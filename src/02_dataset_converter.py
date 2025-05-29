@@ -417,6 +417,147 @@ class FlexibleCSVConverter:
         logger.info(f"Saved {len(documents)} documents to: {filepath}")
         return filepath
 
+    def save_documents_as_markdown_files(self, documents: List[SimpleDocument], prefix: str = "row"):
+        """Save each document as an individual markdown file"""
+        
+        if not documents:
+            logger.warning("No documents to save as markdown files")
+            return []
+        
+        # Create a subdirectory for markdown files
+        markdown_dir = os.path.join(self.output_dir, "markdown_files")
+        os.makedirs(markdown_dir, exist_ok=True)
+        
+        saved_files = []
+        
+        # Determine padding based on total number of documents
+        total_docs = len(documents)
+        padding = len(str(total_docs))
+        
+        for idx, doc in enumerate(documents, 1):
+            # Create enumerated filename with zero-padding
+            filename = f"{prefix}_{str(idx).zfill(padding)}.md"
+            filepath = os.path.join(markdown_dir, filename)
+            
+            # Format document content as markdown
+            markdown_content = self._format_document_as_markdown(doc)
+            
+            try:
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(markdown_content)
+                saved_files.append(filepath)
+            except Exception as e:
+                logger.error(f"Failed to save markdown file {filename}: {e}")
+        
+        logger.info(f"Saved {len(saved_files)} markdown files to: {markdown_dir}")
+        return saved_files
+    
+    def _format_document_as_markdown(self, doc: SimpleDocument) -> str:
+        """Format a document as markdown content"""
+        
+        # Start with a title
+        title = "# Document Record"
+        
+        # Try to get a more specific title from metadata
+        if 'id' in doc.metadata:
+            title = f"# Record ID: {doc.metadata['id']}"
+        elif 'number' in doc.metadata:
+            title = f"# Record Number: {doc.metadata['number']}"
+        
+        markdown_lines = [title, ""]
+        
+        # Add the main content with proper markdown formatting
+        if doc.text:
+            # Split the text into sections and format as markdown
+            text_sections = doc.text.split('\n\n')
+            
+            for section in text_sections:
+                if ':' in section:
+                    # Convert "Section: content" to "## Section\ncontent"
+                    parts = section.split(':', 1)
+                    section_title = parts[0].strip()
+                    section_content = parts[1].strip()
+                    
+                    markdown_lines.append(f"## {section_title}")
+                    markdown_lines.append("")
+                    markdown_lines.append(section_content)
+                    markdown_lines.append("")
+                else:
+                    # Regular content
+                    markdown_lines.append(section)
+                    markdown_lines.append("")
+        
+        # Add metadata section
+        if doc.metadata:
+            markdown_lines.append("## Metadata")
+            markdown_lines.append("")
+            
+            # Group metadata by type for better organization
+            metadata_groups = {
+                'identifiers': [],
+                'demographics': [],
+                'education': [],
+                'career': [],
+                'compensation': [],
+                'assessments': [],
+                'system': [],
+                'other': []
+            }
+            
+            # Categorize metadata based on field mappings
+            field_type_map = {}
+            if self.dataset_config:
+                for mapping in self.dataset_config.field_mappings:
+                    field_type_map[mapping.metadata_key] = mapping.field_type
+            
+            for key, value in doc.metadata.items():
+                if value is None:
+                    continue
+                    
+                field_type = field_type_map.get(key, 'other')
+                
+                if field_type == 'identifier':
+                    metadata_groups['identifiers'].append((key, value))
+                elif field_type == 'demographic':
+                    metadata_groups['demographics'].append((key, value))
+                elif field_type == 'education':
+                    metadata_groups['education'].append((key, value))
+                elif field_type == 'career':
+                    metadata_groups['career'].append((key, value))
+                elif field_type == 'compensation':
+                    metadata_groups['compensation'].append((key, value))
+                elif field_type == 'assessment':
+                    metadata_groups['assessments'].append((key, value))
+                elif key in ['source', 'created_at', 'doc_type', 'config_name']:
+                    metadata_groups['system'].append((key, value))
+                else:
+                    metadata_groups['other'].append((key, value))
+            
+            # Add metadata sections
+            section_titles = {
+                'identifiers': 'Identifiers',
+                'demographics': 'Demographics',
+                'education': 'Education',
+                'career': 'Career Information',
+                'compensation': 'Compensation',
+                'assessments': 'Assessments',
+                'other': 'Additional Information',
+                'system': 'System Information'
+            }
+            
+            for group_key, items in metadata_groups.items():
+                if items:
+                    markdown_lines.append(f"### {section_titles[group_key]}")
+                    markdown_lines.append("")
+                    
+                    for key, value in items:
+                        formatted_key = key.replace('_', ' ').title()
+                        markdown_lines.append(f"- **{formatted_key}**: {value}")
+                    
+                    markdown_lines.append("")
+        
+        return '\n'.join(markdown_lines)
+
 def main():
     """Main execution function with flexible configuration"""
     
@@ -459,13 +600,17 @@ def main():
     # Process documents
     documents = converter.process_csv_to_documents(batch_size=500)
     
-    # Save documents
+    # Save documents as JSONL
     converter.save_documents_as_jsonl(documents)
+    
+    # Save documents as individual markdown files
+    markdown_files = converter.save_documents_as_markdown_files(documents)
     
     logger.info("Flexible conversion completed successfully!")
     logger.info(f"Total documents created: {len(documents)}")
     logger.info(f"Configuration: {config.name}")
-    logger.info(f"Output saved to: {output_dir}")
+    logger.info(f"JSONL output saved to: {output_dir}")
+    logger.info(f"Markdown files saved: {len(markdown_files)} files in {output_dir}/markdown_files/")
 
 if __name__ == "__main__":
     main() 
