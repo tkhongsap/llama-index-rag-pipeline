@@ -8,15 +8,8 @@ from datetime import datetime
 import logging
 from dataclasses import dataclass, asdict
 from pathlib import Path
+from llama_index.core import Document
 
-# LlamaIndex imports
-try:
-    from llama_index.core import Document
-except ImportError:
-    try:
-        from llama_index import Document
-    except ImportError:
-        raise ImportError("LlamaIndex not found. Please install with: pip install llama-index")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
