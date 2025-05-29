@@ -84,8 +84,8 @@ Thumbs.db
 
 # Data and assets (customize as needed)
 data/*
-!data/input_docs/
 assets/*
+example/*
 
 # Logs
 *.log
