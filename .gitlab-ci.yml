@@ -1,0 +1,6 @@
+stages:
+  - code-analyze
+
+
+include:
+  - local: .gitlab-ci/ai-code-review.yml

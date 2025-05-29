@@ -1,0 +1,67 @@
+code_review:
+  stage: code-analyze
+  image: docker:26.1.4
+  services:
+    - docker:26.1.4-dind
+  variables:
+    OPENAI_API_KEY: "$OPENAPI_KEY_DT_Gitlab_Code_Review"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - >
+      docker run --rm
+      -e OPENAI_API_KEY=$OPENAI_API_KEY
+      -e ACTOR="$CI_COMMIT_AUTHOR"
+      -e COMMIT_SHA="$CI_COMMIT_SHA"
+      -e EVENT_NAME="$CI_PIPELINE_SOURCE"
+      -e EVENT_NUMBER="$CI_MERGE_REQUEST_IID"
+      -e EVENT_TITLE="$CI_COMMIT_TITLE"
+      -e REPOSITORY="$CI_PROJECT_NAME"
+      -e NAMESPACE="$CI_PROJECT_ROOT_NAMESPACE"
+      -v $PWD:/app/
+      harborregistryii.thaibevapp.com/baseimage/code-master:latest
+      bash -c "python /doctor/code_review.py"
+  except:
+    - tags
+  # only:
+  #   - main
+  artifacts:
+    paths:
+      - code-review-scores/
+    expire_in: 1 hour
+  allow_failure: true
+
+upload_code_review:
+  stage: code-analyze
+  image: harborregistryii.thaibevapp.com/baseimage/code-master:latest
+  variables:
+    REVIEW_DEFAULT_BRANCH: master
+  before_script:
+    # Export environment variables
+    - export REVIEW_REPOSITORY_URL=gitlabii.thaibevapp.com/gitlab-code-review/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}.git
+
+    # Git configuration
+    - git config user.name "${GITLAB_USER_NAME}"
+    - git config user.email "${GITLAB_USER_EMAIL}"
+    - git remote set-url origin "https://${GITLAB_USER_LOGIN}:${GITLAB_ACCESS_TOKEN}@${REVIEW_REPOSITORY_URL#*@}"
+    - git fetch origin $REVIEW_DEFAULT_BRANCH
+    - git checkout $REVIEW_DEFAULT_BRANCH
+    - git pull origin $REVIEW_DEFAULT_BRANCH --rebase
+  script:
+    # Update repository
+    - git add code-review-scores/
+    - >
+      git commit -m "docs: add code review results for $CI_COMMIT_SHA"
+
+    # Ensure already-update
+    - git pull origin $REVIEW_DEFAULT_BRANCH --rebase
+
+    # Update gitops
+    - git push origin $REVIEW_DEFAULT_BRANCH
+  needs:
+    - code_review
+  except:
+    - tags
+  # only:
+  #   - main
+  allow_failure: true
