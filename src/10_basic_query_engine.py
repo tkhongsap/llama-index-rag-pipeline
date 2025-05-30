@@ -379,12 +379,12 @@ def interactive_query_session():
                 print("-" * 50)
                 
                 # Show sources
-                if result.get('sources'):
-                    print(f"\n📚 Sources used ({len(result['sources'])} documents retrieved):")
-                    for i, source in enumerate(result['sources'][:3], 1):
-                        score_str = f" (relevance: {source['score']:.3f})" if source['score'] is not None else ""
-                        print(f"\n  📄 Source {i}{score_str}:")
-                        print(f"     {source['text_preview'][:150]}...")
+                # if result.get('sources'):
+                #     print(f"\n📚 Sources used ({len(result['sources'])} documents retrieved):")
+                #     for i, source in enumerate(result['sources'][:3], 1):
+                #         score_str = f" (relevance: {source['score']:.3f})" if source['score'] is not None else ""
+                #         print(f"\n  📄 Source {i}{score_str}:")
+                #         print(f"     {source['text_preview'][:150]}...")
                 
                 print(f"\n⏱️ Query completed in {result['timing']['query_time_seconds']}s")
             else:
