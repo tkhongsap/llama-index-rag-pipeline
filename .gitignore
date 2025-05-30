@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Environment variables
+.env
+
 # Distribution / packaging
 .Python
 build/
@@ -89,5 +92,3 @@ example/*
 
 # Logs
 *.log
-
-# If you use dotenv, but per your instructions, do not ignore .env
