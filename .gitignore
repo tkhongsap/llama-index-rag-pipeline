@@ -92,3 +92,6 @@ example/*
 
 # Logs
 *.log
+
+# Git rewrite temporary files
+.git-rewrite/
