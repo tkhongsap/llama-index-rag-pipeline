@@ -297,12 +297,22 @@ def interactive_query_session():
     """Run an interactive query session."""
     print("💬 INTERACTIVE QUERY SESSION")
     print("=" * 80)
-    print("Type 'quit' or 'exit' to end the session")
-    print("Type 'help' for available commands")
+    print("🎯 You can now ask questions about your documents!")
+    print("\n📋 Available commands:")
+    print("  • Type any question to get an answer")
+    print("  • 'quit' or 'exit' - End the session")
+    print("  • 'help' - Show available commands")
+    print("  • 'settings' - Show current engine settings")
+    print("  • 'top_k=N' - Change number of retrieved documents (e.g., top_k=10)")
+    print("\n💡 Example questions:")
+    print("  • What are the main topics in these documents?")
+    print("  • Summarize the key findings")
+    print("  • What educational qualifications are mentioned?")
     
     try:
         # Create index and engine
         print("\n🔄 Setting up query engine...")
+        print("   Loading embeddings from latest batch...")
         index = create_index_from_latest_batch(
             use_chunks=True,
             use_summaries=True,  # Include summaries for better context
@@ -310,7 +320,9 @@ def interactive_query_session():
         )
         
         engine = BasicRAGQueryEngine(index=index)
-        print("✅ Ready for queries!\n")
+        print("✅ Query engine ready!")
+        print(f"📊 Loaded index with {len(index.docstore.docs)} documents")
+        print(f"⚙️  Current settings: top_k={engine.top_k}, response_mode={engine.response_mode}")
         
         while True:
             # Get user input
@@ -318,7 +330,7 @@ def interactive_query_session():
             
             # Check for commands
             if query.lower() in ['quit', 'exit']:
-                print("👋 Goodbye!")
+                print("👋 Thanks for using the query engine! Goodbye!")
                 break
             
             elif query.lower() == 'help':
@@ -327,6 +339,7 @@ def interactive_query_session():
                 print("  • help - Show this help")
                 print("  • settings - Show current settings")
                 print("  • top_k=N - Change number of retrieved documents")
+                print("  • clear - Clear screen (if supported)")
                 continue
                 
             elif query.lower() == 'settings':
@@ -334,37 +347,54 @@ def interactive_query_session():
                 print(f"  • Top K: {engine.top_k}")
                 print(f"  • Response Mode: {engine.response_mode}")
                 print(f"  • Temperature: {engine.temperature}")
+                print(f"  • Documents in index: {len(index.docstore.docs)}")
                 continue
                 
             elif query.startswith('top_k='):
                 try:
                     new_k = int(query.split('=')[1])
-                    engine.top_k = new_k
-                    engine._setup_query_engine()
-                    print(f"✅ Updated top_k to {new_k}")
+                    if new_k > 0:
+                        engine.top_k = new_k
+                        engine._setup_query_engine()
+                        print(f"✅ Updated top_k to {new_k}")
+                    else:
+                        print("❌ top_k must be greater than 0")
                 except:
                     print("❌ Invalid format. Use: top_k=5")
+                continue
+                
+            elif query.lower() == 'clear':
+                os.system('cls' if os.name == 'nt' else 'clear')
                 continue
             
             # Execute query
             if query:
-                print("\n🔄 Processing query...")
+                print("\n🔄 Processing your question...")
+                start_time = time.time()
                 result = engine.query(query)
                 
-                print(f"\n📝 Response:\n{result['response']}")
+                print(f"\n📝 Answer:")
+                print("-" * 50)
+                print(result['response'])
+                print("-" * 50)
                 
                 # Show sources
                 if result.get('sources'):
-                    print(f"\n📚 Sources ({len(result['sources'])} retrieved):")
-                    for source in result['sources'][:3]:
-                        print(f"  • {source['text_preview'][:100]}...")
+                    print(f"\n📚 Sources used ({len(result['sources'])} documents retrieved):")
+                    for i, source in enumerate(result['sources'][:3], 1):
+                        score_str = f" (relevance: {source['score']:.3f})" if source['score'] is not None else ""
+                        print(f"\n  📄 Source {i}{score_str}:")
+                        print(f"     {source['text_preview'][:150]}...")
                 
-                print(f"\n⏱️ Query time: {result['timing']['query_time_seconds']}s")
+                print(f"\n⏱️ Query completed in {result['timing']['query_time_seconds']}s")
+            else:
+                print("❌ Please enter a question or command.")
     
     except KeyboardInterrupt:
         print("\n\n👋 Session interrupted. Goodbye!")
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
+        print(f"\n❌ Error setting up query engine: {str(e)}")
+        print("💡 Make sure you have embeddings available in the data directory.")
 
 # ---------- UTILITY FUNCTIONS -----------------------------------------------
 
@@ -397,10 +427,51 @@ def create_optimized_query_engine(
 
 # ---------- ENTRY POINT -----------------------------------------------------
 
+def main_menu():
+    """Display main menu and handle user choice."""
+    print("🚀 BASIC QUERY ENGINE")
+    print("=" * 50)
+    print("\nChoose an option:")
+    print("1. Interactive Mode - Type your own questions")
+    print("2. Sample Queries - Run demonstration with predefined queries")
+    print("3. Exit")
+    
+    while True:
+        try:
+            choice = input("\n❓ Enter your choice (1, 2, or 3): ").strip()
+            
+            if choice == "1":
+                print("\n🎯 Starting Interactive Mode...")
+                interactive_query_session()
+                break
+            elif choice == "2":
+                print("\n🎯 Running Sample Queries Demonstration...")
+                demonstrate_basic_query_engine()
+                break
+            elif choice == "3":
+                print("\n👋 Goodbye!")
+                break
+            else:
+                print("❌ Invalid choice. Please enter 1, 2, or 3.")
+                
+        except KeyboardInterrupt:
+            print("\n\n👋 Goodbye!")
+            break
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+
 if __name__ == "__main__":
     import sys
     
-    if len(sys.argv) > 1 and sys.argv[1] == "interactive":
-        interactive_query_session()
+    # Check for command line arguments for backward compatibility
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "interactive":
+            interactive_query_session()
+        elif sys.argv[1] == "demo":
+            demonstrate_basic_query_engine()
+        else:
+            print(f"Unknown argument: {sys.argv[1]}")
+            print("Available arguments: 'interactive', 'demo'")
     else:
-        demonstrate_basic_query_engine() 
+        # Default behavior: show menu
+        main_menu() 
