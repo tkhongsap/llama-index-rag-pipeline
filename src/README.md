@@ -1,304 +1,367 @@
-# Flexible CSV to Document Converter
+# LlamaIndex RAG Pipeline - Source Code Documentation
 
-A flexible, configuration-driven system for converting CSV files with different schemas into structured documents for RAG (Retrieval-Augmented Generation) pipelines.
+This directory contains the core processing scripts for the LlamaIndex RAG pipeline that converts CSV data into intelligent vector embeddings.
 
-## 🎯 Overview
+## 🏗️ Pipeline Scripts Overview
 
-This converter automatically analyzes CSV structure and generates field mappings to standardized metadata categories. It can handle different CSV schemas without requiring code changes - just configuration updates.
+### Core Processing Pipeline (Run in Sequential Order)
 
-## 📁 Files
+| # | Script | Purpose | Input | Output |
+|---|--------|---------|-------|--------|
+| 02 | `02_csv_to_documents.py` | Convert CSV to structured documents | CSV files | JSONL documents |
+| 03 | `03_document_to_markdown.py` | Transform documents to markdown | JSONL documents | Markdown files |
+| 04 | `04_build_summary_index.py` | Create document summary index | Markdown files | Summary index |
+| 05 | `05_build_recursive_retriever.py` | Build recursive retrieval system | Summary index | Recursive retriever |
+| 06 | `06_analyze_index_structure.py` | Analyze and inspect index structure | Built indexes | Analysis reports |
+| 07 | `07_extract_embeddings.py` | Extract embeddings for inspection | Built indexes | Embedding files |
+| 08 | `08_batch_process_embeddings.py` | Process large datasets in batches | Markdown files | Batch embeddings |
 
-- `02_flexible_converter.py` - Main flexible converter class
-- `csv_converter_cli.py` - Command-line interface
-- `01_simple_converter.py` - Original hardcoded converter (for reference)
+### Supporting Files
 
-## 🚀 Quick Start
+- `csv_converter_cli.py` - Command-line interface for CSV conversion
+- `01_simple_converter.py` - Basic converter (for reference)
 
-### Method 1: Auto-Configuration (Recommended)
+## 📋 Detailed Script Documentation
 
+### 02_csv_to_documents.py - CSV Data Parser
+
+**Purpose:** Flexible, configuration-driven CSV to document converter
+
+**Key Features:**
+- Auto-detects CSV structure and column types
+- Maps fields to standardized metadata categories (identifier, demographic, education, career, etc.)
+- Generates reusable YAML configuration files
+- Handles large datasets efficiently with batching
+- Creates structured JSONL documents ready for LLM processing
+
+**Field Categories:**
+- `identifier` - ID, No, Code fields
+- `demographic` - Age, Province, Region, Location
+- `education` - Degree, Major, Institute, School
+- `career` - Position, Company, Industry, Experience
+- `compensation` - Salary, Bonus, Currency
+- `assessment` - Test, Score, Skill, Evaluation
+
+**Usage:**
 ```bash
-# Run the flexible converter with auto-configuration
-python 02_flexible_converter.py
+python 02_csv_to_documents.py
 ```
 
-This will:
-1. Analyze your CSV structure
-2. Auto-generate field mappings 
-3. Create a configuration file
-4. Convert all rows to documents
-5. Save as JSONL file
+**Configuration Example:**
+```yaml
+name: my_dataset
+field_mappings:
+- csv_column: "Age"
+  metadata_key: "age"
+  field_type: "demographic"
+  data_type: "numeric"
+  required: true
+```
 
-### Method 2: CLI Tool
+### 03_document_to_markdown.py - Document Formatter
+
+**Purpose:** Transform JSONL documents into markdown format optimized for LLM processing
+
+**Key Features:**
+- Converts structured documents to readable markdown
+- Preserves metadata relationships
+- Optimizes format for embedding generation
+- Maintains document hierarchy and structure
+
+**Usage:**
+```bash
+python 03_document_to_markdown.py
+```
+
+### 04_build_summary_index.py - Summary Index Builder
+
+**Purpose:** Create hierarchical document summaries and searchable indexes
+
+**Key Features:**
+- Generates document summaries using LLM (GPT-4o-mini)
+- Creates DocumentSummaryIndex with embeddings
+- Chunks documents for optimal retrieval
+- Builds foundation for recursive retrieval system
+- Uses configurable chunk size and overlap
+
+**Configuration:**
+- Chunk Size: 1024 tokens
+- Chunk Overlap: 50 tokens
+- Embedding Model: text-embedding-3-small
+- LLM Model: gpt-4o-mini
+
+**Usage:**
+```bash
+python 04_build_summary_index.py
+```
+
+### 05_build_recursive_retriever.py - Recursive Retrieval System
+
+**Purpose:** Create a multi-level recursive retrieval system for complex queries
+
+**Key Features:**
+- Builds IndexNodes for document hierarchy
+- Creates VectorStoreIndex from IndexNodes
+- Enables both summary-level and chunk-level retrieval
+- Supports complex queries across multiple document levels
+- Implements recursive query decomposition
+
+**Usage:**
+```bash
+python 05_build_recursive_retriever.py
+```
+
+### 06_analyze_index_structure.py - Index Analyzer
+
+**Purpose:** Inspect and analyze the built indexes for quality assurance and debugging
+
+**Key Features:**
+- Analyzes document coverage and quality
+- Reports on chunk distribution and sizes
+- Validates index structure integrity
+- Provides performance insights and statistics
+- Generates detailed analysis reports
+
+**Usage:**
+```bash
+python 06_analyze_index_structure.py
+```
+
+### 07_extract_embeddings.py - Embedding Extractor
+
+**Purpose:** Extract and save embeddings for external analysis or vector database storage
+
+**Key Features:**
+- Extracts IndexNode, chunk, and summary embeddings
+- Saves embeddings in multiple formats (JSON, PKL, NPY)
+- Provides comprehensive embedding statistics
+- Enables integration with external vector stores
+- Creates detailed embedding analysis reports
+
+**Output Formats:**
+- JSON: Metadata with embedding previews
+- PKL: Complete Python objects with full embeddings
+- NPY: Numpy arrays for vector operations
+- Statistics: Analysis and quality metrics
+
+**Usage:**
+```bash
+python 07_extract_embeddings.py
+```
+
+### 08_batch_process_embeddings.py - Batch Processor
+
+**Purpose:** Process large datasets efficiently with rate limiting and memory management
+
+**Key Features:**
+- Processes files in configurable batches (default: 10 files)
+- Implements API rate limiting with delays between batches
+- Handles memory management for large datasets
+- Provides batch-level statistics and monitoring
+- Supports parallel processing workflows
+
+**Configuration:**
+- Batch Size: 10 files per batch
+- Delay Between Batches: 3 seconds
+- Memory-efficient processing
+- Individual batch result tracking
+
+**Usage:**
+```bash
+python 08_batch_process_embeddings.py
+```
+
+## 🔧 Configuration & Environment
+
+### Required Environment Variables
+
+```bash
+# Required
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional (with defaults)
+CHUNK_SIZE=1024
+CHUNK_OVERLAP=50
+SUMMARY_EMBED_MODEL=text-embedding-3-small
+LLM_MODEL=gpt-4o-mini
+```
+
+### Directory Structure
+
+```
+src/
+├── 02_csv_to_documents.py        # CSV → Documents
+├── 03_document_to_markdown.py    # Documents → Markdown  
+├── 04_build_summary_index.py     # Markdown → Summary Index
+├── 05_build_recursive_retriever.py # Index → Retriever
+├── 06_analyze_index_structure.py # Index Analysis
+├── 07_extract_embeddings.py      # Embedding Extraction
+├── 08_batch_process_embeddings.py # Batch Processing
+├── csv_converter_cli.py          # CLI interface
+├── 01_simple_converter.py        # Reference implementation
+└── README.md                     # This file
+```
+
+## 🚀 Running the Complete Pipeline
+
+### Sequential Execution
+
+```bash
+# Step 1: Convert CSV to documents
+python 02_csv_to_documents.py
+
+# Step 2: Convert documents to markdown
+python 03_document_to_markdown.py
+
+# Step 3: Build summary index
+python 04_build_summary_index.py
+
+# Step 4: Build recursive retriever
+python 05_build_recursive_retriever.py
+
+# Step 5: Analyze index structure
+python 06_analyze_index_structure.py
+
+# Step 6: Extract embeddings
+python 07_extract_embeddings.py
+
+# Optional: Batch process for large datasets
+python 08_batch_process_embeddings.py
+```
+
+### Data Flow
+
+```
+CSV Files → Documents → Markdown → Summary Index → Recursive Retriever → Analysis → Embeddings
+    ↓           ↓           ↓            ↓               ↓           ↓          ↓
+  JSONL      Markdown    Index      Retriever      Reports    Analysis   Vectors
+```
+
+## 🔍 CLI Tools
+
+### CSV Converter CLI
 
 ```bash
 # Analyze CSV structure
-python csv_converter_cli.py analyze data/input.csv
+python csv_converter_cli.py analyze ../data/input_docs/input.csv
 
 # Generate configuration file  
-python csv_converter_cli.py config data/input.csv --config-name my_dataset
+python csv_converter_cli.py config ../data/input_docs/input.csv --config-name my_dataset
 
 # Convert with existing config
-python csv_converter_cli.py convert data/input.csv --config-file my_config.yaml
+python csv_converter_cli.py convert ../data/input_docs/input.csv --config-file my_config.yaml
 
 # Interactive mode
 python csv_converter_cli.py interactive
 ```
 
-## 🔧 How It Works
+## 📊 Output Files & Formats
 
-### 1. CSV Analysis
+### Generated by Each Script
 
-The system analyzes your CSV file and:
+**02_csv_to_documents.py:**
+- `*_documents.jsonl` - Structured documents
+- `*_config.yaml` - Field mapping configuration
+- `csv_analysis_report.json` - CSV analysis
 
-- **Detects column names** and data types
-- **Categorizes fields** into types:
-  - `identifier` - ID, No, Code fields
-  - `demographic` - Age, Province, Region, Location
-  - `education` - Degree, Major, Institute, School
-  - `career` - Position, Company, Industry, Experience
-  - `compensation` - Salary, Bonus, Currency
-  - `assessment` - Test, Score, Skill, Evaluation
-  - `generic` - Everything else
+**03_document_to_markdown.py:**
+- `*.md` files in `../example/` directory
+- Markdown-formatted documents ready for indexing
 
-- **Suggests metadata keys** with confidence scores
-- **Infers data types** (string, numeric, date, boolean)
+**04_build_summary_index.py:**
+- DocumentSummaryIndex objects
+- Document summaries and chunk embeddings
 
-### 2. Configuration Generation
+**05_build_recursive_retriever.py:**
+- VectorStoreIndex from IndexNodes
+- Recursive retrieval system
 
-Creates a YAML configuration file:
+**06_analyze_index_structure.py:**
+- Index analysis reports
+- Quality metrics and statistics
 
-```yaml
-name: my_dataset
-description: Auto-generated configuration  
-field_mappings:
-- csv_column: "Age"
-  metadata_key: "age"
-  field_type: "demographic"
-  data_type: "numeric"  
-  required: true
-- csv_column: "Company Name"
-  metadata_key: "company"
-  field_type: "career"
-  data_type: "string"
-  required: false
-  aliases: ["CompanyName", "Organization"]
+**07_extract_embeddings.py:**
+- `embeddings_*/` directories with:
+  - JSON files (metadata + previews)
+  - PKL files (complete embeddings)
+  - NPY files (vector arrays)
+  - Statistics files
+
+**08_batch_process_embeddings.py:**
+- `embeddings_batch_*/` directories
+- Batch-organized embedding files
+- Combined statistics across batches
+
+## 🛠️ Development Notes
+
+### Adding New Scripts
+
+1. Follow the naming convention: `NN_descriptive_name.py`
+2. Include comprehensive docstrings and error handling
+3. Add progress indicators for long-running operations
+4. Save intermediate results for debugging
+5. Update this README with new script documentation
+
+### Configuration Best Practices
+
+1. Use environment variables for API keys and model settings
+2. Create reusable YAML configurations for different datasets
+3. Store configurations in version control
+4. Document any custom field mappings or templates
+
+### Performance Optimization
+
+1. Monitor API usage and implement rate limiting
+2. Use appropriate batch sizes for memory management
+3. Cache expensive operations when possible
+4. Profile scripts for bottlenecks in large datasets
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**API Key Problems:**
+```bash
+# Check environment variables
+echo $OPENAI_API_KEY
 ```
 
-### 3. Document Generation
+**Memory Issues:**
+- Reduce batch size in batch processing script
+- Process smaller file sets
+- Monitor system memory usage
 
-Converts each CSV row into:
+**Path Issues:**
+- Always run scripts from project root or src directory
+- Use relative paths consistently
+- Check file permissions
 
-```json
-{
-  "text": "Profile: Id: 123\n\nDemographics: Age: 28, Province: Bangkok...",
-  "metadata": {
-    "id": 123,
-    "age": 28,
-    "province": "Bangkok",
-    "position": "Developer",
-    "salary": 50000,
-    "source": "csv_import",
-    "doc_type": "csv_record",
-    "created_at": "2024-01-15T10:30:00"
-  }
-}
-```
+**Configuration Conflicts:**
+- Delete old configuration files to regenerate
+- Verify YAML syntax
+- Check for duplicate metadata keys
 
-## 📋 Configuration Options
+### Debug Mode
 
-### Field Mapping Properties
+Most scripts support verbose output. Check script headers for debug flags and logging options.
 
-- `csv_column` - Original CSV column name
-- `metadata_key` - Standardized metadata field name  
-- `field_type` - Category (identifier, demographic, etc.)
-- `data_type` - Data type (string, numeric, date, boolean)
-- `required` - Whether field is required (affects confidence)
-- `aliases` - Alternative column names for this field
+## 📈 Performance Monitoring
 
-### Text Template
+### Metrics to Track
 
-You can customize document text generation:
+- Processing time per document
+- API calls and costs
+- Memory usage during processing
+- Embedding quality metrics
+- Index structure statistics
 
-```yaml
-text_template: |
-  Candidate Profile: {id}
-  
-  Personal: Age {age}, Location: {province}
-  Education: {degree} in {major} from {institute}
-  Current Role: {position} at {company}
-  Expected Salary: {salary} {currency}
-```
+### Optimization Strategies
 
-## 🔄 Using with Different CSV Files
+- Batch processing for large datasets
+- Parallel processing where applicable
+- Caching of expensive operations
+- Memory-efficient data structures
 
-### For New CSV Files:
+---
 
-1. **Place your CSV** in `data/input_docs/your_file.csv`
-
-2. **Update the path** in `02_flexible_converter.py`:
-   ```python
-   input_csv = "../data/input_docs/your_file.csv"
-   ```
-
-3. **Run the converter**:
-   ```bash
-   python 02_flexible_converter.py
-   ```
-
-4. **Review generated config** in `data/output_docs/your_file_config.yaml`
-
-5. **Edit config if needed** - adjust field mappings, add aliases, modify templates
-
-6. **Re-run conversion** with your custom config
-
-### For Production Use:
-
-1. **Create dataset-specific configs** for each CSV schema
-2. **Store configs** in version control  
-3. **Load existing configs** when processing new data:
-
-```python
-converter = FlexibleCSVConverter(csv_path, output_dir, config_path="my_config.yaml")
-config = converter.setup_configuration(auto_generate=False)
-```
-
-## 📊 Analysis Reports
-
-The system generates detailed analysis reports:
-
-### `csv_analysis_report.json`
-```json
-{
-  "total_columns": 45,
-  "columns": ["No", "Id", "Age", "Position", ...],
-  "suggested_mappings": [
-    {
-      "csv_column": "Age",
-      "field_type": "demographic", 
-      "suggested_metadata_key": "age",
-      "confidence": 1.0,
-      "data_type": "numeric"
-    }
-  ],
-  "data_types": {...},
-  "sample_data": [...]
-}
-```
-
-This helps you understand:
-- How confident the auto-mapping is
-- Which fields might need manual review
-- Data quality and completeness
-
-## 🎛️ Customization Examples
-
-### Adding Field Aliases
-
-If your CSV has different column names for the same data:
-
-```yaml
-- csv_column: "Company Name"
-  metadata_key: "company"
-  field_type: "career"
-  aliases: ["CompanyName", "Organization", "Employer"]
-```
-
-### Custom Field Types
-
-Add your own field pattern recognition:
-
-```python
-field_patterns = {
-    'skills': {
-        'patterns': [r'skill', r'competency', r'ability'],
-        'metadata_keys': ['skill_name', 'skill_level']
-    }
-}
-```
-
-### Custom Text Templates
-
-```yaml
-text_template: |
-  === CANDIDATE PROFILE ===
-  ID: {id}
-  
-  🎓 EDUCATION
-  {degree} in {major} from {institute}
-  
-  💼 CAREER  
-  Current: {position} at {company}
-  Experience: {experience}
-  Industry: {industry}
-  
-  💰 COMPENSATION
-  Current: {salary} {currency}
-  Expected: {salary_expectation} {currency}
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues:
-
-1. **Missing required dependencies**:
-   ```bash
-   pip install PyYAML>=6.0
-   ```
-
-2. **File path issues**:
-   - Use absolute paths or ensure correct relative paths
-   - Check file permissions
-
-3. **Configuration conflicts**:
-   - Delete old config files to regenerate
-   - Check for duplicate metadata keys
-
-4. **Memory issues with large files**:
-   - Adjust batch_size parameter
-   - Process in smaller chunks
-
-## 📈 Performance Tips
-
-- **Use appropriate batch sizes** (500-2000 rows)
-- **Pre-clean your CSV** data when possible
-- **Cache configurations** for repeated processing
-- **Monitor memory usage** for very large files
-
-## 🔮 Future Enhancements
-
-Potential improvements:
-- Machine learning-based field detection
-- Multi-language column name support  
-- Integration with data validation libraries
-- Real-time CSV schema change detection
-- Support for nested JSON metadata structures
-
-## 📝 Examples
-
-### Example 1: HR Dataset
-```python
-# Different HR system with different column names
-converter = FlexibleCSVConverter("hr_export.csv", "output")
-config = converter.setup_configuration("hr_data", auto_generate=True)
-documents = converter.process_csv_to_documents()
-```
-
-### Example 2: Survey Data
-```python
-# Survey responses with mixed field types
-converter = FlexibleCSVConverter("survey_results.csv", "output") 
-# Manual config for survey-specific fields
-config = converter.load_config("survey_config.yaml")
-documents = converter.process_csv_to_documents()
-```
-
-### Example 3: Financial Data
-```python
-# Financial records requiring custom field mappings
-converter = FlexibleCSVConverter("financial_data.csv", "output")
-config = converter.setup_configuration("finance", auto_generate=True)
-# Review and edit config before final processing
-documents = converter.process_csv_to_documents()
-```
-
-This flexible system adapts to your data structure rather than forcing your data to fit a rigid schema! 
+This pipeline provides a complete solution for converting CSV data into intelligent, searchable vector embeddings using state-of-the-art LLM and embedding technologies. 
