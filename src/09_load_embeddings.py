@@ -1,5 +1,5 @@
 """
-09_load_embeddings.py - Load and reconstruct indices from saved embeddings
+load_embeddings.py - Load and reconstruct indices from saved embeddings
 
 This script provides utilities to load batch-processed embeddings from disk
 and reconstruct various LlamaIndex indices for retrieval.
@@ -74,7 +74,7 @@ class EmbeddingLoader:
         """Load statistics for a specific batch."""
         stats_file = batch_path / "combined_statistics.json"
         if stats_file.exists():
-            with open(stats_file, 'r') as f:
+            with open(stats_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         return {}
     
@@ -114,7 +114,7 @@ class EmbeddingLoader:
         # Load metadata
         meta_path = sub_batch_dir / f"{prefix}_metadata.json"
         if meta_path.exists():
-            with open(meta_path, 'r') as f:
+            with open(meta_path, 'r', encoding='utf-8') as f:
                 metadata = json.load(f)
         else:
             metadata = []
@@ -196,10 +196,16 @@ class IndexReconstructor:
         nodes = []
         
         for emb in embeddings:
+            # Get text content based on embedding type
+            if emb["type"] == "summary":
+                text_content = emb.get("summary_text", "")
+            else:
+                text_content = emb.get("text", "")
+            
             if emb["type"] == "indexnode":
                 # Create IndexNode
                 node = IndexNode(
-                    text=emb["text"],
+                    text=text_content,
                     index_id=emb["index_id"],
                     metadata=emb.get("metadata", {}),
                     embedding=emb.get("embedding_vector"),
@@ -208,7 +214,7 @@ class IndexReconstructor:
             else:
                 # Create TextNode
                 node = TextNode(
-                    text=emb["text"],
+                    text=text_content,
                     metadata=emb.get("metadata", {}),
                     embedding=emb.get("embedding_vector"),
                     id_=emb["node_id"]

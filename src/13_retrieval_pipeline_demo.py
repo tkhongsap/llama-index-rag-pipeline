@@ -40,6 +40,10 @@ def import_module_from_file(module_name, file_path):
 basic_query_engine = import_module_from_file("basic_query_engine", Path(__file__).parent / "10_basic_query_engine.py")
 document_summary_retriever = import_module_from_file("document_summary_retriever", Path(__file__).parent / "11_document_summary_retriever.py")
 recursive_retriever = import_module_from_file("recursive_retriever", Path(__file__).parent / "12_recursive_retriever.py")
+metadata_filtering = import_module_from_file("metadata_filtering", Path(__file__).parent / "14_metadata_filtering.py")
+chunk_decoupling = import_module_from_file("chunk_decoupling", Path(__file__).parent / "15_chunk_decoupling.py")
+hybrid_search = import_module_from_file("hybrid_search", Path(__file__).parent / "16_hybrid_search.py")
+query_planning_agent = import_module_from_file("query_planning_agent", Path(__file__).parent / "17_query_planning_agent.py")
 
 # ---------- CONFIGURATION ---------------------------------------------------
 
@@ -51,27 +55,38 @@ DEMO_QUERIES = [
     {
         "query": "What educational backgrounds are represented in the data?",
         "category": "Educational Analysis",
-        "expected_strategy": "hierarchical"
+        "expected_strategy": "hierarchical",
+        "complexity": "simple"
     },
     {
         "query": "What are the salary ranges mentioned across profiles?",
         "category": "Compensation Analysis", 
-        "expected_strategy": "document_summary"
+        "expected_strategy": "document_summary",
+        "complexity": "simple"
     },
     {
         "query": "Which profiles mention specific assessment scores?",
         "category": "Assessment Analysis",
-        "expected_strategy": "recursive"
+        "expected_strategy": "recursive",
+        "complexity": "moderate"
     },
     {
-        "query": "What types of companies and industries are represented?",
-        "category": "Industry Analysis",
-        "expected_strategy": "basic"
+        "query": "Find profiles with programming skills and technical experience",
+        "category": "Skills Search",
+        "expected_strategy": "hybrid_search",
+        "complexity": "moderate"
     },
     {
-        "query": "How do work experience levels vary across profiles?",
-        "category": "Experience Analysis",
-        "expected_strategy": "hierarchical"
+        "query": "Compare educational qualifications and salary expectations between different experience levels",
+        "category": "Comparative Analysis",
+        "expected_strategy": "query_planning",
+        "complexity": "complex"
+    },
+    {
+        "query": "What are the most common educational institutions, their graduates' salary ranges, and assessment score patterns?",
+        "category": "Multi-faceted Analysis",
+        "expected_strategy": "query_planning",
+        "complexity": "complex"
     }
 ]
 
@@ -111,7 +126,27 @@ class RetrievalPipelineDemo:
             self.strategies['recursive'] = recursive_retriever.create_recursive_retriever_from_latest_batch()
             print("✅ Recursive Document Retriever ready")
             
-            # Strategy 4: Combined Index (all embedding types)
+            # Strategy 4: Metadata Filtering
+            print("\n🔧 Initializing Metadata Filtering...")
+            self.strategies['metadata_filtering'] = metadata_filtering.create_metadata_filtered_retriever_from_latest_batch()
+            print("✅ Metadata Filtering ready")
+            
+            # Strategy 5: Hybrid Search
+            print("\n🔧 Initializing Hybrid Search...")
+            self.strategies['hybrid_search'] = hybrid_search.create_hybrid_search_engine_from_latest_batch()
+            print("✅ Hybrid Search ready")
+            
+            # Strategy 6: Advanced Chunk Decoupling
+            print("\n🔧 Initializing Advanced Chunk Decoupling...")
+            self.strategies['chunk_decoupling'] = chunk_decoupling.create_advanced_decoupler_from_latest_batch()
+            print("✅ Advanced Chunk Decoupling ready")
+            
+            # Strategy 7: Query Planning Agent
+            print("\n🔧 Initializing Query Planning Agent...")
+            self.strategies['query_planning'] = query_planning_agent.create_query_planning_agent()
+            print("✅ Query Planning Agent ready")
+            
+            # Strategy 8: Combined Index (all embedding types)
             print("\n🔧 Initializing Combined Index Strategy...")
             combined_index = create_index_from_latest_batch(
                 use_chunks=True,
@@ -162,6 +197,27 @@ class RetrievalPipelineDemo:
                     # Use recursive query
                     result = strategy.recursive_query(query, show_details=False)
                     formatted_result = result
+                elif strategy_name == 'metadata_filtering':
+                    # Use auto-filtered query
+                    result = strategy.query_with_auto_filters(query, show_filters=False)
+                    formatted_result = result
+                elif strategy_name == 'hybrid_search':
+                    # Use hybrid search query
+                    result = strategy.query(query, show_details=False)
+                    formatted_result = result
+                elif strategy_name == 'chunk_decoupling':
+                    # Use decoupled chunk query
+                    result = strategy.query_with_decoupled_chunks(query, show_details=False)
+                    formatted_result = result
+                elif strategy_name == 'query_planning':
+                    # Use query planning and execution
+                    result = strategy.plan_and_execute_query(query, show_details=False)
+                    formatted_result = {
+                        'query': query,
+                        'response': result['final_response'],
+                        'sources': [],  # Query planning doesn't return sources in the same format
+                        'metadata': result['metadata']
+                    }
                 else:
                     # Use basic query for basic and combined strategies
                     result = strategy.query(query, show_sources=True, show_timing=False)
