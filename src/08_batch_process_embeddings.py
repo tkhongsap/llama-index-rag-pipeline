@@ -8,6 +8,17 @@ from dotenv import load_dotenv
 from typing import Dict, List, Any, Tuple
 import time
 
+# ---------- CLEAR CACHE AND RELOAD ENVIRONMENT ------------------------------
+
+# Clear any cached environment variables related to OpenAI
+if 'OPENAI_API_KEY' in os.environ:
+    del os.environ['OPENAI_API_KEY']
+
+# Force reload of .env file
+load_dotenv(override=True)
+
+print("🔄 Environment reloaded from .env file")
+
 # Import everything needed for recursive retrieval
 from llama_index.core import (
     SimpleDirectoryReader,
@@ -22,9 +33,6 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 
 # ---------- CONFIGURATION ---------------------------------------------------
-
-# Environment setup
-load_dotenv()
 
 # Use same configuration as previous scripts
 DATA_DIR = Path("example")
@@ -47,6 +55,11 @@ def validate_api_key() -> str:
     
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY not found in environment variables")
+    
+    # Show partial key for debugging (first 10 and last 4 characters)
+    if len(api_key) > 14:
+        masked_key = api_key[:10] + "..." + api_key[-4:]
+        print(f"🔑 API Key loaded: {masked_key}")
     
     if api_key.startswith("sk-proj-"):
         print("✅ Project-based API key detected")
