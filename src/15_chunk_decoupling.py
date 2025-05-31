@@ -17,6 +17,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union, Tuple
 from dotenv import load_dotenv
+import pandas as pd
 
 # Add src directory to path for imports
 sys.path.append(str(Path(__file__).parent))
@@ -492,39 +493,63 @@ def demonstrate_chunk_decoupling():
     print("=" * 80)
     
     try:
-        # Load documents and create retrievers
-        print("\n📚 Loading documents and creating retrievers...")
+        # Load real documents from CSV file
+        print("\n📚 Loading real documents from CSV file...")
         
-        # Get documents from latest batch
-        from load_embeddings import EmbeddingLoader
-        loader = EmbeddingLoader(Path("data/embedding"))
-        latest_batch = loader.get_latest_batch_directory()
+        # Load the CSV file
+        csv_path = Path("data/input_docs/input_dataset.csv")
+        if not csv_path.exists():
+            print(f"❌ CSV file not found: {csv_path}")
+            return
         
-        # Load some documents for sentence window processing
-        # This is a simplified approach - in practice, you'd load original documents
-        documents = [
-            Document(text="Sample document 1 with educational background information."),
-            Document(text="Sample document 2 with work experience and skills."),
-            Document(text="Sample document 3 with assessment scores and qualifications.")
-        ]
+        # Read CSV and create documents
+        df = pd.read_csv(csv_path)
+        print(f"📊 Loaded {len(df)} rows from CSV")
+        
+        # Create documents from CSV content (using first 10 rows for demo)
+        documents = []
+        for idx, row in df.head(10).iterrows():
+            # Combine relevant text columns into document content
+            text_parts = []
+            for col in df.columns:
+                if pd.notna(row[col]) and isinstance(row[col], str):
+                    text_parts.append(f"{col}: {row[col]}")
+            
+            if text_parts:
+                doc_text = "\n".join(text_parts)
+                documents.append(Document(
+                    text=doc_text,
+                    metadata={"row_id": idx, "source": "input_dataset.csv"}
+                ))
+        
+        print(f"📄 Created {len(documents)} documents from CSV data")
         
         # Create sentence window retriever
-        print("🪟 Creating sentence window retriever...")
+        print("\n🪟 Creating sentence window retriever...")
         sentence_retriever = SentenceWindowRetriever(
             documents=documents,
             window_size=3
         )
         
-        # Create advanced decoupler
-        print("🔧 Creating advanced decoupler...")
-        index = create_index_from_latest_batch(use_chunks=True)
-        advanced_decoupler = AdvancedChunkDecoupler(index)
+        # Create advanced decoupler using existing embeddings
+        print("\n🔧 Creating advanced decoupler from existing embeddings...")
+        try:
+            index = create_index_from_latest_batch(use_chunks=True, max_embeddings=50)
+            advanced_decoupler = AdvancedChunkDecoupler(index)
+            has_existing_index = True
+        except Exception as e:
+            print(f"⚠️ Could not load existing embeddings: {e}")
+            print("📄 Creating new index from CSV documents...")
+            # Create a simple index from our CSV documents
+            index = VectorStoreIndex.from_documents(documents[:5])  # Use first 5 for demo
+            advanced_decoupler = AdvancedChunkDecoupler(index)
+            has_existing_index = False
         
-        # Test queries
+        # Test queries relevant to typical CSV data
         test_queries = [
-            "What educational qualifications are mentioned?",
-            "What work experience is described?",
-            "What skills and certifications are listed?"
+            "What information is available in the dataset?",
+            "What are the main data fields or categories?",
+            "What patterns can be found in the data?"
         ]
         
         for i, query in enumerate(test_queries, 1):
@@ -533,23 +558,60 @@ def demonstrate_chunk_decoupling():
             
             # Test sentence window retrieval
             print("\n🪟 Sentence Window Retrieval:")
-            sw_result = sentence_retriever.query(query, show_details=False)
-            print(f"Response: {sw_result['response'][:200]}...")
-            print(f"Time: {sw_result['metadata']['total_time']}s")
-            print(f"Sources: {sw_result['metadata']['num_sources']}")
+            try:
+                sw_result = sentence_retriever.query(query, show_details=False)
+                print(f"Response: {sw_result['response'][:200]}...")
+                print(f"Time: {sw_result['metadata']['total_time']}s")
+                print(f"Sources: {sw_result['metadata']['num_sources']}")
+                print(f"Window size: {sw_result['metadata']['window_size']}")
+            except Exception as e:
+                print(f"❌ Sentence window error: {e}")
             
-            # Test context expansion
-            print("\n🔧 Context Expansion:")
-            ce_result = advanced_decoupler.query_with_decoupled_chunks(
-                query, 
-                strategy="context_expansion",
-                show_details=False
-            )
-            print(f"Response: {ce_result['response'][:200]}...")
-            print(f"Time: {ce_result['metadata']['total_time']}s")
-            print(f"Sources: {ce_result['metadata']['num_sources']}")
+            # Test context expansion (only if we have existing embeddings)
+            if has_existing_index:
+                print("\n🔧 Context Expansion:")
+                try:
+                    ce_result = advanced_decoupler.query_with_decoupled_chunks(
+                        query, 
+                        strategy="context_expansion",
+                        show_details=False
+                    )
+                    print(f"Response: {ce_result['response'][:200]}...")
+                    print(f"Time: {ce_result['metadata']['total_time']}s")
+                    print(f"Sources: {ce_result['metadata']['num_sources']}")
+                except Exception as e:
+                    print(f"❌ Context expansion error: {e}")
+            else:
+                print("\n🔧 Standard Retrieval (fallback):")
+                try:
+                    query_engine = index.as_query_engine(similarity_top_k=3)
+                    response = query_engine.query(query)
+                    print(f"Response: {str(response)[:200]}...")
+                except Exception as e:
+                    print(f"❌ Standard retrieval error: {e}")
         
         print("\n✅ Chunk decoupling demonstration complete!")
+        
+        # Show comparison of different window sizes
+        print("\n🪟 TESTING DIFFERENT WINDOW SIZES")
+        print("-" * 60)
+        
+        test_query = "What information is available?"
+        window_sizes = [1, 2, 3, 5]
+        
+        for window_size in window_sizes:
+            print(f"\n📊 Window size {window_size}:")
+            try:
+                temp_retriever = SentenceWindowRetriever(
+                    documents=documents[:3],  # Use fewer docs for speed
+                    window_size=window_size
+                )
+                result = temp_retriever.query(test_query, show_details=False)
+                print(f"  Response length: {len(result['response'])} chars")
+                print(f"  Time: {result['metadata']['total_time']}s")
+                print(f"  Sources: {result['metadata']['num_sources']}")
+            except Exception as e:
+                print(f"  ❌ Error: {e}")
         
     except Exception as e:
         print(f"\n❌ Error in demonstration: {str(e)}")
