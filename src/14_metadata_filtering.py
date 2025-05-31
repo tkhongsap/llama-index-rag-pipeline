@@ -192,6 +192,17 @@ class AutoRetrievalQueryEngine:
         """Use LLM to infer appropriate metadata filters from query."""
         available_filters = self.filter_engine.get_available_filters()
         
+        # Debug: Print available filters to understand what we're working with
+        print(f"🔍 Available filters for inference: {list(available_filters.keys())}")
+        
+        # Check if we have meaningful filters to work with
+        meaningful_filters = {k: v for k, v in available_filters.items() 
+                            if k not in ['file_path', 'file_name', 'file_size', 'creation_date', 'last_modified_date']}
+        
+        if not meaningful_filters:
+            print("⚠️ No meaningful metadata filters available for inference (only file metadata)")
+            return {}
+        
         filter_inference_prompt = f"""
         Given the following query and available metadata filters, determine which filters would be most relevant.
         
@@ -209,11 +220,35 @@ class AutoRetrievalQueryEngine:
         }}
         
         If no specific filters are needed, return an empty object: {{}}
+        
+        CRITICAL: Return ONLY the JSON object, no markdown formatting, no code blocks, no explanatory text. Just pure JSON.
         """
         
         try:
             response = self.llm.complete(filter_inference_prompt)
-            filter_dict = json.loads(response.text.strip())
+            response_text = response.text.strip()
+            
+            # Debug: Print the actual response to see what we're getting
+            print(f"🔍 LLM Response for filter inference: '{response_text}'")
+            
+            if not response_text:
+                print("⚠️ LLM returned empty response for filter inference")
+                return {}
+            
+            # Handle markdown-wrapped JSON responses
+            if response_text.startswith('```json') and response_text.endswith('```'):
+                # Extract JSON from markdown code block
+                json_content = response_text[7:-3].strip()  # Remove ```json and ```
+                print(f"🔧 Extracted JSON from markdown: '{json_content}'")
+                filter_dict = json.loads(json_content)
+            elif response_text.startswith('```') and response_text.endswith('```'):
+                # Handle generic code block
+                json_content = response_text[3:-3].strip()  # Remove ``` and ```
+                print(f"🔧 Extracted JSON from code block: '{json_content}'")
+                filter_dict = json.loads(json_content)
+            else:
+                # Try parsing as-is
+                filter_dict = json.loads(response_text)
             
             # Validate inferred filters
             validated_filters = {}
@@ -228,6 +263,10 @@ class AutoRetrievalQueryEngine:
             
             return validated_filters
             
+        except json.JSONDecodeError as e:
+            print(f"⚠️ JSON parsing error in filter inference: {str(e)}")
+            print(f"⚠️ Raw LLM response was: '{response.text if 'response' in locals() else 'No response'}'")
+            return {}
         except Exception as e:
             print(f"⚠️ Error inferring filters: {str(e)}")
             return {}

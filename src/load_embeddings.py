@@ -61,7 +61,7 @@ class EmbeddingLoader:
         """Get list of available embedding batches."""
         batches = sorted([
             d for d in self.embedding_dir.iterdir() 
-            if d.is_dir() and d.name.startswith("embeddings_batch_")
+            if d.is_dir() and (d.name.startswith("embeddings_batch_") or d.name.startswith("embeddings_enhanced_"))
         ])
         return batches
     
