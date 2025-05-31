@@ -19,6 +19,7 @@ load_dotenv(override=True)
 
 print("🔄 Environment reloaded from .env file")
 
+
 # Import everything needed for recursive retrieval
 from llama_index.core import (
     SimpleDirectoryReader,
@@ -44,7 +45,7 @@ LLM_MODEL = "gpt-4o-mini"
 SUMMARY_TRUNCATE_LENGTH = 1000
 
 # NEW: Batch processing configuration
-BATCH_SIZE = 10  # Process 10 files at a time
+BATCH_SIZE = 20  # Process 10 files at a time
 DELAY_BETWEEN_BATCHES = 3  # Seconds to wait between batches (API rate limiting)
 
 # ---------- UTILITY FUNCTIONS -----------------------------------------------
