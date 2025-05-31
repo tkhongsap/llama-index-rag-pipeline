@@ -50,8 +50,8 @@ load_dotenv(override=True)
 
 # Recursive retrieval settings
 DEFAULT_TOP_K = 5
-DEFAULT_RECURSIVE_TOP_K = 3
-DEFAULT_CHUNK_TOP_K = 8
+DEFAULT_RECURSIVE_TOP_K = 5
+DEFAULT_CHUNK_TOP_K = 15
 
 # Sample queries for testing recursive retrieval
 RECURSIVE_QUERIES = [
@@ -334,6 +334,253 @@ Answer:"""
         
         return results
 
+# ---------- INTERACTIVE FUNCTIONS -------------------------------------------
+
+def interactive_query_session():
+    """Run an interactive query session with recursive retrieval."""
+    print("💬 INTERACTIVE RECURSIVE RETRIEVAL SESSION")
+    print("=" * 80)
+    print("🎯 You can now ask questions using recursive hierarchical retrieval!")
+    print("\n📋 Available commands:")
+    print("  • Type any question to get recursive retrieval results")
+    print("  • 'quit' or 'exit' - End the session")
+    print("  • 'help' - Show available commands")
+    print("  • 'settings' - Show current retriever settings")
+    print("  • 'top_k=N' - Change number of documents retrieved at top level (e.g., top_k=5)")
+    print("  • 'chunk_k=N' - Change chunks per document (e.g., chunk_k=8)")
+    print("  • 'compare' - Compare recursive vs flat retrieval for last query")
+    print("\n💡 Example questions:")
+    print("  • What are the educational qualifications mentioned in the profiles?")
+    print("  • How do work experience levels vary across different profiles?")
+    print("  • What assessment scores are documented in the data?")
+    print("  • What types of companies and industries are represented?")
+    
+    try:
+        # Create recursive retriever
+        print("\n🔄 Setting up recursive retriever...")
+        print("   Loading embeddings from latest batch...")
+        retriever = create_recursive_retriever_from_latest_batch()
+        print("✅ Recursive retriever ready!")
+        print(f"📊 Loaded {len(retriever.indexnode_embeddings)} IndexNodes and {len(retriever.chunk_embeddings)} chunks")
+        print(f"📄 Created {len(retriever.document_indices)} document indices")
+        
+        # Current settings
+        current_top_k = DEFAULT_RECURSIVE_TOP_K
+        current_chunk_k = DEFAULT_CHUNK_TOP_K
+        last_query = None
+        
+        print(f"⚙️  Current settings: top_k={current_top_k}, chunk_k={current_chunk_k}")
+        
+        while True:
+            # Get user input
+            query = input("\n❓ Enter your question: ").strip()
+            
+            # Check for commands
+            if query.lower() in ['quit', 'exit']:
+                print("👋 Thanks for using the recursive retriever! Goodbye!")
+                break
+            
+            elif query.lower() == 'help':
+                print("\n📋 Available commands:")
+                print("  • quit/exit - End session")
+                print("  • help - Show this help")
+                print("  • settings - Show current settings")
+                print("  • top_k=N - Change number of documents retrieved at top level")
+                print("  • chunk_k=N - Change chunks per document")
+                print("  • compare - Compare recursive vs flat retrieval for last query")
+                print("  • clear - Clear screen (if supported)")
+                continue
+                
+            elif query.lower() == 'settings':
+                print(f"\n⚙️ Current settings:")
+                print(f"  • Top Level K: {current_top_k}")
+                print(f"  • Chunks per Document K: {current_chunk_k}")
+                print(f"  • Total IndexNodes: {len(retriever.indexnode_embeddings)}")
+                print(f"  • Total Chunks: {len(retriever.chunk_embeddings)}")
+                print(f"  • Document Indices: {len(retriever.document_indices)}")
+                continue
+                
+            elif query.startswith('top_k='):
+                try:
+                    new_k = int(query.split('=')[1])
+                    if new_k > 0:
+                        current_top_k = new_k
+                        # Update retriever settings
+                        retriever.top_level_retriever = retriever.top_level_index.as_retriever(
+                            similarity_top_k=new_k
+                        )
+                        print(f"✅ Updated top_k to {new_k}")
+                    else:
+                        print("❌ top_k must be greater than 0")
+                except:
+                    print("❌ Invalid format. Use: top_k=5")
+                continue
+                
+            elif query.startswith('chunk_k='):
+                try:
+                    new_k = int(query.split('=')[1])
+                    if new_k > 0:
+                        current_chunk_k = new_k
+                        # Update document retrievers
+                        for doc_id, doc_index in retriever.document_indices.items():
+                            retriever.document_retrievers[doc_id] = doc_index.as_retriever(
+                                similarity_top_k=new_k
+                            )
+                        print(f"✅ Updated chunk_k to {new_k}")
+                    else:
+                        print("❌ chunk_k must be greater than 0")
+                except:
+                    print("❌ Invalid format. Use: chunk_k=8")
+                continue
+                
+            elif query.lower() == 'compare':
+                if last_query:
+                    print(f"\n🔬 Comparing retrieval methods for: '{last_query}'")
+                    comparison = retriever.compare_with_flat_retrieval(last_query)
+                    
+                    print(f"\n📊 COMPARISON RESULTS:")
+                    print("-" * 40)
+                    
+                    for method, result in comparison.items():
+                        print(f"\n{method.upper()} RETRIEVAL:")
+                        print(f"  • Response length: {len(result['response'])} chars")
+                        print(f"  • Query time: {result['metadata']['query_time']}s")
+                        print(f"  • Sources found: {result['metadata']['num_sources']}")
+                        
+                        if result['sources']:
+                            print("  • Top source:")
+                            top_source = result['sources'][0]
+                            score = top_source.get('score')
+                            score_str = f"{score:.3f}" if score is not None else 'N/A'
+                            print(f"    - Score: {score_str}")
+                            print(f"    - Preview: {top_source['text_preview'][:100]}...")
+                        
+                        print(f"  • Response preview: {result['response'][:150]}...")
+                else:
+                    print("❌ No previous query to compare. Ask a question first!")
+                continue
+                
+            elif query.lower() == 'clear':
+                os.system('cls' if os.name == 'nt' else 'clear')
+                continue
+            
+            # Execute recursive retrieval
+            if query:
+                print("\n🔄 Processing your question with recursive retrieval...")
+                last_query = query
+                
+                result = retriever.recursive_query(query, show_details=False)
+                
+                # Show response first
+                print(f"\n💬 ANSWER:")
+                print("=" * 50)
+                print(result['response'])
+                print("=" * 50)
+                
+                print(f"\n⏱️ Query completed in {result['metadata']['query_time']}s")
+                print(f"📊 Retrieved {result['metadata']['num_sources']} chunks from {result['metadata']['num_documents_searched']} documents")
+                print(f"💡 Tip: Type 'compare' to see how this compares to flat retrieval")
+                
+            else:
+                print("❌ Please enter a question or command.")
+    
+    except KeyboardInterrupt:
+        print("\n\n👋 Session interrupted. Goodbye!")
+    except Exception as e:
+        print(f"\n❌ Error setting up recursive retriever: {str(e)}")
+        print("💡 Make sure you have embeddings available in the data directory.")
+        import traceback
+        traceback.print_exc()
+
+def sample_query_demonstration():
+    """Run demonstration with predefined sample queries."""
+    print("🧪 SAMPLE QUERY DEMONSTRATION")
+    print("=" * 80)
+    
+    try:
+        # Create retriever
+        print("🔄 Setting up recursive retriever...")
+        retriever = create_recursive_retriever_from_latest_batch()
+        print("✅ Retriever ready!")
+        
+        # Test with sample queries
+        for i, query in enumerate(RECURSIVE_QUERIES, 1):
+            print(f"\n🔍 Sample Query {i}: {query}")
+            print("-" * 60)
+            
+            # Perform recursive retrieval
+            result = retriever.recursive_query(query, show_details=False)
+            
+            print(f"💬 Response: {result['response'][:300]}...")
+            print(f"📊 Sources: {result['metadata']['num_sources']}")
+            print(f"📄 Documents searched: {result['metadata']['num_documents_searched']}")
+            print(f"⏱️ Query time: {result['metadata']['query_time']}s")
+            
+            # Show top sources
+            if result['sources']:
+                print("\nTop sources:")
+                for j, source in enumerate(result['sources'][:3], 1):
+                    doc_id = source.get('doc_id', 'Unknown')
+                    score = source.get('score')
+                    score_str = f"{score:.3f}" if score is not None else 'N/A'
+                    print(f"  {j}. Doc: {doc_id} (score: {score_str})")
+                    print(f"     Preview: {source['text_preview'][:100]}...")
+            
+            # Pause between queries for readability
+            if i < len(RECURSIVE_QUERIES):
+                input("\nPress Enter to continue to next query...")
+        
+        # Show method comparison for last query
+        print(f"\n🔬 METHOD COMPARISON for last query:")
+        print("=" * 60)
+        comparison = retriever.compare_with_flat_retrieval(RECURSIVE_QUERIES[-1])
+        
+        for method, result in comparison.items():
+            print(f"\n{method.upper()} RETRIEVAL:")
+            print(f"  • Response length: {len(result['response'])} chars")
+            print(f"  • Query time: {result['metadata']['query_time']}s")
+            print(f"  • Sources found: {result['metadata']['num_sources']}")
+        
+        print("\n✅ Sample query demonstration complete!")
+        
+    except Exception as e:
+        print(f"\n❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+def main_menu():
+    """Display main menu and handle user choice."""
+    print("🚀 RECURSIVE RETRIEVER")
+    print("=" * 50)
+    print("\nChoose an option:")
+    print("1. Interactive Mode - Type your own questions")
+    print("2. Sample Queries - Run demonstration with predefined queries")
+    print("3. Exit")
+    
+    while True:
+        try:
+            choice = input("\n❓ Enter your choice (1, 2, or 3): ").strip()
+            
+            if choice == "1":
+                print("\n🎯 Starting Interactive Mode...")
+                interactive_query_session()
+                break
+            elif choice == "2":
+                print("\n🎯 Running Sample Queries Demonstration...")
+                sample_query_demonstration()
+                break
+            elif choice == "3":
+                print("\n👋 Goodbye!")
+                break
+            else:
+                print("❌ Invalid choice. Please enter 1, 2, or 3.")
+                
+        except KeyboardInterrupt:
+            print("\n\n👋 Goodbye!")
+            break
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+
 # ---------- TESTING AND DEMONSTRATION FUNCTIONS ----------------------------
 
 def test_recursive_retrieval():
@@ -494,4 +741,19 @@ def create_recursive_retriever_from_latest_batch() -> RecursiveDocumentRetriever
 # ---------- ENTRY POINT -----------------------------------------------------
 
 if __name__ == "__main__":
-    demonstrate_recursive_retrieval() 
+    import sys
+    
+    # Check for command line arguments for backward compatibility
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "interactive":
+            interactive_query_session()
+        elif sys.argv[1] == "demo":
+            sample_query_demonstration()
+        elif sys.argv[1] == "legacy":
+            demonstrate_recursive_retrieval()
+        else:
+            print(f"Unknown argument: {sys.argv[1]}")
+            print("Available arguments: 'interactive', 'demo', 'legacy'")
+    else:
+        # Default behavior: show menu
+        main_menu() 
