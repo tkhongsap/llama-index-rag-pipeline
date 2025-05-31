@@ -49,8 +49,8 @@ load_dotenv(override=True)
 
 # Retrieval settings
 DEFAULT_TOP_K = 5
-DEFAULT_SUMMARY_TOP_K = 3
-DEFAULT_CHUNK_TOP_K = 8
+DEFAULT_SUMMARY_TOP_K = 5
+DEFAULT_CHUNK_TOP_K = 15
 
 # Sample queries for testing document-level retrieval
 DOCUMENT_LEVEL_QUERIES = [
@@ -525,26 +525,26 @@ def interactive_query_session():
                 print(result['synthesized_response'])
                 print("=" * 50)
                 
-                print(f"\n📋 DOCUMENT-LEVEL RESULTS:")
-                print("-" * 50)
-                print(f"Found {result['metadata']['total_docs_found']} relevant documents:")
+                # print(f"\n📋 DOCUMENT-LEVEL RESULTS:")
+                # print("-" * 50)
+                # print(f"Found {result['metadata']['total_docs_found']} relevant documents:")
                 
-                for i, doc in enumerate(result['relevant_documents'], 1):
-                    print(f"\n  📄 Document {i}: {doc['doc_title']}")
-                    print(f"     Relevance Score: {doc['score']:.3f}")
-                    print(f"     Summary Preview: {doc['summary_text'][:150]}...")
+                # for i, doc in enumerate(result['relevant_documents'], 1):
+                #     print(f"\n  📄 Document {i}: {doc['doc_title']}")
+                #     print(f"     Relevance Score: {doc['score']:.3f}")
+                #     print(f"     Summary Preview: {doc['summary_text'][:150]}...")
                 
-                print(f"\n📄 DETAILED CHUNKS:")
-                print("-" * 50)
-                print(f"Retrieved {result['metadata']['total_chunks_found']} chunks from relevant documents:")
+                # print(f"\n📄 DETAILED CHUNKS:")
+                # print("-" * 50)
+                # print(f"Retrieved {result['metadata']['total_chunks_found']} chunks from relevant documents:")
                 
-                for i, chunk in enumerate(result['relevant_chunks'], 1):
-                    print(f"\n  📝 Chunk {i} from '{chunk['doc_title']}':")
-                    print(f"     Relevance Score: {chunk['score']:.3f}")
-                    print(f"     Content: {chunk['text'][:200]}...")
+                # for i, chunk in enumerate(result['relevant_chunks'], 1):
+                #     print(f"\n  📝 Chunk {i} from '{chunk['doc_title']}':")
+                #     print(f"     Relevance Score: {chunk['score']:.3f}")
+                #     print(f"     Content: {chunk['text'][:200]}...")
                 
-                print(f"\n⏱️ Retrieval completed in {result['metadata']['retrieval_time']}s")
-                print(f"💡 Tip: Type 'compare' to see how this compares to other retrieval strategies")
+                # print(f"\n⏱️ Retrieval completed in {result['metadata']['retrieval_time']}s")
+                # print(f"💡 Tip: Type 'compare' to see how this compares to other retrieval strategies")
                 
             else:
                 print("❌ Please enter a question or command.")
