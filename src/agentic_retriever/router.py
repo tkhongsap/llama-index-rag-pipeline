@@ -12,9 +12,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
 from dotenv import load_dotenv
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
-
 from llama_index.core import Settings
 from llama_index.core.schema import NodeWithScore, QueryBundle
 from llama_index.core.retrievers import BaseRetriever
@@ -70,6 +67,9 @@ class RouterRetriever(BaseRetriever):
         # Strategy selection state
         self._strategy_round_robin_state = {}
         self._default_strategy = "vector"
+        
+        # Store last routing info for CLI display
+        self.last_routing_info = {}
     
     def _setup_models(self):
         """Setup LLM and embedding models."""
@@ -233,8 +233,7 @@ Respond with ONLY the strategy name (exactly as listed above).
             
             # Step 4: Perform retrieval
             nodes = retriever.retrieve(query)
-            
-            # Step 5: Add routing metadata to nodes
+              # Step 5: Add routing metadata to nodes
             for node in nodes:
                 if hasattr(node.node, 'metadata'):
                     node.node.metadata.update({
@@ -244,6 +243,14 @@ Respond with ONLY the strategy name (exactly as listed above).
                         'strategy_confidence': strategy_confidence,
                         'router_method': 'agentic'
                     })
+            
+            # Store routing info for CLI access
+            self.last_routing_info = {
+                'selected_index': selected_index,
+                'selected_strategy': selected_strategy,
+                'index_confidence': index_confidence,
+                'strategy_confidence': strategy_confidence
+            }
             
             # Step 6: Log the retrieval
             end_time = time.time()

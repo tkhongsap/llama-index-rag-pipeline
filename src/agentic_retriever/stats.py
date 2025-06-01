@@ -12,8 +12,7 @@ from typing import Dict, List, Any
 from collections import Counter
 import statistics
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
+
 
 from .log_utils import read_log_entries, get_compressed_logs, read_compressed_log
 

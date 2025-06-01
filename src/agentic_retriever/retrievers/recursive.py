@@ -8,9 +8,6 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent.parent))
-
 from llama_index.core.schema import NodeWithScore, TextNode
 
 from .base import BaseRetrieverAdapter
@@ -44,13 +41,24 @@ class RecursiveRetrieverAdapter(BaseRetrieverAdapter):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         
-        # Import and create the recursive retriever
-        from recursive_retriever import RecursiveDocumentRetriever
-        self.retriever = RecursiveDocumentRetriever(
-            embeddings=embeddings,
-            api_key=api_key,
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap
+        # Import and create the recursive retriever from pipeline script
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "recursive_retriever", 
+            Path(__file__).parent.parent.parent / "12_recursive_retriever.py"
+        )
+        recursive_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(recursive_module)
+        
+        # Separate indexnodes and chunks from embeddings
+        indexnode_embeddings = [emb for emb in embeddings if emb.get('type') == 'indexnode']
+        chunk_embeddings = [emb for emb in embeddings if emb.get('type') == 'chunk']
+        
+        # Create RecursiveDocumentRetriever instance
+        self.retriever = recursive_module.RecursiveDocumentRetriever(
+            indexnode_embeddings=indexnode_embeddings,
+            chunk_embeddings=chunk_embeddings,
+            api_key=api_key
         )
     
     def retrieve(self, query: str, top_k: Optional[int] = None) -> List[NodeWithScore]:
@@ -67,25 +75,23 @@ class RecursiveRetrieverAdapter(BaseRetrieverAdapter):
         # Use provided top_k or default
         k = top_k if top_k is not None else self.default_top_k
         
-        # Perform recursive retrieval
-        result = self.retriever.recursive_retrieve(
-            query=query,
-            top_k=k
-        )
+        # Perform recursive retrieval using the recursive_query method
+        result = self.retriever.recursive_query(query, show_details=False)
         
-        # Convert retrieved chunks to NodeWithScore objects
+        # Convert retrieved sources to NodeWithScore objects
         nodes = []
-        for chunk_info in result.get('retrieved_chunks', []):
-            # Create TextNode from chunk info
+        for source in result.get('sources', []):
+            # Create TextNode from source info
             text_node = TextNode(
-                text=chunk_info.get('text', ''),
-                metadata=chunk_info.get('metadata', {})
+                text=source.get('text_preview', ''),
+                metadata=source.get('metadata', {}),
+                id_=source.get('node_id', '')
             )
             
             # Create NodeWithScore
             node_with_score = NodeWithScore(
                 node=text_node,
-                score=chunk_info.get('score', 0.0)
+                score=source.get('score', 0.0)
             )
             nodes.append(node_with_score)
         

@@ -1,115 +1,124 @@
 """
 Agentic Retriever CLI
 
-Command-line interface for the agentic retrieval system.
-Usage: python -m agentic_retriever.cli -q "your question here"
+Command-line interface for the intelligent retrieval system that automatically
+selects the best retrieval strategy and index for each query.
 """
 
-import argparse
+import os
 import sys
 import time
+import argparse
+import json
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional, Any
+from datetime import datetime
+from dotenv import load_dotenv
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
-
-from llama_index.core import Settings, QueryBundle
-from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core.response_synthesizers import get_response_synthesizer
+from llama_index.core import Settings
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core.response_synthesizers import get_response_synthesizer
 
-from .router import RouterRetriever, create_default_router
-from .index_classifier import create_default_classifier
-from .retrievers.vector import VectorRetrieverAdapter
-from load_embeddings import EmbeddingLoader
+from .index_classifier import create_default_classifier, DEFAULT_INDICES
+from .router import RouterRetriever
+from .log_utils import log_retrieval_call
+
+# Import all retrieval strategy adapters
+from .retrievers import (
+    VectorRetrieverAdapter,
+    SummaryRetrieverAdapter,
+    RecursiveRetrieverAdapter,
+    MetadataRetrieverAdapter,
+    ChunkDecouplingRetrieverAdapter,
+    HybridRetrieverAdapter,
+    PlannerRetrieverAdapter
+)
+
+# Import from parent src directory
+try:
+    from ..load_embeddings import EmbeddingLoader
+except ImportError:
+    # Fallback for when module is run directly
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from load_embeddings import EmbeddingLoader
+
+# Load environment variables
+load_dotenv(override=True)
 
 
 def setup_models(api_key: Optional[str] = None):
     """Setup LLM and embedding models."""
     Settings.llm = OpenAI(
-        model="gpt-4.1-mini",
+        model="gpt-4o-mini",
         temperature=0,
-        api_key=api_key
+        api_key=api_key or os.getenv("OPENAI_API_KEY")
     )
     Settings.embed_model = OpenAIEmbedding(
         model="text-embedding-3-small",
-        api_key=api_key
+        api_key=api_key or os.getenv("OPENAI_API_KEY")
     )
 
 
-def create_simple_router(api_key: Optional[str] = None) -> RouterRetriever:
-    """Create a simple router with available data."""
+def create_strategy_adapters(embeddings_data: Any, api_key: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Create all retrieval strategy adapters as defined in PRD.
+    
+    Args:
+        embeddings_data: Loaded embeddings data for adapters
+        api_key: OpenAI API key
+        
+    Returns:
+        Dict mapping strategy names to adapter instances
+    """
+    adapters = {}
+    
     try:
-        # Try to load embeddings from the latest batch
-        from pathlib import Path
-        # Try different possible paths for embedding directory
-        possible_paths = [
-            Path("../data/embedding"),  # From src directory
-            Path("data/embedding"),     # From project root
-            Path("./data/embedding")    # Current directory
-        ]
+        # Vector adapter (wraps 10_basic_query_engine.py)
+        adapters["vector"] = VectorRetrieverAdapter.from_embeddings(embeddings_data, api_key)
         
-        embedding_dir = None
-        for path in possible_paths:
-            if path.exists():
-                embedding_dir = path
-                break
+        # Summary adapter (wraps 11_document_summary_retriever.py) 
+        adapters["summary"] = SummaryRetrieverAdapter.from_embeddings(embeddings_data, api_key)
         
-        if not embedding_dir:
-            print("⚠️  No embedding directory found. Please run the embedding pipeline first.")
-            return None
-            
-        loader = EmbeddingLoader(embedding_dir)
-        latest_batch = loader.get_latest_batch()
+        # Recursive adapter (wraps 12_recursive_retriever.py)
+        adapters["recursive"] = RecursiveRetrieverAdapter.from_embeddings(embeddings_data, api_key)
         
-        if latest_batch:
-            # Load chunk embeddings from the latest batch
-            try:
-                full_data, _, _ = loader.load_embeddings_from_files(
-                    latest_batch, "batch_1", "chunks"
-                )
-                
-                if full_data:
-                    # Create a simple router with vector retrieval
-                    retrievers = {
-                        "general_docs": {
-                            "vector": VectorRetrieverAdapter.from_embeddings(full_data, api_key)
-                        }
-                    }
-                    
-                    return RouterRetriever.from_retrievers(
-                        retrievers=retrievers,
-                        api_key=api_key,
-                        strategy_selector="llm"
-                    )
-                else:
-                    print("⚠️  No embedding data found in latest batch.")
-                    return None
-                    
-            except Exception as e:
-                print(f"⚠️  Error loading embeddings from batch: {e}")
-                return None
-        else:
-            print("⚠️  No embedding batches found. Please run the embedding pipeline first.")
-            return None
-            
+        # Metadata adapter (wraps 14_metadata_filtering.py)
+        adapters["metadata"] = MetadataRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        
+        # Chunk decoupling adapter (wraps 15_chunk_decoupling.py)
+        adapters["chunk_decoupling"] = ChunkDecouplingRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        
+        # Hybrid adapter (wraps 16_hybrid_search.py)
+        adapters["hybrid"] = HybridRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        
+        # Planner adapter (wraps 17_query_planning_agent.py)
+        adapters["planner"] = PlannerRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        
+        print(f"✅ Created {len(adapters)} strategy adapters: {list(adapters.keys())}")
+        
     except Exception as e:
-        print(f"⚠️  Error loading embeddings: {e}")
-        print("Please ensure the embedding pipeline has been run.")
-        return None
+        print(f"⚠️  Error creating strategy adapters: {e}")
+        # Fallback to just vector adapter
+        try:
+            adapters["vector"] = VectorRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+            print("✅ Fallback: Created vector adapter only")
+        except Exception as fallback_error:
+            print(f"❌ Failed to create even vector adapter: {fallback_error}")
+    
+    return adapters
 
 
 def create_agentic_router(api_key: Optional[str] = None) -> RouterRetriever:
     """Create a full agentic router with multiple indices and strategies."""
     try:
-        # Try to load embeddings from the latest batch
-        from pathlib import Path
-        # Try different possible paths for embedding directory
+        # Find embedding directory
         possible_paths = [
-            Path("../data/embedding"),  # From src directory
             Path("data/embedding"),     # From project root
+            Path("../data/embedding"),  # From src directory
             Path("./data/embedding")    # Current directory
         ]
         
@@ -126,72 +135,122 @@ def create_agentic_router(api_key: Optional[str] = None) -> RouterRetriever:
         loader = EmbeddingLoader(embedding_dir)
         latest_batch = loader.get_latest_batch()
         
-        if latest_batch:
-            # Load chunk embeddings from the latest batch
-            try:
-                full_data, _, _ = loader.load_embeddings_from_files(
-                    latest_batch, "batch_1", "chunks"
-                )
-                
-                if full_data:
-                    # Create multiple indices based on the default classifier indices
-                    from .index_classifier import DEFAULT_INDICES
-                    from .retrievers import VectorRetrieverAdapter
-                    try:
-                        from .retrievers import MetadataRetrieverAdapter
-                    except ImportError as e:
-                        print(f"⚠️ MetadataRetrieverAdapter import failed: {e}")
-                        MetadataRetrieverAdapter = None
-                    
-                    # Create retrievers for each index with multiple strategies
-                    retrievers = {}
-                    
-                    for index_name in DEFAULT_INDICES.keys():
-                        retrievers[index_name] = {
-                            "vector": VectorRetrieverAdapter.from_embeddings(full_data, api_key)
-                        }
-                        
-                        # Only add metadata retriever if it's available
-                        if MetadataRetrieverAdapter is not None:
-                            try:
-                                retrievers[index_name]["metadata"] = MetadataRetrieverAdapter.from_embeddings(full_data, api_key)
-                            except Exception as e:
-                                print(f"⚠️ Failed to create metadata retriever for {index_name}: {e}")
-                                # Continue without metadata retriever for this index
-                        
-                        # Add recursive strategy for certain indices
-                        if index_name in ["candidate_profiles", "education_career"]:
-                            try:
-                                from .retrievers import RecursiveRetrieverAdapter
-                                retrievers[index_name]["recursive"] = RecursiveRetrieverAdapter.from_embeddings(full_data, api_key)
-                            except ImportError:
-                                pass  # Skip if not available
-                    
-                    # Create router with proper index classifier
-                    index_classifier = create_default_classifier(api_key)
-                    
-                    return RouterRetriever(
-                        retrievers=retrievers,
-                        index_classifier=index_classifier,
-                        strategy_selector="llm",
-                        api_key=api_key
-                    )
-                else:
-                    print("⚠️  No embedding data found in latest batch.")
-                    return None
-                    
-            except Exception as e:
-                print(f"⚠️  Error loading embeddings from batch: {e}")
-                # Fallback to simple router
-                return create_simple_router(api_key)
-        else:
+        if not latest_batch:
             print("⚠️  No embedding batches found. Please run the embedding pipeline first.")
             return None
+        
+        # Load chunk embeddings from the latest batch
+        full_data, _, _ = loader.load_embeddings_from_files(
+            latest_batch, "batch_1", "chunks"
+        )
+        
+        if not full_data:
+            print("⚠️  No embedding data found in latest batch.")
+            return None
+        
+        # Create strategy adapters
+        strategy_adapters = create_strategy_adapters(full_data, api_key)
+        
+        if not strategy_adapters:
+            print("⚠️  No strategy adapters created.")
+            return None
+        
+        # Create retrievers for each index with all available strategies
+        retrievers = {}
+        
+        for index_name, index_description in DEFAULT_INDICES.items():
+            retrievers[index_name] = {}
             
+            # Add all available strategy adapters for each index
+            for strategy_name, adapter in strategy_adapters.items():
+                try:
+                    # Create a copy/instance for this specific index
+                    retrievers[index_name][strategy_name] = adapter
+                except Exception as e:
+                    print(f"⚠️  Failed to add {strategy_name} strategy for {index_name}: {e}")
+                    continue
+            
+            print(f"📋 Index '{index_name}': {len(retrievers[index_name])} strategies available")
+        
+        # Create index classifier
+        index_classifier = create_default_classifier(api_key)
+        
+        # Create router with all retrievers
+        router = RouterRetriever(
+            retrievers=retrievers,
+            index_classifier=index_classifier,
+            strategy_selector="llm",
+            api_key=api_key
+        )
+        
+        print(f"🎯 Router created with {len(retrievers)} indices and {len(strategy_adapters)} strategies")
+        return router
+        
     except Exception as e:
-        print(f"⚠️  Error creating agentic router: {e}")
-        print("Falling back to simple router...")
-        return create_simple_router(api_key)
+        print(f"❌ Error creating agentic router: {e}")
+        return None
+
+
+def create_simple_router(api_key: Optional[str] = None) -> RouterRetriever:
+    """Create a simple router with vector strategy only (fallback)."""
+    try:
+        # Find embedding directory
+        possible_paths = [
+            Path("data/embedding"),
+            Path("../data/embedding"),
+            Path("./data/embedding")
+        ]
+        
+        embedding_dir = None
+        for path in possible_paths:
+            if path.exists():
+                embedding_dir = path
+                break
+        
+        if not embedding_dir:
+            print("⚠️  No embedding directory found.")
+            return None
+            
+        loader = EmbeddingLoader(embedding_dir)
+        latest_batch = loader.get_latest_batch()
+        
+        if not latest_batch:
+            print("⚠️  No embedding batches found.")
+            return None
+        
+        full_data, _, _ = loader.load_embeddings_from_files(
+            latest_batch, "batch_1", "chunks"
+        )
+        
+        if not full_data:
+            print("⚠️  No embedding data found.")
+            return None
+        
+        # Create simple router with just vector strategy
+        retrievers = {
+            "general_docs": {
+                "vector": VectorRetrieverAdapter.from_embeddings(full_data, api_key)
+            }
+        }
+        
+        # Simple classifier with just one index
+        from .index_classifier import IndexClassifier
+        simple_indices = {"general_docs": "General document collection"}
+        index_classifier = IndexClassifier(simple_indices, api_key, "llm")
+        
+        router = RouterRetriever(
+            retrievers=retrievers,
+            index_classifier=index_classifier,
+            strategy_selector="llm",
+            api_key=api_key
+        )
+        
+        print("✅ Simple router created with vector strategy")
+        return router
+        
+    except Exception as e:
+        print(f"❌ Error creating simple router: {e}")
+        return None
 
 
 def query_agentic_retriever(
@@ -215,17 +274,24 @@ def query_agentic_retriever(
     # Setup models
     setup_models(api_key)
     
-    # Create router
+    # Create router (try agentic first, fallback to simple)
     router = create_agentic_router(api_key)
     if not router:
+        print("🔄 Falling back to simple router...")
+        router = create_simple_router(api_key)
+        
+    if not router:
         return {
-            "error": "Could not initialize router",
+            "error": "Could not initialize any router",
             "response": None,
-            "metadata": {}
+            "metadata": {
+                "query": query,
+                "total_time_ms": round((time.time() - start_time) * 1000, 2)
+            }
         }
     
     try:
-        # Create query engine
+        # Create query engine with response synthesizer
         response_synthesizer = get_response_synthesizer(
             response_mode="tree_summarize",
             use_async=False
@@ -236,28 +302,46 @@ def query_agentic_retriever(
             response_synthesizer=response_synthesizer
         )
         
-        # Execute query
+        # Execute query with timing
+        query_start = time.time()
         response = query_engine.query(query)
+        query_time = time.time() - query_start
         
-        # Extract metadata from retrieved nodes
+        # Extract metadata from retrieved nodes and router
         metadata = {
             "query": query,
             "top_k": top_k,
-            "total_time_ms": round((time.time() - start_time) * 1000, 2)
+            "total_time_ms": round((time.time() - start_time) * 1000, 2),
+            "query_time_ms": round(query_time * 1000, 2)
         }
         
-        # Get routing information from the first node if available
+        # Get routing information from router's last decision
+        if hasattr(router, 'last_routing_info'):
+            routing_info = router.last_routing_info
+            metadata.update({
+                "index": routing_info.get('selected_index', 'unknown'),
+                "strategy": routing_info.get('selected_strategy', 'unknown'),
+                "index_confidence": routing_info.get('index_confidence'),
+                "strategy_confidence": routing_info.get('strategy_confidence')
+            })
+        
+        # Get information from source nodes
         if hasattr(response, 'source_nodes') and response.source_nodes:
+            metadata["num_sources"] = len(response.source_nodes)
+            
+            # Try to get strategy from first node metadata
             first_node = response.source_nodes[0]
-            if hasattr(first_node.node, 'metadata'):
+            if hasattr(first_node, 'node') and hasattr(first_node.node, 'metadata'):
                 node_metadata = first_node.node.metadata
-                metadata.update({
-                    "index": node_metadata.get('selected_index', 'unknown'),
-                    "strategy": node_metadata.get('selected_strategy', 'unknown'),
-                    "index_confidence": node_metadata.get('index_confidence'),
-                    "strategy_confidence": node_metadata.get('strategy_confidence'),
-                    "num_sources": len(response.source_nodes)
-                })
+                if not metadata.get("strategy"):
+                    metadata["strategy"] = node_metadata.get('strategy', 'unknown')
+                if not metadata.get("index"):
+                    metadata["index"] = node_metadata.get('index', 'unknown')
+        
+        # Set defaults if still missing
+        metadata.setdefault("index", "unknown")
+        metadata.setdefault("strategy", "unknown")
+        metadata.setdefault("num_sources", 0)
         
         return {
             "response": str(response),
@@ -266,18 +350,23 @@ def query_agentic_retriever(
         }
         
     except Exception as e:
+        error_time = round((time.time() - start_time) * 1000, 2)
+        print(f"❌ Query execution error: {e}")
+        
         return {
             "error": str(e),
             "response": None,
             "metadata": {
                 "query": query,
-                "total_time_ms": round((time.time() - start_time) * 1000, 2)
+                "total_time_ms": error_time,
+                "index": "error",
+                "strategy": "error"
             }
         }
 
 
 def format_output(result: dict):
-    """Format the output for display."""
+    """Format the output for display according to PRD requirements."""
     if result["error"]:
         print(f"❌ Error: {result['error']}")
         return
@@ -288,25 +377,33 @@ def format_output(result: dict):
     print(result["response"])
     print("=" * 60)
     
-    # Print metadata
+    # Print routing information in PRD format
     metadata = result["metadata"]
     
-    print(f"\n📊 Routing Information:")
+    # Main routing info line as specified in PRD: "index = finance_docs | strategy = summary | latency = 320 ms"
     index = metadata.get("index", "unknown")
     strategy = metadata.get("strategy", "unknown")
     latency = metadata.get("total_time_ms", 0)
     
-    print(f"index = {index} | strategy = {strategy} | latency = {latency} ms")
+    print(f"\nindex = {index} | strategy = {strategy} | latency = {latency} ms")
     
-    # Additional details if available
+    # Additional details if available and verbose mode
+    additional_info = []
+    
     if metadata.get("num_sources"):
-        print(f"sources = {metadata['num_sources']}")
+        additional_info.append(f"sources = {metadata['num_sources']}")
     
     if metadata.get("index_confidence") is not None:
-        print(f"index_confidence = {metadata['index_confidence']:.3f}")
+        additional_info.append(f"index_confidence = {metadata['index_confidence']:.3f}")
     
     if metadata.get("strategy_confidence") is not None:
-        print(f"strategy_confidence = {metadata['strategy_confidence']:.3f}")
+        additional_info.append(f"strategy_confidence = {metadata['strategy_confidence']:.3f}")
+    
+    if metadata.get("query_time_ms"):
+        additional_info.append(f"query_time = {metadata['query_time_ms']} ms")
+    
+    if additional_info:
+        print("Additional details: " + " | ".join(additional_info))
 
 
 def main():

@@ -8,9 +8,6 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent.parent))
-
 from llama_index.core.schema import NodeWithScore, TextNode
 
 from .base import BaseRetrieverAdapter
@@ -44,9 +41,17 @@ class SummaryRetrieverAdapter(BaseRetrieverAdapter):
         self.default_top_k = default_top_k
         self.chunks_per_doc = chunks_per_doc
         
-        # Import and create the document summary retriever
-        from document_summary_retriever import DocumentSummaryRetriever
-        self.retriever = DocumentSummaryRetriever(
+        # Import and create the document summary retriever from pipeline script
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "document_summary_retriever", 
+            Path(__file__).parent.parent.parent / "11_document_summary_retriever.py"
+        )
+        doc_summary_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(doc_summary_module)
+        
+        # Create DocumentSummaryRetriever instance
+        self.retriever = doc_summary_module.DocumentSummaryRetriever(
             summary_embeddings=summary_embeddings,
             chunk_embeddings=chunk_embeddings,
             api_key=api_key
@@ -95,8 +100,7 @@ class SummaryRetrieverAdapter(BaseRetrieverAdapter):
     @classmethod
     def from_embeddings(
         cls,
-        summary_embeddings: List[dict],
-        chunk_embeddings: List[dict],
+        embeddings: List[dict],
         api_key: Optional[str] = None,
         default_top_k: int = 5,
         chunks_per_doc: int = 3
@@ -105,8 +109,7 @@ class SummaryRetrieverAdapter(BaseRetrieverAdapter):
         Create adapter from embedding data.
         
         Args:
-            summary_embeddings: Document summary embeddings
-            chunk_embeddings: Chunk embeddings
+            embeddings: Embedding data (should contain summaries and chunks)
             api_key: OpenAI API key
             default_top_k: Default number of documents to retrieve
             chunks_per_doc: Number of chunks to retrieve per document
@@ -114,10 +117,14 @@ class SummaryRetrieverAdapter(BaseRetrieverAdapter):
         Returns:
             SummaryRetrieverAdapter instance
         """
+        # Separate summaries and chunks from embeddings
+        summary_embeddings = [emb for emb in embeddings if emb.get('type') == 'summary']
+        chunk_embeddings = [emb for emb in embeddings if emb.get('type') == 'chunk']
+        
         return cls(
             summary_embeddings=summary_embeddings,
             chunk_embeddings=chunk_embeddings,
             api_key=api_key,
             default_top_k=default_top_k,
             chunks_per_doc=chunks_per_doc
-        ) 
+        )

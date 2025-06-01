@@ -8,8 +8,7 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent.parent))
+
 
 from llama_index.core.schema import NodeWithScore, TextNode
 from llama_index.core.vector_stores import MetadataFilters
@@ -42,61 +41,20 @@ class MetadataRetrieverAdapter(BaseRetrieverAdapter):
         self.default_top_k = default_top_k
         self.metadata_filters = metadata_filters
         
-        # Create a simple metadata-aware retriever
-        # For now, we'll use a basic vector retriever with metadata support
+        # Import and create the auto retrieval query engine from pipeline script
         try:
-            # Try to import and use the metadata filtering functionality
-            import sys
-            from pathlib import Path
-            
-            # Add the src directory to path to import 14_metadata_filtering
-            src_path = Path(__file__).parent.parent.parent
-            if str(src_path) not in sys.path:
-                sys.path.append(str(src_path))
-            
-            # Import from the correct module name (14_metadata_filtering.py)
             import importlib.util
-            metadata_filtering_path = src_path / "14_metadata_filtering.py"
+            spec = importlib.util.spec_from_file_location(
+                "metadata_filtering", 
+                Path(__file__).parent.parent.parent / "14_metadata_filtering.py"
+            )
+            metadata_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(metadata_module)
             
-            if metadata_filtering_path.exists():
-                spec = importlib.util.spec_from_file_location("metadata_filtering_14", metadata_filtering_path)
-                metadata_filtering_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(metadata_filtering_module)
-                
-                AutoRetrievalQueryEngine = metadata_filtering_module.AutoRetrievalQueryEngine
-                
-                # Create a simple index from embeddings for the AutoRetrievalQueryEngine
-                from llama_index.core import VectorStoreIndex
-                from llama_index.core.schema import TextNode
-                
-                # Convert embeddings to nodes
-                nodes = []
-                for emb_data in embeddings:
-                    node = TextNode(
-                        text=emb_data.get('text', ''),
-                        metadata=emb_data.get('metadata', {}),
-                        embedding=emb_data.get('embedding')
-                    )
-                    nodes.append(node)
-                
-                # Create index from nodes
-                index = VectorStoreIndex(nodes)
-                
-                # Create the auto retrieval query engine
-                self.retriever = AutoRetrievalQueryEngine(index, top_k=default_top_k)
-                self.use_advanced_filtering = True
-            else:
-                raise FileNotFoundError("14_metadata_filtering.py not found")
-                
-        except Exception as e:
-            print(f"⚠️ Advanced metadata filtering not available: {e}")
-            print("⚠️ Using basic vector retrieval as fallback")
-            
-            # Fallback to basic vector retrieval
+            # Convert embeddings to nodes
             from llama_index.core import VectorStoreIndex
             from llama_index.core.schema import TextNode
             
-            # Convert embeddings to nodes
             nodes = []
             for emb_data in embeddings:
                 node = TextNode(
@@ -107,6 +65,31 @@ class MetadataRetrieverAdapter(BaseRetrieverAdapter):
                 nodes.append(node)
             
             # Create index from nodes
+            index = VectorStoreIndex(nodes)
+            
+            # Create the auto retrieval query engine
+            self.retriever = metadata_module.AutoRetrievalQueryEngine(index, top_k=default_top_k)
+            self.use_advanced_filtering = True
+            
+        except Exception as e:
+            print(f"⚠️ Advanced metadata filtering not available: {e}")
+            print("⚠️ Using basic vector retrieval as fallback")
+            
+            # Fallback to basic vector retrieval
+            from llama_index.core import VectorStoreIndex
+            from llama_index.core.schema import TextNode
+              # Convert embeddings to nodes
+            nodes = []
+            for emb_data in embeddings:
+                node = TextNode(
+                    text=emb_data.get('text', ''),
+                    metadata=emb_data.get('metadata', {}),
+                    embedding=emb_data.get('embedding')
+                )
+                nodes.append(node)
+            
+            # Create index from nodes
+            from llama_index.core import VectorStoreIndex
             index = VectorStoreIndex(nodes)
             
             # Create basic retriever

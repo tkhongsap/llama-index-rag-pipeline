@@ -8,14 +8,20 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent.parent))
-
 from llama_index.core.schema import NodeWithScore
 from llama_index.core import VectorStoreIndex
 
 from .base import BaseRetrieverAdapter
-from load_embeddings import EmbeddingLoader, IndexReconstructor
+
+# Import from src directory with fallback
+try:
+    from ...load_embeddings import EmbeddingLoader, IndexReconstructor
+except ImportError:
+    # Fallback for when module is run directly
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from load_embeddings import EmbeddingLoader, IndexReconstructor
 
 
 class VectorRetrieverAdapter(BaseRetrieverAdapter):
