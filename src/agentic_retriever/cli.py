@@ -139,14 +139,20 @@ def create_agentic_router(api_key: Optional[str] = None) -> RouterRetriever:
             print("⚠️  No embedding batches found. Please run the embedding pipeline first.")
             return None
         
-        # Load chunk embeddings from the latest batch
-        full_data, _, _ = loader.load_embeddings_from_files(
-            latest_batch, "batch_1", "chunks"
-        )
+        # Load all embedding types from the latest batch
+        all_embeddings = loader.load_all_embeddings_from_batch(latest_batch)
+        
+        # Combine all embeddings from all sub-batches
+        full_data = []
+        for sub_batch, emb_types in all_embeddings.items():
+            for emb_type, embeddings in emb_types.items():
+                full_data.extend(embeddings)
         
         if not full_data:
             print("⚠️  No embedding data found in latest batch.")
             return None
+            
+        print(f"📊 Loaded {len(full_data)} total embeddings from {len(all_embeddings)} sub-batches")
         
         # Create strategy adapters
         strategy_adapters = create_strategy_adapters(full_data, api_key)

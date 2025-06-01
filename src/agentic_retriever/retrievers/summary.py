@@ -80,7 +80,7 @@ class SummaryRetrieverAdapter(BaseRetrieverAdapter):
         
         # Convert retrieved chunks to NodeWithScore objects
         nodes = []
-        for chunk_info in result.get('retrieved_chunks', []):
+        for chunk_info in result.get('relevant_chunks', []):  # Fixed key name from 'retrieved_chunks' to 'relevant_chunks'
             # Create TextNode from chunk info
             text_node = TextNode(
                 text=chunk_info.get('text', ''),
