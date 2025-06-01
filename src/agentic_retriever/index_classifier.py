@@ -223,9 +223,9 @@ If unsure, choose the most general index.
 
 # Default index configurations
 DEFAULT_INDICES = {
-    "finance_docs": "Financial documents, earnings reports, revenue data, financial statements, and business metrics",
-    "general_docs": "General documents, presentations, reports, and miscellaneous content",
-    "technical_docs": "Technical documentation, API references, code documentation, and technical specifications"
+    "candidate_profiles": "Professional candidate profiles including demographics, educational backgrounds, career history, work experience, job positions, companies, and skills assessments",
+    "compensation_docs": "Salary information, compensation data, bonus details, salary expectations, currency types, and financial compensation packages",
+    "education_career": "Educational qualifications, degrees, majors, institutions, career progression, job families, industry experience, and professional development data"
 }
 
 

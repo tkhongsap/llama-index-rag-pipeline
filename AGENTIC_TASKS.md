@@ -1,4 +1,4 @@
-# Agentic Retrieval Layer v1.3 - Implementation Tasks
+git # Agentic Retrieval Layer v1.3 - Implementation Tasks
 
 Implementation of the agentic retrieval layer as specified in the PRD (attached_assets/04_agentic_retrieval.md).
 

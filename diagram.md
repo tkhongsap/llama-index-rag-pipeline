@@ -364,4 +364,4 @@ This diagram illustrates the complete data flow within the LlamaIndex RAG (Retri
 - **Extensible Architecture**: Easy addition of new indices and strategies
 - **Modular Design**: Clear separation between data preparation and retrieval
 
-This architecture enables sophisticated retrieval-augmented generation with intelligent routing based on query characteristics and available data sources.
+This architecture enables sophisticated retrieval-augmented generation with intelligent routing based on query characteristics and available data sources.git 
