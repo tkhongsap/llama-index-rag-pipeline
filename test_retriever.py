@@ -34,94 +34,186 @@ class RetrieverTestSuite:
     def _create_test_questions(self) -> List[Dict[str, Any]]:
         """Create predefined test questions based on the candidate profile data."""
         return [
-            # Basic semantic queries (should trigger vector strategy)
+            # === BASIC VECTOR STRATEGY TESTS ===
             {
                 "id": 1,
-                "category": "Demographics",
-                "question": "What age groups are represented in the candidate profiles?",
-                "description": "Test basic semantic retrieval of demographic information",
-                "expected_topics": ["age", "demographics", "mid-career", "senior professionals"],
+                "category": "Basic Vector - Simple",
+                "question": "salary compensation THB",
+                "description": "Test basic vector search with simple keywords",
+                "expected_topics": ["salary", "compensation", "THB"],
                 "expected_strategy": "vector"
             },
             {
                 "id": 2,
-                "category": "Education",
-                "question": "What are the most common educational backgrounds and degrees among candidates?",
-                "description": "Test semantic retrieval of educational information and degree patterns",
-                "expected_topics": ["education", "degree", "major", "university", "bachelor", "master"],
+                "category": "Basic Vector - Education",
+                "question": "university degree bachelor master education",
+                "description": "Test vector search for educational content",
+                "expected_topics": ["university", "degree", "bachelor", "master", "education"],
+                "expected_strategy": "vector"
+            },
+            {
+                "id": 3,
+                "category": "Basic Vector - Career",
+                "question": "job position experience years career",
+                "description": "Test vector search for career-related content",
+                "expected_topics": ["job", "position", "experience", "years", "career"],
                 "expected_strategy": "vector"
             },
             
-            # Specific filtering queries (should trigger metadata strategy)
-            {
-                "id": 3,
-                "category": "Compensation - Filtered",
-                "question": "Show me all candidates with salary above 50,000 THB in the Human Resources job family",
-                "description": "Test metadata-filtered retrieval with specific criteria",
-                "expected_topics": ["salary", "50000", "human resources", "THB", "job family"],
-                "expected_strategy": "metadata"
-            },
+            # === STRATEGY-SPECIFIC ROUTER TESTS ===
             {
                 "id": 4,
-                "category": "Geographic - Filtered",
-                "question": "Find candidates located specifically in กรุงเทพมหานคร (Bangkok) region R1",
-                "description": "Test metadata filtering for specific geographic criteria",
-                "expected_topics": ["กรุงเทพมหานคร", "bangkok", "R1", "region"],
-                "expected_strategy": "metadata"
+                "category": "Router - Index Classification",
+                "question": "What are the salary ranges for different positions?",
+                "description": "Test router index classification - should route to compensation_docs",
+                "expected_topics": ["salary", "ranges", "positions"],
+                "expected_strategy": "vector"
             },
-            
-            # Hierarchical/complex queries (should trigger recursive strategy)
             {
                 "id": 5,
-                "category": "Career Progression",
-                "question": "Analyze the career progression patterns from entry-level to senior positions across different industries",
-                "description": "Test recursive retrieval for hierarchical career analysis",
-                "expected_topics": ["career", "progression", "entry-level", "senior", "industries"],
-                "expected_strategy": "recursive"
+                "category": "Router - Education Index",
+                "question": "What educational backgrounds do the candidates have?",
+                "description": "Test router index classification - should route to education_career",
+                "expected_topics": ["educational", "backgrounds", "candidates"],
+                "expected_strategy": "vector"
             },
             {
                 "id": 6,
-                "category": "Education Hierarchy",
-                "question": "Break down the educational pathways from bachelor's to master's degrees and their impact on career advancement",
-                "description": "Test recursive retrieval for educational hierarchy analysis",
-                "expected_topics": ["bachelor", "master", "educational", "pathways", "career advancement"],
-                "expected_strategy": "recursive"
+                "category": "Router - Candidate Profiles",
+                "question": "Show me candidate profiles from Bangkok",
+                "description": "Test router index classification - should route to candidate_profiles",
+                "expected_topics": ["candidate", "profiles", "bangkok"],
+                "expected_strategy": "vector"
             },
             
-            # Mixed semantic and exact queries (should trigger hybrid strategy if available)
+            # === SEMANTIC SEARCH TESTS ===
             {
                 "id": 7,
-                "category": "Compensation Analysis",
-                "question": "What is the exact salary range for 'Training Officer' positions and how does it compare to similar roles?",
-                "description": "Test hybrid retrieval combining exact job title matching with semantic comparison",
-                "expected_topics": ["training officer", "salary range", "similar roles", "compare"],
-                "expected_strategy": "hybrid"
+                "category": "Semantic - Descriptive",
+                "question": "Find candidates with management experience in technology companies",
+                "description": "Test semantic understanding of role and industry requirements",
+                "expected_topics": ["management", "experience", "technology", "companies"],
+                "expected_strategy": "vector"
             },
             {
                 "id": 8,
-                "category": "Industry Comparison",
-                "question": "Compare the 'Manufacturing' industry compensation with 'Oil' industry for similar experience levels",
-                "description": "Test hybrid retrieval for exact industry matching with semantic comparison",
-                "expected_topics": ["manufacturing", "oil", "industry", "compensation", "experience"],
-                "expected_strategy": "hybrid"
+                "category": "Semantic - Skills",
+                "question": "Who has expertise in human resources and recruitment?",
+                "description": "Test semantic search for skills and expertise",
+                "expected_topics": ["expertise", "human resources", "recruitment"],
+                "expected_strategy": "vector"
             },
             
-            # Complex multi-step queries (should trigger planner strategy if available)
+            # === SPECIFIC DATA RETRIEVAL ===
             {
                 "id": 9,
-                "category": "Complex Analysis",
-                "question": "First identify the top 3 industries by candidate count, then analyze their average compensation, and finally compare their educational requirements",
-                "description": "Test query planning for multi-step analysis",
-                "expected_topics": ["top industries", "candidate count", "average compensation", "educational requirements"],
-                "expected_strategy": "planner"
+                "category": "Data Retrieval - Location",
+                "question": "candidates in กรุงเทพมหานคร Bangkok",
+                "description": "Test location-based search with Thai and English terms",
+                "expected_topics": ["กรุงเทพมหานคร", "bangkok", "candidates"],
+                "expected_strategy": "vector"
             },
             {
                 "id": 10,
-                "category": "Regional Analysis",
-                "question": "Determine which provinces have the highest concentration of candidates, analyze their job families, and identify compensation trends by region",
-                "description": "Test query planning for complex regional analysis",
-                "expected_topics": ["provinces", "concentration", "job families", "compensation trends", "region"],
+                "category": "Data Retrieval - Industry",
+                "question": "manufacturing oil industry positions",
+                "description": "Test industry-specific search",
+                "expected_topics": ["manufacturing", "oil", "industry", "positions"],
+                "expected_strategy": "vector"
+            },
+            
+            # === SUMMARY STRATEGY TESTS ===
+            {
+                "id": 11,
+                "category": "Summary Strategy",
+                "question": "Provide an overview of all candidate qualifications and experience levels",
+                "description": "Test summary-first retrieval for comprehensive overviews",
+                "expected_topics": ["overview", "qualifications", "experience", "levels"],
+                "expected_strategy": "summary"
+            },
+            {
+                "id": 12,
+                "category": "Summary Strategy",
+                "question": "Summarize the compensation structure across all positions",
+                "description": "Test summary strategy for compensation overview",
+                "expected_topics": ["summarize", "compensation", "structure", "positions"],
+                "expected_strategy": "summary"
+            },
+            
+            # === RECURSIVE STRATEGY TESTS ===
+            {
+                "id": 13,
+                "category": "Recursive Strategy",
+                "question": "Break down the career progression from entry to senior levels with specific examples",
+                "description": "Test recursive retrieval for hierarchical information",
+                "expected_topics": ["career", "progression", "entry", "senior", "examples"],
+                "expected_strategy": "recursive"
+            },
+            
+            # === HYBRID STRATEGY TESTS ===
+            {
+                "id": 14,
+                "category": "Hybrid Strategy",
+                "question": "Find exact match for 'Training Officer' position AND similar roles",
+                "description": "Test hybrid search combining exact and semantic matching",
+                "expected_topics": ["training officer", "position", "similar", "roles"],
+                "expected_strategy": "hybrid"
+            },
+            
+            # === METADATA FILTERING TESTS ===
+            {
+                "id": 15,
+                "category": "Metadata Strategy",
+                "question": "Filter candidates with salary > 40000 AND experience 5-10 years",
+                "description": "Test metadata filtering with specific criteria",
+                "expected_topics": ["filter", "salary", "40000", "experience", "5-10"],
+                "expected_strategy": "metadata"
+            },
+            
+            # === PLANNER STRATEGY TESTS ===
+            {
+                "id": 16,
+                "category": "Planner Strategy",
+                "question": "First find the highest paid positions, then analyze their required qualifications, and finally compare with entry-level requirements",
+                "description": "Test query planning for multi-step analysis",
+                "expected_topics": ["highest paid", "qualifications", "compare", "entry-level"],
                 "expected_strategy": "planner"
+            },
+            
+            # === STRESS TESTS ===
+            {
+                "id": 17,
+                "category": "Stress Test - Simple",
+                "question": "salary",
+                "description": "Test single keyword retrieval",
+                "expected_topics": ["salary"],
+                "expected_strategy": "vector"
+            },
+            {
+                "id": 18,
+                "category": "Stress Test - Complex",
+                "question": "What are the detailed compensation packages including base salary, bonuses, and benefits for senior management positions in technology and manufacturing industries, specifically for candidates located in Bangkok with master's degrees and more than 10 years of experience?",
+                "description": "Test very complex query handling",
+                "expected_topics": ["compensation", "salary", "bonuses", "benefits", "senior", "management", "technology", "manufacturing", "bangkok", "master", "10 years"],
+                "expected_strategy": "vector"
+            },
+            
+            # === MULTILINGUAL TESTS ===
+            {
+                "id": 19,
+                "category": "Multilingual - Thai",
+                "question": "เงินเดือน ประสบการณ์ กรุงเทพมหานคร",
+                "description": "Test Thai language query handling",
+                "expected_topics": ["เงินเดือน", "ประสบการณ์", "กรุงเทพมหานคร"],
+                "expected_strategy": "vector"
+            },
+            {
+                "id": 20,
+                "category": "Multilingual - Mixed",
+                "question": "candidates in กรุงเทพมหานคร with bachelor degree salary above 30000 THB",
+                "description": "Test mixed Thai-English query",
+                "expected_topics": ["candidates", "กรุงเทพมหานคร", "bachelor", "salary", "30000"],
+                "expected_strategy": "vector"
             }
         ]
     
@@ -215,55 +307,91 @@ class RetrieverTestSuite:
             "success": False,
             "quality_score": 0,
             "topic_coverage": 0.0,
-            "issues": []
+            "issues": [],
+            "routing_quality": "unknown"
         }
         
         if result["error"]:
             analysis["issues"].append(f"Error: {result['error']}")
             return analysis
         
-        if not result["response"]:
-            analysis["issues"].append("No response generated")
+        # Check if response is effectively empty
+        response = result.get("response", "")
+        if not response or response.strip() == "Empty Response" or len(response.strip()) < 10:
+            analysis["issues"].append("Empty or minimal response")
+            analysis["routing_quality"] = "poor"
             return analysis
         
         analysis["success"] = True
-        response_text = result["response"].lower()
+        response_text = response.lower()
         
         # Check topic coverage
         expected_topics = test_case["expected_topics"]
         covered_topics = sum(1 for topic in expected_topics if topic.lower() in response_text)
         analysis["topic_coverage"] = covered_topics / len(expected_topics) if expected_topics else 0
         
-        # Quality scoring (1-5 scale)
+        # Enhanced quality scoring (1-5 scale)
         quality_score = 1  # Base score for successful response
         
-        # +1 for good topic coverage
-        if analysis["topic_coverage"] >= 0.5:
-            quality_score += 1
+        # Content quality checks
+        if analysis["topic_coverage"] >= 0.7:
+            quality_score += 2  # Excellent topic coverage
+        elif analysis["topic_coverage"] >= 0.4:
+            quality_score += 1  # Good topic coverage
         
-        # +1 for comprehensive response (length check)
-        if len(result["response"]) >= 200:
-            quality_score += 1
+        # Response depth and usefulness
+        if len(response) >= 300:
+            quality_score += 1  # Comprehensive response
+        elif len(response) >= 150:
+            quality_score += 0.5  # Adequate response
         
-        # +1 for fast response
-        if result["metadata"].get("total_time_ms", 0) < 5000:
-            quality_score += 1
+        # Performance metrics
+        latency = result["metadata"].get("total_time_ms", 0)
+        if latency > 0:
+            if latency < 3000:
+                quality_score += 1  # Fast response
+            elif latency < 8000:
+                quality_score += 0.5  # Reasonable response time
         
-        # +1 for having source information
-        if result["metadata"].get("num_sources", 0) > 0:
-            quality_score += 1
+        # Source availability
+        num_sources = result["metadata"].get("num_sources", 0)
+        if num_sources > 0:
+            quality_score += 0.5
+            if num_sources >= 3:
+                quality_score += 0.5  # Multiple sources
         
-        analysis["quality_score"] = min(quality_score, 5)
+        analysis["quality_score"] = min(round(quality_score, 1), 5.0)
         
-        # Check for potential issues
-        if analysis["topic_coverage"] < 0.3:
+        # Enhanced issue detection
+        if analysis["topic_coverage"] < 0.2:
+            analysis["issues"].append("Very low topic coverage")
+        elif analysis["topic_coverage"] < 0.4:
             analysis["issues"].append("Low topic coverage")
         
-        if len(result["response"]) < 100:
+        if len(response) < 50:
             analysis["issues"].append("Response too short")
+        elif len(response) < 100:
+            analysis["issues"].append("Response somewhat short")
         
-        if result["metadata"].get("total_time_ms", 0) > 10000:
+        if latency > 15000:
+            analysis["issues"].append("Very slow response time")
+        elif latency > 8000:
             analysis["issues"].append("Slow response time")
+        
+        if num_sources == 0:
+            analysis["issues"].append("No sources retrieved")
+        
+        # Routing quality assessment
+        selected_strategy = result["metadata"].get("strategy", "unknown")
+        expected_strategy = test_case.get("expected_strategy", "unknown")
+        
+        if selected_strategy == expected_strategy:
+            analysis["routing_quality"] = "excellent"
+        elif selected_strategy in ["vector", "summary"]:  # Common fallback strategies
+            analysis["routing_quality"] = "good"
+        else:
+            analysis["routing_quality"] = "poor"
+            analysis["issues"].append(f"Strategy mismatch: got {selected_strategy}, expected {expected_strategy}")
         
         return analysis
     
@@ -323,6 +451,17 @@ class RetrieverTestSuite:
         avg_coverage = sum(r["analysis"]["topic_coverage"] for r in successful_tests) / len(successful_tests) if successful_tests else 0
         avg_duration = sum(r["duration"] for r in self.results) / len(self.results)
         
+        # Strategy distribution analysis
+        strategy_distribution = {}
+        routing_quality_distribution = {}
+        
+        for result in self.results:
+            strategy = result["result"]["metadata"].get("strategy", "unknown")
+            strategy_distribution[strategy] = strategy_distribution.get(strategy, 0) + 1
+            
+            routing_quality = result["analysis"].get("routing_quality", "unknown")
+            routing_quality_distribution[routing_quality] = routing_quality_distribution.get(routing_quality, 0) + 1
+        
         return {
             "total_tests": len(self.results),
             "successful_tests": len(successful_tests),
@@ -332,7 +471,9 @@ class RetrieverTestSuite:
             "average_topic_coverage": avg_coverage,
             "average_test_duration": avg_duration,
             "total_duration": total_duration,
-            "issues_by_category": self._categorize_issues()
+            "issues_by_category": self._categorize_issues(),
+            "strategy_distribution": strategy_distribution,
+            "routing_quality_distribution": routing_quality_distribution
         }
     
     def _categorize_issues(self) -> Dict[str, int]:
@@ -365,16 +506,33 @@ class RetrieverTestSuite:
         print(f"   • Average Test Duration: {summary['average_test_duration']:.2f}s")
         print(f"   • Total Suite Duration: {summary['total_duration']:.2f}s")
         
+        if summary['strategy_distribution']:
+            print(f"\n🎯 Strategy Usage:")
+            for strategy, count in summary['strategy_distribution'].items():
+                percentage = (count / summary['total_tests']) * 100
+                print(f"   • {strategy}: {count} ({percentage:.1f}%)")
+        
+        if summary['routing_quality_distribution']:
+            print(f"\n🧭 Routing Quality:")
+            for quality, count in summary['routing_quality_distribution'].items():
+                percentage = (count / summary['total_tests']) * 100
+                print(f"   • {quality}: {count} ({percentage:.1f}%)")
+        
         if summary['issues_by_category']:
             print(f"\n⚠️  Common Issues:")
             for issue, count in summary['issues_by_category'].items():
                 print(f"   • {issue}: {count} test(s)")
         
-        # Overall assessment
-        if summary['success_rate'] >= 0.8 and summary['average_quality_score'] >= 3.5:
+        # Enhanced overall assessment
+        excellent_routing = summary['routing_quality_distribution'].get('excellent', 0) / summary['total_tests']
+        strategy_variety = len(summary['strategy_distribution'])
+        
+        if summary['success_rate'] >= 0.8 and summary['average_quality_score'] >= 3.5 and excellent_routing >= 0.6:
             print(f"\n🎉 EXCELLENT! The agentic retriever is performing very well.")
-        elif summary['success_rate'] >= 0.6 and summary['average_quality_score'] >= 2.5:
+        elif summary['success_rate'] >= 0.6 and summary['average_quality_score'] >= 2.5 and strategy_variety >= 3:
             print(f"\n👍 GOOD! The agentic retriever is working well with room for improvement.")
+        elif summary['success_rate'] >= 0.4:
+            print(f"\n🔧 FAIR! The system is functional but needs optimization.")
         else:
             print(f"\n⚠️  NEEDS IMPROVEMENT! Consider reviewing the retrieval configuration.")
     
@@ -442,8 +600,10 @@ def main():
 Examples:
   python test_retriever.py                    # Run all tests
   python test_retriever.py --test_id 1        # Run specific test
-  python test_retriever.py --category "Demographics"  # Run tests by category
+  python test_retriever.py --category "Basic Vector"  # Run tests by category
   python test_retriever.py --no_markdown      # Skip markdown output
+  python test_retriever.py --quick            # Run only first 5 tests (quick check)
+  python test_retriever.py --diagnostic       # Run diagnostic tests only
         """
     )
     
@@ -473,6 +633,18 @@ Examples:
         "--no_markdown",
         action="store_true",
         help="Skip saving results to markdown file"
+    )
+    
+    parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Run only first 5 tests for quick validation"
+    )
+    
+    parser.add_argument(
+        "--diagnostic",
+        action="store_true",
+        help="Run diagnostic tests (simple queries to check basic functionality)"
     )
     
     args = parser.parse_args()
@@ -507,6 +679,25 @@ Examples:
         else:
             available_categories = list(set(t["category"] for t in test_suite.test_questions))
             print(f"❌ Category '{args.category}' not found. Available categories: {', '.join(available_categories)}")
+    
+    elif args.quick:
+        # Run first 5 tests only
+        test_suite._add_to_markdown(f"# Quick Test Results\n\n")
+        for test_case in test_suite.test_questions[:5]:
+            test_suite.run_single_test(test_case)
+            time.sleep(1)
+        if test_suite.save_markdown:
+            test_suite._save_markdown_file()
+    
+    elif args.diagnostic:
+        # Run only basic diagnostic tests
+        diagnostic_tests = [t for t in test_suite.test_questions if "Basic Vector" in t["category"] or "Router" in t["category"]]
+        test_suite._add_to_markdown(f"# Diagnostic Test Results\n\n")
+        for test_case in diagnostic_tests:
+            test_suite.run_single_test(test_case)
+            time.sleep(1)
+        if test_suite.save_markdown:
+            test_suite._save_markdown_file()
     
     else:
         # Run all tests
