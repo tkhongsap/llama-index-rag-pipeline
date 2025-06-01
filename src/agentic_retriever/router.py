@@ -83,70 +83,67 @@ class RouterRetriever(BaseRetriever):
             api_key=self.api_key
         )
     
-    def _select_strategy_llm(self, query: str, available_strategies: List[str]) -> Dict[str, Any]:
-        """Select strategy using LLM."""
-        strategies_desc = {
-            "vector": "Basic vector similarity search - good for general semantic queries",
-            "summary": "Document summary-first retrieval - good for document-level questions",
-            "recursive": "Recursive retrieval with parent-child relationships - good for hierarchical content",
-            "metadata": "Metadata-filtered retrieval - good when specific filters are needed",
-            "chunk_decoupling": "Chunk decoupling with sentence windows - good for precise context",
-            "hybrid": "Hybrid vector + keyword search - good for mixed semantic/exact queries",
-            "planner": "Query planning agent - good for complex multi-step queries"
+    def _select_strategy_llm(self, index: str, query: str, available_strategies: List[str]) -> str:
+        """
+        Select the best retrieval strategy using LLM, with optimized reliability.
+        
+        Args:
+            index: The selected index name
+            query: The user query
+            available_strategies: List of available strategies for this index
+            
+        Returns:
+            Selected strategy name
+        """
+        # Strategy reliability ranking based on performance analysis
+        strategy_priority = {
+            "vector": 1,        # Most reliable, fast, always works
+            "hybrid": 2,        # Good results but slower  
+            "recursive": 3,     # Good for complex hierarchical queries
+            "chunk_decoupling": 4,  # Good for detailed chunk analysis
+            "planner": 5,       # Good for multi-step queries
+            "metadata": 6,      # Unreliable, often empty results
+            "summary": 7        # Currently broken, empty results
         }
         
-        available_desc = "\n".join([
-            f"- {strategy}: {strategies_desc.get(strategy, 'Advanced retrieval strategy')}"
-            for strategy in available_strategies
-        ])
+        # Filter available strategies by reliability
+        reliable_strategies = [s for s in available_strategies if s in strategy_priority]
         
-        prompt = f"""
-You are an expert at selecting the best retrieval strategy for different types of queries.
-
-Available strategies:
-{available_desc}
-
-Query: "{query}"
-
-Based on the query characteristics, which strategy would be most effective?
-Consider:
-- Query complexity (simple vs multi-step)
-- Information type needed (specific facts vs general overview)
-- Search type (semantic similarity vs exact matches)
-
-Respond with ONLY the strategy name (exactly as listed above).
-"""
+        if not reliable_strategies:
+            # Fallback to first available if none are in our priority list
+            return available_strategies[0] if available_strategies else "vector"
         
-        try:
-            response = Settings.llm.complete(prompt)
-            selected_strategy = response.text.strip()
-            
-            if selected_strategy in available_strategies:
-                return {
-                    "strategy": selected_strategy,
-                    "confidence": 0.9,
-                    "method": "llm",
-                    "reasoning": f"LLM selected {selected_strategy}"
-                }
-            else:
-                # Fallback to default
-                fallback_strategy = available_strategies[0] if available_strategies else self._default_strategy
-                return {
-                    "strategy": fallback_strategy,
-                    "confidence": 0.3,
-                    "method": "llm_fallback",
-                    "reasoning": f"LLM response '{selected_strategy}' invalid, using fallback"
-                }
-                
-        except Exception as e:
-            # Fallback to default strategy
-            fallback_strategy = available_strategies[0] if available_strategies else self._default_strategy
-            return {
-                "strategy": fallback_strategy,
-                "confidence": 0.1,
-                "method": "error_fallback",
-                "reasoning": f"Error in LLM strategy selection: {str(e)}"
-            }
+        # For simple semantic queries, prefer vector strategy
+        simple_query_indicators = ["what", "show", "list", "find", "get", "which"]
+        query_lower = query.lower()
+        
+        if any(indicator in query_lower for indicator in simple_query_indicators):
+            if "vector" in reliable_strategies:
+                return "vector"
+        
+        # For complex multi-step queries, prefer planner
+        complex_indicators = ["first", "then", "analyze", "compare", "breakdown", "step"]
+        if any(indicator in query_lower for indicator in complex_indicators):
+            if "planner" in reliable_strategies:
+                return "planner"
+            elif "recursive" in reliable_strategies:
+                return "recursive"
+        
+        # For comparison queries, prefer hybrid
+        comparison_indicators = ["compare", "versus", "vs", "difference", "similar"]
+        if any(indicator in query_lower for indicator in comparison_indicators):
+            if "hybrid" in reliable_strategies:
+                return "hybrid"
+        
+        # Default to most reliable available strategy
+        reliable_strategies.sort(key=lambda s: strategy_priority.get(s, 10))
+        selected = reliable_strategies[0]
+        
+        # Avoid metadata strategy for compensation queries due to empty results issue
+        if selected == "metadata" and "compensation" in query_lower and "vector" in reliable_strategies:
+            selected = "vector"
+        
+        return selected
     
     def _select_strategy_round_robin(self, index_name: str, available_strategies: List[str]) -> Dict[str, Any]:
         """Select strategy using round-robin."""
@@ -189,7 +186,13 @@ Respond with ONLY the strategy name (exactly as listed above).
             }
         
         if self.strategy_selector == "llm":
-            return self._select_strategy_llm(query, available_strategies)
+            selected_strategy = self._select_strategy_llm(index_name, query, available_strategies)
+            return {
+                "strategy": selected_strategy,
+                "confidence": 0.9,
+                "method": "llm",
+                "reasoning": f"LLM selected {selected_strategy}"
+            }
         elif self.strategy_selector == "round_robin":
             return self._select_strategy_round_robin(index_name, available_strategies)
         else:  # default

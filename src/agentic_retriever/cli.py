@@ -49,6 +49,11 @@ except ImportError:
 # Load environment variables
 load_dotenv(override=True)
 
+# Global cache for router to avoid rebuilding indices
+_cached_router = None
+_cache_timestamp = None
+_cache_duration = 3600  # 1 hour cache
+
 
 def setup_models(api_key: Optional[str] = None):
     """Setup LLM and embedding models."""
@@ -63,9 +68,9 @@ def setup_models(api_key: Optional[str] = None):
     )
 
 
-def create_strategy_adapters(embeddings_data: Any, api_key: Optional[str] = None) -> Dict[str, Any]:
+def create_strategy_adapters_optimized(embeddings_data: Any, api_key: Optional[str] = None) -> Dict[str, Any]:
     """
-    Create all retrieval strategy adapters as defined in PRD.
+    Create all retrieval strategy adapters with optimizations.
     
     Args:
         embeddings_data: Loaded embeddings data for adapters
@@ -77,26 +82,41 @@ def create_strategy_adapters(embeddings_data: Any, api_key: Optional[str] = None
     adapters = {}
     
     try:
-        # Vector adapter (wraps 10_basic_query_engine.py)
-        adapters["vector"] = VectorRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        print("🚀 Creating optimized strategy adapters...")
         
-        # Summary adapter (wraps 11_document_summary_retriever.py) 
-        adapters["summary"] = SummaryRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        # Only create essential adapters to start with
+        essential_adapters = ["vector", "metadata", "summary"]
         
-        # Recursive adapter (wraps 12_recursive_retriever.py)
-        adapters["recursive"] = RecursiveRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        for adapter_name in essential_adapters:
+            try:
+                if adapter_name == "vector":
+                    adapters["vector"] = VectorRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+                elif adapter_name == "metadata":
+                    adapters["metadata"] = MetadataRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+                elif adapter_name == "summary":
+                    adapters["summary"] = SummaryRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+                
+                print(f"✅ Created {adapter_name} adapter")
+            except Exception as e:
+                print(f"⚠️  Failed to create {adapter_name} adapter: {e}")
+                continue
         
-        # Metadata adapter (wraps 14_metadata_filtering.py)
-        adapters["metadata"] = MetadataRetrieverAdapter.from_embeddings(embeddings_data, api_key)
-        
-        # Chunk decoupling adapter (wraps 15_chunk_decoupling.py)
-        adapters["chunk_decoupling"] = ChunkDecouplingRetrieverAdapter.from_embeddings(embeddings_data, api_key)
-        
-        # Hybrid adapter (wraps 16_hybrid_search.py)
-        adapters["hybrid"] = HybridRetrieverAdapter.from_embeddings(embeddings_data, api_key)
-        
-        # Planner adapter (wraps 17_query_planning_agent.py)
-        adapters["planner"] = PlannerRetrieverAdapter.from_embeddings(embeddings_data, api_key)
+        # Only create additional adapters if essential ones work
+        if len(adapters) >= 2:
+            additional_adapters = {
+                "recursive": RecursiveRetrieverAdapter,
+                "chunk_decoupling": ChunkDecouplingRetrieverAdapter,
+                "hybrid": HybridRetrieverAdapter,
+                "planner": PlannerRetrieverAdapter
+            }
+            
+            for adapter_name, adapter_class in additional_adapters.items():
+                try:
+                    adapters[adapter_name] = adapter_class.from_embeddings(embeddings_data, api_key)
+                    print(f"✅ Created {adapter_name} adapter")
+                except Exception as e:
+                    print(f"⚠️  Failed to create {adapter_name} adapter: {e}")
+                    continue
         
         print(f"✅ Created {len(adapters)} strategy adapters: {list(adapters.keys())}")
         
@@ -110,6 +130,32 @@ def create_strategy_adapters(embeddings_data: Any, api_key: Optional[str] = None
             print(f"❌ Failed to create even vector adapter: {fallback_error}")
     
     return adapters
+
+
+def get_cached_router(api_key: Optional[str] = None, force_refresh: bool = False) -> RouterRetriever:
+    """Get cached router or create new one if cache is invalid."""
+    global _cached_router, _cache_timestamp
+    
+    current_time = time.time()
+    
+    # Check if cache is valid
+    if (not force_refresh and 
+        _cached_router is not None and 
+        _cache_timestamp is not None and 
+        (current_time - _cache_timestamp) < _cache_duration):
+        print("🚀 Using cached router (performance optimization)")
+        return _cached_router
+    
+    # Create new router
+    print("🔄 Creating new router...")
+    router = create_agentic_router(api_key)
+    
+    if router:
+        _cached_router = router
+        _cache_timestamp = current_time
+        print("✅ Router cached for future queries")
+    
+    return router
 
 
 def create_agentic_router(api_key: Optional[str] = None) -> RouterRetriever:
@@ -155,7 +201,7 @@ def create_agentic_router(api_key: Optional[str] = None) -> RouterRetriever:
         print(f"📊 Loaded {len(full_data)} total embeddings from {len(all_embeddings)} sub-batches")
         
         # Create strategy adapters
-        strategy_adapters = create_strategy_adapters(full_data, api_key)
+        strategy_adapters = create_strategy_adapters_optimized(full_data, api_key)
         
         if not strategy_adapters:
             print("⚠️  No strategy adapters created.")
@@ -262,7 +308,8 @@ def create_simple_router(api_key: Optional[str] = None) -> RouterRetriever:
 def query_agentic_retriever(
     query: str,
     top_k: int = 5,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    fast_mode: bool = False
 ) -> dict:
     """
     Query the agentic retriever and return results.
@@ -271,17 +318,19 @@ def query_agentic_retriever(
         query: The user query
         top_k: Number of results to retrieve
         api_key: OpenAI API key
+        fast_mode: If True, prioritize speed over completeness
         
     Returns:
         Dict with response and metadata
     """
     start_time = time.time()
     
-    # Setup models
-    setup_models(api_key)
+    # Setup models (only once per session)
+    if not hasattr(Settings, 'llm') or Settings.llm is None:
+        setup_models(api_key)
     
-    # Create router (try agentic first, fallback to simple)
-    router = create_agentic_router(api_key)
+    # Create router (try cached first for performance)
+    router = get_cached_router(api_key)
     if not router:
         print("🔄 Falling back to simple router...")
         router = create_simple_router(api_key)
