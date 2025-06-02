@@ -3,12 +3,17 @@ Router Module
 
 Main router that combines index classification and retrieval strategy selection.
 Provides both local RouterRetriever and cloud LlamaCloudCompositeRetriever.
+
+Usage:
+    The RouterRetriever is strategy-agnostic and accepts any pre-built retrievers.
+    For the complete 7-strategy implementation, see cli.py which creates all adapters
+    and builds the full router system.
+    
+    Use RouterRetriever.from_retrievers() to create a router with your retrievers.
 """
 
 import os
-import sys
 import time
-from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
 from dotenv import load_dotenv
 
@@ -19,15 +24,6 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 from .index_classifier import IndexClassifier, create_default_classifier
-from .retrievers import (
-    VectorRetrieverAdapter,
-    SummaryRetrieverAdapter,
-    RecursiveRetrieverAdapter,
-    MetadataRetrieverAdapter,
-    ChunkDecouplingRetrieverAdapter,
-    HybridRetrieverAdapter,
-    PlannerRetrieverAdapter
-)
 from .log_utils import log_retrieval_call
 
 # Load environment variables
@@ -570,41 +566,10 @@ class LlamaCloudCompositeRetriever:
         raise NotImplementedError("LlamaCloud integration not yet implemented")
 
 
-def create_default_router(
-    embeddings_data: Dict[str, List[dict]],
-    api_key: Optional[str] = None,
-    strategy_selector: str = "llm",
-    llm_strategy_mode: str = "enhanced"
-) -> RouterRetriever:
-    """
-    Create a router with default retrievers for each strategy.
-    
-    Args:
-        embeddings_data: Dict mapping index names to embedding data
-        api_key: OpenAI API key
-        strategy_selector: Strategy selection method ("llm", "round_robin", "default")
-        llm_strategy_mode: LLM strategy selection mode ("enhanced", "simple")
-        
-    Returns:
-        RouterRetriever instance
-    """
-    retrievers = {}
-    
-    for index_name, embeddings in embeddings_data.items():
-        retrievers[index_name] = {}
-        
-        # Create all strategy adapters for this index
-        retrievers[index_name]["vector"] = VectorRetrieverAdapter.from_embeddings(
-            embeddings, api_key
-        )
-        
-        # Note: Other strategies would need additional data (summary embeddings, etc.)
-        # For now, we'll just include vector retrieval
-        # TODO: Add other strategies when data is available
-    
-    return RouterRetriever.from_retrievers(
-        retrievers=retrievers,
-        api_key=api_key,
-        strategy_selector=strategy_selector,
-        llm_strategy_mode=llm_strategy_mode
-    ) 
+# Note: The RouterRetriever is designed to be initialized with pre-built retrievers.
+# For the complete implementation with all 7 retrieval strategies, see:
+# - cli.py: create_strategy_adapters_optimized() - Creates all strategy adapters
+# - cli.py: setup_agentic_retriever() - Builds the complete router with all strategies
+#
+# The RouterRetriever.from_retrievers() classmethod is the recommended way to create
+# a router instance with your custom set of retrievers.
