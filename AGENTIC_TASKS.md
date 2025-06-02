@@ -16,6 +16,13 @@ A task list for implementing the intelligent retrieval layer that automatically 
 - [x] Created CLI tool with proper adapter imports and instantiation
 - [x] Implemented factory methods (`from_embeddings()`) for all adapters
 - [x] Added comprehensive error handling and fallback strategies in CLI
+- [x] **ENHANCEMENT**: Upgraded router with intelligent LLM-powered strategy selection
+  - ✅ Replaced static rule-based logic with true LLM reasoning
+  - ✅ Added enhanced mode with detailed reasoning and confidence scoring
+  - ✅ Implemented configurable strategy selection modes (enhanced vs simple)
+  - ✅ Added robust fallback mechanisms for LLM failures
+  - ✅ Included debug logging for strategy selection transparency
+  - ✅ Created comprehensive test suite for validation
 
 ## In Progress Tasks
 - [x] **CRITICAL**: Fix import path issues in CLI and adapter modules
