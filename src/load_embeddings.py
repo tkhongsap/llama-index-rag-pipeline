@@ -56,13 +56,25 @@ class EmbeddingLoader:
         """Validate that embedding directory exists."""
         if not self.embedding_dir.exists():
             raise ValueError(f"Embedding directory not found: {self.embedding_dir}")
-    
+
     def get_available_batches(self) -> List[Path]:
-        """Get list of available embedding batches."""
-        batches = sorted([
+        """Get list of available embedding batches sorted by timestamp."""
+        def extract_timestamp(batch_path: Path) -> str:
+            """Extract timestamp from batch directory name for sorting."""
+            name = batch_path.name
+            if name.startswith("embeddings_batch_"):
+                return name.replace("embeddings_batch_", "")
+            elif name.startswith("embeddings_enhanced_"):
+                return name.replace("embeddings_enhanced_", "")
+            return name
+        
+        batches = [
             d for d in self.embedding_dir.iterdir() 
             if d.is_dir() and (d.name.startswith("embeddings_batch_") or d.name.startswith("embeddings_enhanced_"))
-        ])
+        ]
+        
+        # Sort by timestamp (most recent last)
+        batches = sorted(batches, key=extract_timestamp)
         return batches
     
     def get_latest_batch(self) -> Optional[Path]:
@@ -366,12 +378,27 @@ def demonstrate_loading():
             print(f"   • Chunks: {stats['grand_totals']['chunk_embeddings']}")
             print(f"   • IndexNodes: {stats['grand_totals']['indexnode_embeddings']}")
             print(f"   • Summaries: {stats['grand_totals']['summary_embeddings']}")
+          # Load embeddings from ALL sub-batches
+        print("\n🔄 Loading embeddings from all sub-batches...")
+        all_batch_embeddings = loader.load_all_embeddings_from_batch(latest_batch)
         
-        # Load embeddings from first sub-batch
-        print("\n🔄 Loading embeddings from batch_1...")
-        chunk_embeddings, _, _ = loader.load_embeddings_from_files(
-            latest_batch, "batch_1", "chunks"
-        )
+        # Count total embeddings across all sub-batches
+        total_chunks = sum(len(emb_types.get("chunks", [])) for emb_types in all_batch_embeddings.values())
+        total_summaries = sum(len(emb_types.get("summaries", [])) for emb_types in all_batch_embeddings.values())
+        total_indexnodes = sum(len(emb_types.get("indexnodes", [])) for emb_types in all_batch_embeddings.values())
+        
+        print(f"   • Found {len(all_batch_embeddings)} sub-batches")
+        print(f"   • Total chunks: {total_chunks}")
+        print(f"   • Total summaries: {total_summaries}")
+        print(f"   • Total indexnodes: {total_indexnodes}")
+        
+        # Get chunk embeddings from first available sub-batch for validation
+        chunk_embeddings = []
+        for sub_batch, emb_types in all_batch_embeddings.items():
+            if emb_types.get("chunks"):
+                chunk_embeddings = emb_types["chunks"]
+                print(f"   • Using chunks from {sub_batch} for demo ({len(chunk_embeddings)} embeddings)")
+                break
         
         # Validate embeddings
         print("\n📋 Validating loaded embeddings...")
@@ -429,6 +456,38 @@ def load_latest_embeddings(
     )
     
     return embeddings, latest_batch
+
+def load_all_latest_embeddings(
+    embedding_type: str = "chunks"
+) -> Tuple[List[Dict[str, Any]], Path]:
+    """
+    Load embeddings of a specific type from ALL sub-batches in the latest batch.
+    
+    Args:
+        embedding_type: Type of embeddings to load ("chunks", "summaries", "indexnodes")
+    
+    Returns:
+        - Combined list of embedding dictionaries from all sub-batches
+        - Path to the batch directory
+    """
+    loader = EmbeddingLoader(EMBEDDING_DIR)
+    latest_batch = loader.get_latest_batch()
+    
+    if not latest_batch:
+        raise RuntimeError("No embedding batches found")
+    
+    # Load all embeddings from all sub-batches
+    all_batch_embeddings = loader.load_all_embeddings_from_batch(latest_batch)
+    
+    # Combine embeddings of the specified type from all sub-batches
+    combined_embeddings = []
+    for sub_batch, emb_types in all_batch_embeddings.items():
+        if emb_types.get(embedding_type):
+            combined_embeddings.extend(emb_types[embedding_type])
+            print(f"📦 Added {len(emb_types[embedding_type])} {embedding_type} from {sub_batch}")
+    
+    print(f"✅ Total {embedding_type} loaded: {len(combined_embeddings)}")
+    return combined_embeddings, latest_batch
 
 def create_index_from_latest_batch(
     use_chunks: bool = True,
