@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 # Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent / "src"))
+sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 from agentic_retriever.cli import query_agentic_retriever, format_output
 
