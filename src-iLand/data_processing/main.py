@@ -1,31 +1,13 @@
 """
-Legacy process_data_for_embedding.py
+Main execution script for iLand dataset processing
 
-This file has been refactored into smaller, focused modules following the coding rules.
-The original 1176-line file has been broken down into:
-
-- models.py: Data classes and models
-- csv_analyzer.py: CSV analysis and field mapping
-- config_manager.py: Configuration management
-- document_processor.py: Document processing and text generation
-- file_output.py: File output operations
-- statistics_generator.py: Statistics and reporting
-- iland_converter.py: Main converter orchestrator
-- main.py: Simplified main execution
-
-For new usage, import from the data_processing package:
-    from .iland_converter import iLandCSVConverter
+This script provides a simple interface to process iLand CSV files into documents
+using the refactored modular components.
 """
 
 import logging
-import warnings
 from pathlib import Path
-
-# Import the refactored components
 from .iland_converter import iLandCSVConverter
-
-# Suppress pandas date parsing warnings to reduce noise
-warnings.filterwarnings('ignore', message='Could not infer format, so each element will be parsed individually')
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -55,7 +37,7 @@ def main():
     logger.info(f"Using iLand CSV file: {input_csv}")
     logger.info(f"Output directory: {output_dir}")
     
-    # Create iLand converter using the refactored components
+    # Create iLand converter
     converter = iLandCSVConverter(str(input_csv), output_dir)
     
     # Setup configuration (auto-generate from CSV analysis)
