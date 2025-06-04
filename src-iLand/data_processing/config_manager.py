@@ -4,7 +4,11 @@ import json
 import logging
 from dataclasses import asdict
 from typing import Dict, Any
-from .models import DatasetConfig, FieldMapping
+# Handle both relative and absolute imports
+try:
+    from .models import DatasetConfig, FieldMapping
+except ImportError:
+    from models import DatasetConfig, FieldMapping
 
 logger = logging.getLogger(__name__)
 

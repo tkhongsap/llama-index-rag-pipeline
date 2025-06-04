@@ -4,7 +4,11 @@ import hashlib
 import logging
 from typing import Dict, Any, List
 from datetime import datetime
-from .models import SimpleDocument, DatasetConfig
+# Handle both relative and absolute imports
+try:
+    from .models import SimpleDocument, DatasetConfig
+except ImportError:
+    from models import SimpleDocument, DatasetConfig
 
 logger = logging.getLogger(__name__)
 

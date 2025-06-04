@@ -2,7 +2,11 @@ import pandas as pd
 import re
 import logging
 from typing import List, Dict, Any
-from .models import FieldMapping, DatasetConfig
+# Handle both relative and absolute imports
+try:
+    from .models import FieldMapping, DatasetConfig
+except ImportError:
+    from models import FieldMapping, DatasetConfig
 
 logger = logging.getLogger(__name__)
 
@@ -16,31 +20,42 @@ class CSVAnalyzer:
     def _load_thai_provinces(self) -> List[str]:
         """Load list of Thai provinces for validation"""
         return [
-            'กรุงเทพมหานคร', 'เชียงใหม่', 'เชียงราย', 'ภูเก็ต', 'สุราษฎร์ธานี',
-            'นครราชสีมา', 'ขอนแก่น', 'อุดรธานี', 'นครศรีธรรมราช', 'สงขลา',
-            'ระยอง', 'ชลบุรี', 'พัทยา', 'สมุทรปราการ', 'นนทบุรี'
+            'อุดรธานี', 'อุตรดิตถ์', 'พะเยา', 'เพชรบุรี', 'กรุงเทพมหานคร',
+            'พิจิตร', 'ระยอง', 'สุราษฎร์ธานี', 'สมุทรปราการ', 'เชียงราย',
+            'พระนครศรีอยุธยา', 'นนทบุรี', 'ปทุมธานี', 'ชลบุรี', 'อ่างทอง',
+            'ลพบุรี', 'ชัยนาท', 'สระบุรี', 'จันทบุรี', 'ฉะเชิงเทรา',
+            'นครราชสีมา', 'บึงกาฬ', 'ปราจีนบุรี', 'นครนายก', 'อุบลราชธานี',
+            'ชัยภูมิ', 'เลย', 'หนองคาย', 'มหาสารคาม', 'นครพนม',
+            'เชียงใหม่', 'กำแพงเพชร', 'กาญจนบุรี', 'ลำพูน', 'ลำปาง',
+            'แพร่', 'แม่ฮ่องสอน', 'นครสวรรค์', 'อุทัยธานี', 'สุโขทัย',
+            'ตาก', 'พิษณุโลก', 'เพชรบูรณ์', 'สุพรรณบุรี', 'นครปฐม',
+            'สมุทรสาคร', 'ประจวบคีรีขันธ์', 'ภูเก็ต', 'ชุมพร', 'สงขลา',
+            'นราธิวาส', 'ขอนแก่น', 'นครศรีธรรมราช'
         ]
     
     def analyze_csv_structure(self, csv_path: str) -> Dict[str, Any]:
         """Analyze CSV structure and suggest field mappings for iLand dataset"""
         logger.info(f"Analyzing iLand CSV structure: {csv_path}")
         
-        # Try UTF-8 first, fallback to other encodings if needed
-        encodings_to_try = ['utf-8', 'utf-8-sig', 'cp874', 'latin-1']
+        # Smart encoding detection for Thai CSV files
+        logger.info("Detecting optimal encoding for CSV file...")
+        # Try Thai encoding first since this is for iLand (Thai) dataset  
+        encodings_to_try = ['cp874', 'utf-8', 'utf-8-sig', 'latin-1']
         sample_df = None
         used_encoding = None
         
-        for encoding in encodings_to_try:
+        for i, encoding in enumerate(encodings_to_try):
             try:
                 sample_df = pd.read_csv(csv_path, nrows=200, encoding=encoding)
                 used_encoding = encoding
-                logger.info(f"Successfully read CSV with encoding: {encoding}")
+                logger.info(f"✓ Successfully read CSV with encoding: {encoding}")
                 break
             except UnicodeDecodeError:
-                logger.warning(f"Failed to read with encoding: {encoding}")
+                # Only show debug info, not warnings, since this is expected behavior
+                logger.debug(f"Encoding {encoding} not compatible, trying next...")
                 continue
             except Exception as e:
-                logger.warning(f"Error reading with encoding {encoding}: {e}")
+                logger.debug(f"Error with encoding {encoding}: {str(e)[:50]}")
                 continue
         
         if sample_df is None:
@@ -232,12 +247,48 @@ class CSVAnalyzer:
         """Infer the data type of a pandas Series"""
         # Check for dates first
         if series.dtype == 'object':
-            # Try to parse as date
-            try:
-                pd.to_datetime(series.dropna().head(10))
-                return 'date'
-            except:
-                pass
+            # Try to parse as date with common Thai/international formats
+            sample_values = series.dropna().head(10)
+            if len(sample_values) > 0:
+                try:
+                    # Try common date formats first to avoid warnings
+                    common_formats = [
+                        '%Y-%m-%d',      # 2023-12-31
+                        '%d/%m/%Y',      # 31/12/2023
+                        '%d-%m-%Y',      # 31-12-2023
+                        '%Y/%m/%d',      # 2023/12/31
+                        '%d/%m/%y',      # 31/12/23
+                        '%Y%m%d',        # 20231231
+                    ]
+                    
+                    # Test if any common format works for most values
+                    for fmt in common_formats:
+                        try:
+                            parsed_count = 0
+                            for val in sample_values:
+                                try:
+                                    pd.to_datetime(str(val), format=fmt)
+                                    parsed_count += 1
+                                except:
+                                    continue
+                            
+                            # If most values parse successfully with this format
+                            if parsed_count >= len(sample_values) * 0.7:
+                                return 'date'
+                        except:
+                            continue
+                    
+                    # Fallback: try pandas auto-detection but suppress warnings
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        pd.to_datetime(sample_values, errors='coerce')
+                        # If we get here without exception, it might be dates
+                        non_null_parsed = pd.to_datetime(sample_values, errors='coerce').notna().sum()
+                        if non_null_parsed >= len(sample_values) * 0.5:
+                            return 'date'
+                except:
+                    pass
         
         if pd.api.types.is_numeric_dtype(series):
             if series.dtype in ['int64', 'int32']:

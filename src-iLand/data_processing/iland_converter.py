@@ -5,12 +5,21 @@ from typing import List, Optional
 from datetime import datetime
 from pathlib import Path
 
-from .models import SimpleDocument, DatasetConfig
-from .csv_analyzer import CSVAnalyzer
-from .config_manager import ConfigManager
-from .document_processor import DocumentProcessor
-from .file_output import FileOutputManager
-from .statistics_generator import StatisticsGenerator
+# Handle both relative and absolute imports
+try:
+    from .models import SimpleDocument, DatasetConfig
+    from .csv_analyzer import CSVAnalyzer
+    from .config_manager import ConfigManager
+    from .document_processor import DocumentProcessor
+    from .file_output import FileOutputManager
+    from .statistics_generator import StatisticsGenerator
+except ImportError:
+    from models import SimpleDocument, DatasetConfig
+    from csv_analyzer import CSVAnalyzer
+    from config_manager import ConfigManager
+    from document_processor import DocumentProcessor
+    from file_output import FileOutputManager
+    from statistics_generator import StatisticsGenerator
 
 logger = logging.getLogger(__name__)
 
