@@ -7,7 +7,12 @@ from typing import List, Dict, Any
 from llama_index.core import DocumentSummaryIndex
 from llama_index.core.schema import IndexNode
 from llama_index.embeddings.openai import OpenAIEmbedding
-from .metadata_extractor import iLandMetadataExtractor
+
+# Handle both module import and direct script execution
+try:
+    from .metadata_extractor import iLandMetadataExtractor
+except ImportError:
+    from metadata_extractor import iLandMetadataExtractor
 
 
 class EmbeddingProcessor:

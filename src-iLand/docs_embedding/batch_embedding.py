@@ -4,6 +4,7 @@ Follows LlamaIndex best practices for production RAG applications.
 """
 
 import os
+import sys
 import time
 from pathlib import Path
 from datetime import datetime
@@ -26,11 +27,24 @@ from llama_index.core.schema import IndexNode
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 
-# Local module imports
-from .document_loader import iLandDocumentLoader
-from .metadata_extractor import iLandMetadataExtractor
-from .embedding_processor import EmbeddingProcessor
-from .file_storage import EmbeddingStorage
+# Local module imports - handle both direct script execution and module import
+try:
+    # Try relative imports first (when used as module)
+    from .document_loader import iLandDocumentLoader
+    from .metadata_extractor import iLandMetadataExtractor
+    from .embedding_processor import EmbeddingProcessor
+    from .file_storage import EmbeddingStorage
+except ImportError:
+    # Fallback for direct script execution
+    try:
+        from document_loader import iLandDocumentLoader
+        from metadata_extractor import iLandMetadataExtractor
+        from embedding_processor import EmbeddingProcessor
+        from file_storage import EmbeddingStorage
+    except ImportError as e:
+        print(f"❌ Import Error: {e}")
+        print("Make sure you're running from the correct directory with all module files present.")
+        sys.exit(1)
 
 # Configuration
 CONFIG = {

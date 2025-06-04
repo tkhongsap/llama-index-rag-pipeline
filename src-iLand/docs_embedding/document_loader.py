@@ -8,7 +8,12 @@ from pathlib import Path
 from datetime import datetime
 from typing import List
 from llama_index.core import Document
-from .metadata_extractor import iLandMetadataExtractor
+
+# Handle both module import and direct script execution
+try:
+    from .metadata_extractor import iLandMetadataExtractor
+except ImportError:
+    from metadata_extractor import iLandMetadataExtractor
 
 
 class iLandDocumentLoader:
