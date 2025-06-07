@@ -11,6 +11,11 @@ import time
 import argparse
 from typing import Dict, List, Optional, Any
 from pathlib import Path
+import colorama
+from colorama import Fore, Style, Back
+
+# Initialize colorama for cross-platform color support
+colorama.init(autoreset=True)
 
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -114,7 +119,7 @@ class iLandRetrievalCLI:
         Returns:
             True if successful, False otherwise
         """
-        print(f"Loading iLand embeddings (type: {embedding_type})...")
+        print(f"{Fore.CYAN}Loading iLand embeddings (type: {embedding_type})...{Style.RESET_ALL}")
         
         try:
             if embedding_type == "all" and load_all_latest_iland_embeddings:
@@ -129,58 +134,58 @@ class iLandRetrievalCLI:
                 print("No embedding data loaded")
                 return False
             
-            print(f"Loaded {len(embeddings_data)} embeddings from {batch_path}")
+            print(f"{Fore.GREEN}Loaded {len(embeddings_data)} embeddings from {batch_path}{Style.RESET_ALL}")
             
             # Create adapters for the main iLand index
             index_name = "iland_land_deeds"
             self.adapters[index_name] = {}
             
-            print("Creating retriever adapters...")
+            print(f"{Fore.CYAN}Creating retriever adapters...{Style.RESET_ALL}")
             
             # Vector adapter
             self.adapters[index_name]["vector"] = VectorRetrieverAdapter.from_iland_embeddings(
                 embeddings_data, api_key=self.api_key
             )
-            print("✓ Vector adapter created")
+            print(f"{Fore.GREEN}✓ Vector adapter created{Style.RESET_ALL}")
             
             # Summary adapter (using same embeddings for now)
             self.adapters[index_name]["summary"] = SummaryRetrieverAdapter.from_iland_embeddings(
                 embeddings_data, api_key=self.api_key
             )
-            print("✓ Summary adapter created")
+            print(f"{Fore.GREEN}✓ Summary adapter created{Style.RESET_ALL}")
             
             # Metadata adapter
             self.adapters[index_name]["metadata"] = MetadataRetrieverAdapter.from_iland_embeddings(
                 embeddings_data, api_key=self.api_key
             )
-            print("✓ Metadata adapter created")
+            print(f"{Fore.GREEN}✓ Metadata adapter created{Style.RESET_ALL}")
             
             # Hybrid adapter
             self.adapters[index_name]["hybrid"] = HybridRetrieverAdapter.from_iland_embeddings(
                 embeddings_data, api_key=self.api_key
             )
-            print("✓ Hybrid adapter created")
+            print(f"{Fore.GREEN}✓ Hybrid adapter created{Style.RESET_ALL}")
             
             # Planner adapter
             self.adapters[index_name]["planner"] = PlannerRetrieverAdapter.from_iland_embeddings(
                 embeddings_data, api_key=self.api_key
             )
-            print("✓ Planner adapter created")
+            print(f"{Fore.GREEN}✓ Planner adapter created{Style.RESET_ALL}")
             
             # Chunk decoupling adapter (using same embeddings for both chunk and context)
             self.adapters[index_name]["chunk_decoupling"] = ChunkDecouplingRetrieverAdapter.from_iland_embeddings(
                 embeddings_data, embeddings_data, api_key=self.api_key
             )
-            print("✓ Chunk decoupling adapter created")
+            print(f"{Fore.GREEN}✓ Chunk decoupling adapter created{Style.RESET_ALL}")
             
             # Recursive adapter (simplified - using vector index for both levels)
             vector_index = self.adapters[index_name]["vector"].index
             self.adapters[index_name]["recursive"] = RecursiveRetrieverAdapter.from_iland_indices(
                 vector_index, vector_index
             )
-            print("✓ Recursive adapter created")
+            print(f"{Fore.GREEN}✓ Recursive adapter created{Style.RESET_ALL}")
             
-            print(f"Successfully created {len(self.adapters[index_name])} adapters")
+            print(f"{Fore.GREEN}Successfully created {len(self.adapters[index_name])} adapters{Style.RESET_ALL}")
             return True
             
         except Exception as e:
@@ -234,12 +239,12 @@ class iLandRetrievalCLI:
             List of result dictionaries
         """
         if not self.router:
-            print("Router not initialized. Please create router first.")
+            print(f"{Fore.RED}Router not initialized. Please create router first.{Style.RESET_ALL}")
             return []
         
         try:
-            print(f"\nExecuting query: '{query_text}'")
-            print("-" * 60)
+            print(f"\n{Fore.CYAN}Executing query: '{query_text}'{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}{'-' * 60}{Style.RESET_ALL}")
             
             start_time = time.time()
             
@@ -268,38 +273,38 @@ class iLandRetrievalCLI:
                 }
                 results.append(result)
             
-            # Print results
-            print(f"Found {len(results)} results in {latency:.2f}s")
+            # Generate natural language response FIRST
+            if self.response_synthesizer and nodes:
+                try:
+                    print(f"\n{Fore.MAGENTA}🤖 Natural Language Response:{Style.RESET_ALL}")
+                    print(f"{Fore.MAGENTA}{'-' * 40}{Style.RESET_ALL}")
+                    response = self.response_synthesizer.synthesize(query_text, nodes)
+                    print(f"{Fore.MAGENTA}{response.response}{Style.RESET_ALL}")
+                    print()
+                except Exception as e:
+                    print(f"{Fore.YELLOW}⚠️ Response generation failed: {str(e)[:100]}...{Style.RESET_ALL}")
+                    print()
+            
+            # Print execution summary
+            print(f"{Fore.GREEN}Found {len(results)} results in {latency:.2f}s{Style.RESET_ALL}")
             
             if results:
                 first_result = results[0]
-                print(f"Routed to: {first_result['index']}/{first_result['strategy']}")
-                print(f"Confidence: Index={first_result['index_confidence']:.2f}, Strategy={first_result['strategy_confidence']:.2f}")
+                print(f"{Fore.YELLOW}Routed to: {first_result['index']}/{first_result['strategy']}{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Confidence: Index={first_result['index_confidence']:.2f}, Strategy={first_result['strategy_confidence']:.2f}{Style.RESET_ALL}")
                 print()
                 
-                # Generate natural language response
-                if self.response_synthesizer and nodes:
-                    try:
-                        print("🤖 Natural Language Response:")
-                        print("-" * 40)
-                        response = self.response_synthesizer.synthesize(query_text, nodes)
-                        print(response.response)
-                        print()
-                    except Exception as e:
-                        print(f"⚠️ Response generation failed: {str(e)[:100]}...")
-                        print()
-                
-                print("📄 Retrieved Documents:")
-                print("-" * 40)
+                print(f"{Fore.CYAN}📄 Retrieved Documents:{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{'-' * 40}{Style.RESET_ALL}")
                 for result in results:
-                    print(f"[{result['rank']}] Score: {result['score']:.3f}")
-                    print(f"Text: {result['text']}")
+                    print(f"{Fore.WHITE}[{result['rank']}] Score: {result['score']:.3f}{Style.RESET_ALL}")
+                    print(f"{Fore.WHITE}Text: {result['text']}{Style.RESET_ALL}")
                     print()
             
             return results
             
         except Exception as e:
-            print(f"Error executing query: {e}")
+            print(f"{Fore.RED}Error executing query: {e}{Style.RESET_ALL}")
             return []
     
     def test_strategies(self, test_queries: List[str], top_k: int = 3) -> Dict[str, Any]:
@@ -608,30 +613,32 @@ class iLandRetrievalCLI:
     
     def interactive_mode(self):
         """Start interactive query mode."""
-        print("\niLand Retrieval Interactive Mode")
-        print("=" * 40)
-        print("Enter queries to test the retrieval system.")
-        print("Commands:")
-        print("  /quit - Exit interactive mode")
-        print("  /help - Show this help")
-        print("  /summary - Show batch summary")
-        print("  /strategies <query> - Test query with all strategies")
-        print("  /parallel <query> - Test parallel strategy execution")
-        print("  /response <query> - Get detailed RAG response for query")
-        print("  /cache-stats - Show cache statistics")
-        print("  /clear-cache - Clear all caches")
+        print(f"\n{Fore.CYAN}iLand Retrieval Interactive Mode{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
+        print(f"{Fore.WHITE}Enter queries to test the retrieval system.{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}Commands:{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /quit - Exit interactive mode{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /help - Show this help{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /summary - Show batch summary{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /strategies <query> - Test query with all strategies{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /parallel <query> - Test parallel strategy execution{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /response <query> - Get detailed RAG response for query{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /cache-stats - Show cache statistics{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}  /clear-cache - Clear all caches{Style.RESET_ALL}")
         print()
         
         while True:
             try:
-                query = input("iLand> ").strip()
+                # Use colored prompt for input
+                query = input(f"{Fore.LIGHTBLUE_EX}iLand> {Style.RESET_ALL}").strip()
                 
                 if not query:
                     continue
                 elif query == "/quit":
+                    print(f"{Fore.YELLOW}Goodbye!{Style.RESET_ALL}")
                     break
                 elif query == "/help":
-                    print("Commands: /quit, /help, /summary, /strategies <query>, /parallel <query>, /response <query>, /cache-stats, /clear-cache")
+                    print(f"{Fore.GREEN}Commands: /quit, /help, /summary, /strategies <query>, /parallel <query>, /response <query>, /cache-stats, /clear-cache{Style.RESET_ALL}")
                 elif query == "/summary":
                     self.show_batch_summary()
                 elif query == "/cache-stats":
@@ -654,10 +661,10 @@ class iLandRetrievalCLI:
                     self.query(query)
                     
             except KeyboardInterrupt:
-                print("\nExiting...")
+                print(f"\n{Fore.YELLOW}Exiting...{Style.RESET_ALL}")
                 break
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
     
     def test_retrieval_strategies(self, strategy_selector: str = "llm") -> Dict[str, Any]:
         """

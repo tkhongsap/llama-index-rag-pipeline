@@ -51,7 +51,7 @@ CONFIG = {
     "data_dir": Path("example"),
     "output_dir": Path("data/embedding"),
     "chunk_size": 1024,
-    "chunk_overlap": 50,
+    "chunk_overlap": 200,
     "embedding_model": "text-embedding-3-small",
     "llm_model": "gpt-4o-mini",
     "summary_truncate_length": 1000,

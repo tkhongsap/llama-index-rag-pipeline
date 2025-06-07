@@ -27,9 +27,17 @@ from .embedding_loader import iLandEmbeddingLoader
 try:
     from ..docs_embedding import iLandMetadataExtractor
 except ImportError:
-    print("⚠️ Warning: Could not import iLandMetadataExtractor. Some features may be limited.")
-    class iLandMetadataExtractor:
-        pass
+    try:
+        # Try absolute import as backup
+        import sys
+        from pathlib import Path
+        docs_embedding_path = Path(__file__).parent.parent / "docs_embedding"
+        sys.path.insert(0, str(docs_embedding_path))
+        from metadata_extractor import iLandMetadataExtractor
+    except ImportError:
+        print("⚠️ Warning: Could not import iLandMetadataExtractor. Some features may be limited.")
+        class iLandMetadataExtractor:
+            pass
 
 # ---------- ILAND INDEX RECONSTRUCTION CLASS --------------------------------
 
