@@ -16,6 +16,7 @@ from llama_index.llms.openai import OpenAI
 
 from index_classifier import iLandIndexClassifier, create_default_iland_classifier
 from retrievers.base import BaseRetrieverAdapter
+from cache import iLandCacheManager
 
 # Import logging utilities from src package
 try:
@@ -38,7 +39,9 @@ class iLandRouterRetriever(BaseRetriever):
                  index_classifier: Optional[iLandIndexClassifier] = None,
                  strategy_selector: Optional[str] = "llm",
                  llm_strategy_mode: Optional[str] = "enhanced",
-                 api_key: Optional[str] = None):
+                 api_key: Optional[str] = None,
+                 cache_manager: Optional[iLandCacheManager] = None,
+                 enable_caching: bool = True):
         """
         Initialize iLand router retriever.
         
@@ -48,6 +51,8 @@ class iLandRouterRetriever(BaseRetriever):
             strategy_selector: Strategy selection method ("llm", "heuristic", "round_robin")
             llm_strategy_mode: LLM strategy mode ("enhanced", "simple")
             api_key: OpenAI API key
+            cache_manager: Cache manager instance (creates default if None)
+            enable_caching: Whether to enable caching
         """
         super().__init__()
         
@@ -56,12 +61,19 @@ class iLandRouterRetriever(BaseRetriever):
         self.llm_strategy_mode = llm_strategy_mode or "enhanced"
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self._default_strategy = "vector"
+        self.enable_caching = enable_caching
         
         # Setup index classifier
         if index_classifier is None:
             self.index_classifier = create_default_iland_classifier(api_key=self.api_key)
         else:
             self.index_classifier = index_classifier
+        
+        # Setup cache manager
+        if cache_manager is None and enable_caching:
+            self.cache_manager = iLandCacheManager.from_env()
+        else:
+            self.cache_manager = cache_manager
         
         # Setup models
         self._setup_models()
@@ -338,7 +350,7 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
     
     def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
         """
-        Main retrieval method implementing two-stage routing.
+        Main retrieval method implementing two-stage routing with caching.
         
         Args:
             query_bundle: Query bundle containing the query
@@ -358,6 +370,32 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
         strategy_result = self._select_strategy(query, selected_index)
         selected_strategy = strategy_result["strategy"]
         strategy_confidence = strategy_result["confidence"]
+        
+        # Check cache first if enabled
+        cached_results = None
+        if self.enable_caching and self.cache_manager:
+            cached_results = self.cache_manager.get_query_results(
+                query=query,
+                strategy=selected_strategy,
+                top_k=5,  # Default top_k, should be configurable
+                index=selected_index
+            )
+            if cached_results:
+                # Calculate cache hit latency
+                latency = time.time() - start_time
+                
+                # Update metadata for cached results
+                for node in cached_results:
+                    if hasattr(node.node, 'metadata'):
+                        node.node.metadata.update({
+                            "cache_hit": True,
+                            "routing_latency": latency
+                        })
+                
+                if self.debug_logging:
+                    print(f"Cache hit for query: {query[:50]}... -> {selected_index}/{selected_strategy}")
+                
+                return cached_results
         
         # Get the appropriate retriever adapter
         if (selected_index in self.retrievers and 
@@ -383,6 +421,16 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
                 print(f"Retrieval error: {e}")
             nodes = []
         
+        # Cache results if enabled
+        if self.enable_caching and self.cache_manager and nodes:
+            self.cache_manager.cache_query_results(
+                query=query,
+                strategy=selected_strategy,
+                top_k=len(nodes),
+                results=nodes,
+                index=selected_index
+            )
+        
         # Calculate latency
         latency = time.time() - start_time
         
@@ -397,7 +445,8 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
                     "routing_latency": latency,
                     "index_method": index_result.get("method", "unknown"),
                     "strategy_method": strategy_result.get("method", "unknown"),
-                    "data_source": "iland"
+                    "data_source": "iland",
+                    "cache_hit": False  # Set to False for fresh retrievals
                 })
         
         # Log the retrieval call
@@ -448,7 +497,8 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
                      adapters: Dict[str, Dict[str, BaseRetrieverAdapter]],
                      api_key: Optional[str] = None,
                      strategy_selector: str = "llm",
-                     llm_strategy_mode: str = "enhanced") -> "iLandRouterRetriever":
+                     llm_strategy_mode: str = "enhanced",
+                     enable_caching: bool = True) -> "iLandRouterRetriever":
         """
         Create router from adapter dictionary.
         
@@ -457,6 +507,7 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
             api_key: OpenAI API key
             strategy_selector: Strategy selection method
             llm_strategy_mode: LLM strategy mode
+            enable_caching: Whether to enable caching
             
         Returns:
             iLandRouterRetriever instance
@@ -465,5 +516,6 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
             retrievers=adapters,
             api_key=api_key,
             strategy_selector=strategy_selector,
-            llm_strategy_mode=llm_strategy_mode
+            llm_strategy_mode=llm_strategy_mode,
+            enable_caching=enable_caching
         ) 

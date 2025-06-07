@@ -17,6 +17,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from router import iLandRouterRetriever
 from index_classifier import create_default_iland_classifier
+from cache import iLandCacheManager
+from parallel_executor import ParallelStrategyExecutor
 from retrievers import (
     VectorRetrieverAdapter,
     SummaryRetrieverAdapter,
@@ -50,6 +52,8 @@ class iLandRetrievalCLI:
         self.router = None
         self.adapters = {}
         self.api_key = os.getenv("OPENAI_API_KEY")
+        self.cache_manager = None
+        self.parallel_executor = None
         
         if not self.api_key:
             print("Warning: OPENAI_API_KEY not found in environment variables")
@@ -325,6 +329,136 @@ class iLandRetrievalCLI:
         else:
             print("Batch summary utility not available")
     
+    def setup_performance_optimizations(self, enable_caching: bool = True, 
+                                       enable_parallel: bool = True) -> bool:
+        """
+        Setup performance optimization features.
+        
+        Args:
+            enable_caching: Enable query result caching
+            enable_parallel: Enable parallel strategy execution
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Setup cache manager
+            if enable_caching:
+                self.cache_manager = iLandCacheManager.from_env()
+                print("✓ Cache manager initialized")
+            
+            # Setup parallel executor
+            if enable_parallel:
+                self.parallel_executor = ParallelStrategyExecutor(max_workers=3)
+                print("✓ Parallel executor initialized")
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error setting up performance optimizations: {e}")
+            return False
+    
+    def test_parallel_strategies(self, query: str, top_k: int = 5) -> Dict[str, Any]:
+        """
+        Test query using parallel strategy execution.
+        
+        Args:
+            query: Query string
+            top_k: Number of results per strategy
+            
+        Returns:
+            Parallel execution results
+        """
+        if not self.adapters or not self.parallel_executor:
+            print("Adapters or parallel executor not available")
+            return {}
+        
+        index_name = list(self.adapters.keys())[0]
+        strategies = self.adapters[index_name]
+        
+        print(f"\nExecuting parallel strategies for: '{query}'")
+        print("-" * 60)
+        
+        # Test different parallel execution modes
+        results = {}
+        
+        # Mode 1: Best strategy selection
+        print("Mode 1: Best strategy selection")
+        result_best = self.parallel_executor.execute_strategies_parallel(
+            query=query,
+            strategies=strategies,
+            top_k=top_k,
+            return_strategy="best",
+            combine_results=False
+        )
+        results["best"] = result_best
+        print(f"  Selected: {result_best['selected_strategy']}")
+        print(f"  Results: {len(result_best['results'])}")
+        print(f"  Latency: {result_best['execution_stats']['total_latency']:.2f}s")
+        
+        # Mode 2: Fastest strategy
+        print("\nMode 2: Fastest strategy")
+        result_fastest = self.parallel_executor.execute_strategies_parallel(
+            query=query,
+            strategies=strategies,
+            top_k=top_k,
+            return_strategy="fastest",
+            combine_results=False
+        )
+        results["fastest"] = result_fastest
+        print(f"  Selected: {result_fastest['selected_strategy']}")
+        print(f"  Results: {len(result_fastest['results'])}")
+        print(f"  Latency: {result_fastest['execution_stats']['total_latency']:.2f}s")
+        
+        # Mode 3: Combined results
+        print("\nMode 3: Combined results")
+        result_combined = self.parallel_executor.execute_strategies_parallel(
+            query=query,
+            strategies=strategies,
+            top_k=top_k,
+            return_strategy="best",
+            combine_results=True
+        )
+        results["combined"] = result_combined
+        print(f"  Selected: {result_combined['selected_strategy']}")
+        print(f"  Results: {len(result_combined['results'])}")
+        print(f"  Latency: {result_combined['execution_stats']['total_latency']:.2f}s")
+        
+        # Show execution statistics
+        print(f"\nExecution Statistics:")
+        stats = self.parallel_executor.get_stats()
+        print(f"  Total executions: {stats['total_executions']}")
+        print(f"  Successful: {stats['successful_executions']}")
+        print(f"  Failed: {stats['failed_executions']}")
+        print(f"  Average latency: {stats['average_latency']:.2f}s")
+        
+        return results
+    
+    def show_cache_stats(self):
+        """Show cache performance statistics."""
+        if not self.cache_manager:
+            print("Cache manager not initialized")
+            return
+        
+        stats = self.cache_manager.get_stats()
+        print("\nCache Performance Statistics:")
+        print("=" * 40)
+        
+        query_stats = stats.get("query_cache", {})
+        print(f"Query Cache:")
+        print(f"  Hit rate: {query_stats.get('hit_rate', 0):.2%}")
+        print(f"  Total queries: {query_stats.get('total_queries', 0)}")
+        print(f"  Cache size: {query_stats.get('size', 0)}/{query_stats.get('max_size', 0)}")
+        print(f"  TTL: {query_stats.get('ttl_seconds', 0)}s")
+    
+    def clear_caches(self):
+        """Clear all caches."""
+        if self.cache_manager:
+            self.cache_manager.clear_all_caches()
+            print("✓ All caches cleared")
+        else:
+            print("Cache manager not initialized")
+    
     def interactive_mode(self):
         """Start interactive query mode."""
         print("\niLand Retrieval Interactive Mode")
@@ -335,6 +469,9 @@ class iLandRetrievalCLI:
         print("  /help - Show this help")
         print("  /summary - Show batch summary")
         print("  /strategies <query> - Test query with all strategies")
+        print("  /parallel <query> - Test parallel strategy execution")
+        print("  /cache-stats - Show cache statistics")
+        print("  /clear-cache - Clear all caches")
         print()
         
         while True:
@@ -346,13 +483,21 @@ class iLandRetrievalCLI:
                 elif query == "/quit":
                     break
                 elif query == "/help":
-                    print("Commands: /quit, /help, /summary, /strategies <query>")
+                    print("Commands: /quit, /help, /summary, /strategies <query>, /parallel <query>, /cache-stats, /clear-cache")
                 elif query == "/summary":
                     self.show_batch_summary()
+                elif query == "/cache-stats":
+                    self.show_cache_stats()
+                elif query == "/clear-cache":
+                    self.clear_caches()
                 elif query.startswith("/strategies "):
                     test_query = query[12:]  # Remove "/strategies "
                     if test_query:
                         self.test_strategies([test_query], top_k=3)
+                elif query.startswith("/parallel "):
+                    test_query = query[10:]  # Remove "/parallel "
+                    if test_query:
+                        self.test_parallel_strategies(test_query, top_k=5)
                 else:
                     self.query(query)
                     
@@ -376,6 +521,11 @@ def main():
     parser.add_argument("--test-queries", nargs="+", help="Test multiple queries")
     parser.add_argument("--top-k", type=int, default=5, help="Number of results to return")
     parser.add_argument("--batch-summary", action="store_true", help="Show batch summary")
+    parser.add_argument("--enable-cache", action="store_true", help="Enable query result caching")
+    parser.add_argument("--enable-parallel", action="store_true", help="Enable parallel strategy execution")
+    parser.add_argument("--parallel-query", type=str, help="Test parallel execution with query")
+    parser.add_argument("--cache-stats", action="store_true", help="Show cache statistics")
+    parser.add_argument("--clear-cache", action="store_true", help="Clear all caches")
     
     args = parser.parse_args()
     
@@ -397,6 +547,13 @@ def main():
         if not cli.create_router(args.strategy_selector):
             print("Failed to create router")
             return
+        
+        # Setup performance optimizations
+        if args.enable_cache or args.enable_parallel:
+            cli.setup_performance_optimizations(
+                enable_caching=args.enable_cache,
+                enable_parallel=args.enable_parallel
+            )
     
     # Execute single query
     if args.query:
@@ -411,6 +568,27 @@ def main():
             print("Router not initialized. Use --load-embeddings first.")
             return
         cli.test_strategies(args.test_queries, args.top_k)
+    
+    # Test parallel execution
+    elif args.parallel_query:
+        if not cli.router:
+            print("Router not initialized. Use --load-embeddings first.")
+            return
+        if not cli.parallel_executor:
+            cli.setup_performance_optimizations(enable_parallel=True)
+        cli.test_parallel_strategies(args.parallel_query, args.top_k)
+    
+    # Show cache statistics
+    elif args.cache_stats:
+        if not cli.cache_manager:
+            cli.setup_performance_optimizations(enable_caching=True)
+        cli.show_cache_stats()
+    
+    # Clear caches
+    elif args.clear_cache:
+        if not cli.cache_manager:
+            cli.setup_performance_optimizations(enable_caching=True)
+        cli.clear_caches()
     
     # Interactive mode
     elif args.interactive:
