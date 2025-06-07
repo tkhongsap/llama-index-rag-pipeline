@@ -1,13 +1,16 @@
-"""
-Test script for Production RAG features in iLand batch embedding pipeline.
-"""
+"""Test script for Production RAG features in iLand batch embedding pipeline."""
+
+from pathlib import Path
+import sys
+
+# Add docs_embedding directory to path so `batch_embedding` can be imported
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src-iLand' / 'docs_embedding'))
 
 from batch_embedding import (
-    iLandBatchEmbeddingPipeline, 
+    iLandBatchEmbeddingPipeline,
     create_iland_production_query_engine,
     CONFIG
 )
-from pathlib import Path
 
 def test_path_configuration():
     """Test that paths are correctly configured."""
