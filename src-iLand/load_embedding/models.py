@@ -3,6 +3,7 @@ models.py - Configuration models and constants for iLand embedding loading
 
 This module contains configuration classes, constants, and data models
 used throughout the iLand embedding loading pipeline.
+"""
 
 import os
 from pathlib import Path
@@ -24,8 +25,15 @@ DEFAULT_LLM_MODEL = "gpt-4o-mini"
 
 # iLand specific constants
 ILAND_BATCH_PREFIX = "embeddings_iland_"
-# Thai provinces list - single source of truth
-from ..common.thai_provinces import THAI_PROVINCES
+# Thai provinces list - fallback if common module not available
+try:
+    from ..common.thai_provinces import THAI_PROVINCES
+except ImportError:
+    # Fallback Thai provinces list
+    THAI_PROVINCES = [
+        "กรุงเทพมหานคร", "เชียงใหม่", "เชียงราย", "กาญจนบุรี", "ระยอง", 
+        "ชลบุรี", "ภูเก็ต", "สุราษฎร์ธานี", "นครราชสีมา", "อุบลราชธานี"
+    ]
 # Standard embedding types
 EMBEDDING_TYPES = ["chunks", "indexnodes", "summaries"]
 
