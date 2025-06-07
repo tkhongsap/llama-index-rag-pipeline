@@ -15,11 +15,11 @@ from pathlib import Path
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from router import iLandRouterRetriever
-from index_classifier import create_default_iland_classifier
-from cache import iLandCacheManager
-from parallel_executor import ParallelStrategyExecutor
-from retrievers import (
+from .router import iLandRouterRetriever
+from .index_classifier import create_default_iland_classifier
+from .cache import iLandCacheManager
+from .parallel_executor import ParallelStrategyExecutor
+from .retrievers import (
     VectorRetrieverAdapter,
     SummaryRetrieverAdapter,
     RecursiveRetrieverAdapter,

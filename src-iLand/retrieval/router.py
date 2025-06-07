@@ -14,9 +14,9 @@ from llama_index.core.base.base_retriever import BaseRetriever
 from llama_index.core.schema import QueryBundle, NodeWithScore
 from llama_index.llms.openai import OpenAI
 
-from index_classifier import iLandIndexClassifier, create_default_iland_classifier
-from retrievers.base import BaseRetrieverAdapter
-from cache import iLandCacheManager
+from .index_classifier import iLandIndexClassifier, create_default_iland_classifier
+from .retrievers.base import BaseRetrieverAdapter
+from .cache import iLandCacheManager
 
 # Import logging utilities from src package
 try:
