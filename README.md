@@ -17,6 +17,7 @@ This pipeline provides a complete end-to-end solution for building intelligent d
 - **Flexible Data Ingestion**: Auto-detects CSV structure and creates reusable configurations
 - **Enhanced Metadata Processing**: Extracts and categorizes fields (demographic, education, career, compensation)
 - **Multiple Retrieval Paradigms**: Vector search, hybrid search, metadata filtering, recursive retrieval
+- **Full Thai Province Coverage**: Built-in list of all 77 provinces for precise location parsing
 - **Batch Processing**: Handles large datasets with configurable batch sizes and memory management
 - **Interactive Demos**: Complete pipeline demonstrations with performance comparisons
 - **Rate Limiting & Error Handling**: Built-in API rate limiting, retry mechanisms, and comprehensive error handling
