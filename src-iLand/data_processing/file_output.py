@@ -92,6 +92,7 @@ class FileOutputManager:
                 'identifiers': [],
                 'deed_info': [],
                 'location': [],
+                'geolocation': [],
                 'land_details': [],
                 'area_measurements': [],
                 'dates': [],
@@ -119,6 +120,8 @@ class FileOutputManager:
                     metadata_groups['system'].append((key, value))
                 elif key in ['location_hierarchy', 'area_formatted', 'area_total_sqm']:
                     metadata_groups['computed'].append((key, value))
+                elif key in ['longitude', 'latitude', 'coordinates_formatted', 'google_maps_url']:
+                    metadata_groups['geolocation'].append((key, value))
                 else:
                     field_type = field_type_map.get(key, 'other')
                     if field_type in metadata_groups:
@@ -131,6 +134,7 @@ class FileOutputManager:
                 'identifiers': 'รหัสอ้างอิง (Identifiers)',
                 'deed_info': 'ข้อมูลโฉนด (Deed Information)',
                 'location': 'ที่ตั้ง (Location)',
+                'geolocation': 'พิกัดภูมิศาสตร์ (Geolocation)',
                 'land_details': 'รายละเอียดที่ดิน (Land Details)',
                 'area_measurements': 'ขนาดพื้นที่ (Area Measurements)',
                 'dates': 'วันที่ (Dates)',

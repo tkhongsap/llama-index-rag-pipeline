@@ -45,6 +45,35 @@ class DocumentProcessor:
         
         return " ".join(parts) if parts else "ไม่ระบุ"
     
+    def parse_geom_point(self, geom_point_str: str) -> Dict[str, Any]:
+        """Parse POINT(longitude latitude) format and return lat/lng"""
+        if not geom_point_str or not isinstance(geom_point_str, str):
+            return {}
+        
+        # Clean the string and match POINT format
+        cleaned = geom_point_str.strip()
+        
+        # Match patterns like "POINT (100.4514 14.5486)" or "POINT(100.4514 14.5486)"
+        point_pattern = r'POINT\s*\(\s*([-+]?\d*\.?\d+)\s+([-+]?\d*\.?\d+)\s*\)'
+        match = re.search(point_pattern, cleaned, re.IGNORECASE)
+        
+        if match:
+            try:
+                longitude = float(match.group(1))
+                latitude = float(match.group(2))
+                
+                return {
+                    'longitude': longitude,
+                    'latitude': latitude,
+                    'coordinates_formatted': f"{latitude:.6f}, {longitude:.6f}",
+                    'google_maps_url': f"https://www.google.com/maps?q={latitude},{longitude}"
+                }
+            except (ValueError, AttributeError) as e:
+                logger.warning(f"Failed to parse coordinates from '{geom_point_str}': {e}")
+                return {}
+        
+        return {}
+    
     def extract_metadata_from_row(self, row: pd.Series) -> Dict[str, Any]:
         """Extract metadata from a CSV row using the configured field mappings"""
         metadata = {}
@@ -98,6 +127,13 @@ class DocumentProcessor:
             metadata['location_hierarchy'] = " > ".join(location_parts)
             search_text_parts.append(metadata['location_hierarchy'])
         
+        # Parse geolocation from land_geom_point if available
+        if 'land_geom_point' in metadata and metadata['land_geom_point']:
+            geom_data = self.parse_geom_point(metadata['land_geom_point'])
+            if geom_data:
+                metadata.update(geom_data)
+                search_text_parts.append(f"พิกัด: {geom_data.get('coordinates_formatted', '')}")
+        
         # Add formatted area
         area_rai = metadata.get('area_rai')
         area_ngan = metadata.get('area_ngan')
@@ -141,6 +177,7 @@ class DocumentProcessor:
             'identifier': [],
             'deed_info': [],
             'location': [],
+            'geolocation': [],
             'land_details': [],
             'area_measurements': [],
             'dates': [],
@@ -161,6 +198,10 @@ class DocumentProcessor:
             'province': 'จังหวัด',
             'district': 'อำเภอ',
             'subdistrict': 'ตำบล',
+            'land_geom_point': 'พิกัดภูมิศาสตร์',
+            'longitude': 'ลองจิจูด',
+            'latitude': 'ละติจูด',
+            'coordinates_formatted': 'พิกัด',
             'land_use_type': 'ประเภทการใช้ที่ดิน',
             'area_formatted': 'เนื้อที่',
             'area_total_sqm': 'พื้นที่รวม (ตร.ม.)',
@@ -193,6 +234,7 @@ class DocumentProcessor:
         section_builders = {
             'deed_info': self._build_deed_section,
             'location': self._build_location_section,
+            'geolocation': self._build_geolocation_section,
             'land_details': self._build_land_details_section,
             'area_measurements': self._build_area_section,
             'dates': self._build_dates_section,
@@ -211,7 +253,7 @@ class DocumentProcessor:
                 # Fill in template sections
                 template_data = {key: value for key, value in sections.items()}
                 # Add empty strings for missing sections
-                for section in ['deed_info_section', 'location_section', 'land_details_section',
+                for section in ['deed_info_section', 'location_section', 'geolocation_section', 'land_details_section',
                               'area_section', 'classification_section', 'dates_section',
                               'additional_section']:
                     if section not in template_data:
@@ -229,8 +271,33 @@ class DocumentProcessor:
         return "\n".join(f"- {field}" for field in fields)
     
     def _build_location_section(self, fields: List[str], metadata: Dict[str, Any]) -> str:
-        """Build location section with hierarchy"""
-        return "\n".join(f"- {field}" for field in fields)
+        """Build location section with hierarchy and coordinates"""
+        location_fields = fields.copy()
+        
+        # Add geolocation information if available
+        if 'longitude' in metadata and 'latitude' in metadata:
+            location_fields.append(f"พิกัด: {metadata['coordinates_formatted']}")
+            location_fields.append(f"ลองจิจูด: {metadata['longitude']}")
+            location_fields.append(f"ละติจูด: {metadata['latitude']}")
+        
+        return "\n".join(f"- {field}" for field in location_fields)
+    
+    def _build_geolocation_section(self, fields: List[str], metadata: Dict[str, Any]) -> str:
+        """Build geolocation section with coordinates and map links"""
+        geolocation_fields = fields.copy()
+        
+        # Add formatted coordinate information if available
+        if 'longitude' in metadata and 'latitude' in metadata:
+            if not any('พิกัด:' in field for field in geolocation_fields):
+                geolocation_fields.append(f"พิกัด: {metadata['coordinates_formatted']}")
+            if not any('ลองจิจูด:' in field for field in geolocation_fields):
+                geolocation_fields.append(f"ลองจิจูด: {metadata['longitude']}")
+            if not any('ละติจูด:' in field for field in geolocation_fields):
+                geolocation_fields.append(f"ละติจูด: {metadata['latitude']}")
+            if 'google_maps_url' in metadata:
+                geolocation_fields.append(f"ลิงก์แผนที่: {metadata['google_maps_url']}")
+        
+        return "\n".join(f"- {field}" for field in geolocation_fields) if geolocation_fields else "ไม่มีข้อมูล"
     
     def _build_land_details_section(self, fields: List[str], metadata: Dict[str, Any]) -> str:
         """Build land details section"""
@@ -270,6 +337,7 @@ class DocumentProcessor:
         section_titles = {
             'deed_info_section': 'ข้อมูลโฉนด (Deed Information)',
             'location_section': 'ที่ตั้ง (Location)',
+            'geolocation_section': 'พิกัดภูมิศาสตร์ (Geolocation)',
             'land_details_section': 'รายละเอียดที่ดิน (Land Details)',
             'area_section': 'ขนาดพื้นที่ (Area Measurements)',
             'classification_section': 'การจำแนกประเภท (Classification)',

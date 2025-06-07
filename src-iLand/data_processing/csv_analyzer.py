@@ -124,6 +124,16 @@ class CSVAnalyzer:
                 ],
                 'metadata_keys': ['province', 'district', 'subdistrict', 'region', 'country']
             },
+            'geolocation': {
+                'patterns': [
+                    (r'geom.*point', 'Geographic coordinates point'),
+                    (r'land.*geom', 'Land geometry data'),
+                    (r'coordinates', 'Coordinate information'),
+                    (r'lat.*lon', 'Latitude longitude'),
+                    (r'point.*geo', 'Geographic point data')
+                ],
+                'metadata_keys': ['land_geom_point', 'coordinates', 'latitude', 'longitude']
+            },
             'land_details': {
                 'patterns': [
                     (r'land_name', 'Name or description of land'),
@@ -326,6 +336,9 @@ class CSVAnalyzer:
 ## ที่ตั้ง (Location)
 {location_section}
 
+## พิกัดภูมิศาสตร์ (Geolocation)
+{geolocation_section}
+
 ## รายละเอียดที่ดิน (Land Details)
 {land_details_section}
 
@@ -345,7 +358,7 @@ class CSVAnalyzer:
         embedding_fields = [
             'deed_type', 'province', 'district', 'subdistrict',
             'land_use_type', 'land_main_category', 'area_rai',
-            'deed_group_type'
+            'deed_group_type', 'coordinates_formatted', 'longitude', 'latitude'
         ]
         
         config = DatasetConfig(
