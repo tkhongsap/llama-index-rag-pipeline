@@ -166,6 +166,7 @@ index = create_iland_index_from_latest_batch(
     use_summaries=False,  # Optional: include summary embeddings
     use_indexnodes=False, # Optional: include indexnode embeddings
     province_filter="กรุงเทพมหานคร",  # Optional: filter by province
+    deed_type_filter=["chanote"],  # Optional: filter by deed type
     max_embeddings=500  # Limit for performance
 )
 
@@ -252,6 +253,33 @@ multi_index = create_iland_index_from_latest_batch(
     use_indexnodes=True,
     max_embeddings=200
 )
+```
+
+### Quick Query Utility
+
+```python
+from load_embedding import quick_iland_query
+
+# Quick queries without manual index creation
+response = quick_iland_query(
+    "ที่ดินในกรุงเทพมีโฉนดกี่แปลง?",
+    embedding_type="chunks",
+    province_filter="กรุงเทพมหานคร"
+)
+print(response)
+```
+
+### Data Analysis
+
+```python
+from load_embedding import get_available_provinces, get_available_deed_types
+
+# Get all available provinces and deed types
+provinces = get_available_provinces()
+deed_types = get_available_deed_types()
+
+print(f"Available provinces: {provinces[:5]}...")  # Show first 5
+print(f"Available deed types: {deed_types}")
 ```
 
 ### Batch Processing Multiple Provinces
@@ -434,7 +462,30 @@ bangkok_index = create_province_specific_iland_index("กรุงเทพม�
 # Analysis functions
 summary = get_iland_batch_summary()
 provinces = get_available_provinces()
+deed_types = get_available_deed_types()
 stats = validate_iland_embeddings(embeddings)
+
+# Quick query function
+response = quick_iland_query("ที่ดินในกรุงเทพมีกี่แปลง?", province_filter="กรุงเทพมหานคร")
+
+# Load and validate in one step
+embeddings, validation_stats = load_and_validate_latest_batch("chunks")
+```
+
+### Validation Functions
+
+```python
+# Basic validation
+stats = validate_iland_embeddings(embeddings)
+
+# Consistency checks
+consistency = validate_embedding_consistency(embeddings)
+
+# Thai metadata analysis
+distribution = analyze_thai_metadata_distribution(embeddings)
+
+# Comprehensive report
+report = generate_validation_report(embeddings)
 ```
 
 ## 🔗 Integration
@@ -454,6 +505,7 @@ This module integrates with the complete iLand pipeline:
 - Monitor memory usage with large datasets
 - Use `similarity_top_k=3-5` for balanced performance
 - Load specific sub-batches instead of all embeddings when possible
+- Use `quick_iland_query()` for simple one-off queries
 
 ## 🎯 Running Examples
 
@@ -513,6 +565,22 @@ comprehensive_index = create_iland_index_from_latest_batch(
     use_indexnodes=True,
     max_embeddings=500
 )
+```
+
+### 4. Filtered Data Analysis
+```python
+from load_embedding import create_filtered_index_with_stats, FilterConfig
+
+# Create filtered index with statistics
+filter_config = FilterConfig(
+    provinces=["กรุงเทพมหานคร", "เชียงใหม่"],
+    deed_types=["chanote"],
+    max_embeddings=300
+)
+
+index, stats = create_filtered_index_with_stats(filter_config)
+print(f"Filter ratio: {stats['filter_ratio']:.2%}")
+print(f"Created index with {stats['filtered_count']} embeddings")
 ```
 
 ---
