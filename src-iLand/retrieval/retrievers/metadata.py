@@ -28,13 +28,27 @@ class MetadataRetrieverAdapter(BaseRetrieverAdapter):
         self.index = index
         self.default_top_k = default_top_k
         
-        # Thai provinces for metadata filtering
-        self.thai_provinces = [
-            "กรุงเทพมหานคร", "สมุทรปราการ", "นนทบุรี", "ปทุมธานี", "พระนครศรีอยุธยา",
-            "อ่างทอง", "ลพบุรี", "สิงห์บุรี", "ชัยนาท", "สระบุรี", "ชลบุรี", "ระยอง",
-            "จันทบุรี", "ตราด", "ฉะเชิงเทรา", "ปราจีนบุรี", "นครนายก", "สระแก้ว"
-            # Add more provinces as needed
-        ]
+        # Thai provinces for metadata filtering (both Thai and English formats)
+        self.thai_to_english_provinces = {
+            "กรุงเทพมหานคร": "**: Bangkok",
+            "สมุทรปราการ": "**: Samut Prakan",
+            "นนทบุรี": "**: Nonthaburi", 
+            "ปทุมธานี": "**: Pathum Thani",
+            "พระนครศรีอยุธยา": "**: Phra Nakhon Si Ayutthaya",
+            "อ่างทอง": "**: Ang Thong",
+            "ลพบุรี": "**: Lopburi",
+            "สิงห์บุรี": "**: Sing Buri",
+            "ชัยนาท": "**: Chai Nat",
+            "สระบุรี": "**: Saraburi",
+            "ชลบุรี": "**: Chonburi",
+            "ระยอง": "**: Rayong",
+            "จันทบุรี": "**: Chanthaburi",
+            "ตราด": "**: Trat",
+            "ฉะเชิงเทรา": "**: Chachoengsao",
+            "ปราจีนบุรี": "**: Prachinburi",
+            "นครนายก": "**: Nakhon Nayok",
+            "สระแก้ว": "**: Sa Kaeo"
+        }
     
     def retrieve(self, query: str, top_k: Optional[int] = None, 
                  filters: Optional[Dict[str, Any]] = None) -> List[NodeWithScore]:
@@ -104,28 +118,19 @@ class MetadataRetrieverAdapter(BaseRetrieverAdapter):
                     )
         
         # Extract implicit filters from query (Thai province names)
-        query_lower = query.lower()
-        for province in self.thai_provinces:
-            if province in query or province.lower() in query_lower:
-                filter_conditions.append(
-                    MetadataFilter(key="province", value=province, operator=FilterOperator.EQ)
-                )
-                break  # Use first matching province
+        # Only add implicit filters if no explicit province filter was provided
+        if not filters or "province" not in filters:
+            query_lower = query.lower()
+            for thai_province, english_province in self.thai_to_english_provinces.items():
+                if thai_province in query or thai_province.lower() in query_lower:
+                    filter_conditions.append(
+                        MetadataFilter(key="province", value=english_province, operator=FilterOperator.EQ)
+                    )
+                    break  # Use first matching province
         
-        # Check for land type keywords in Thai
-        land_type_keywords = {
-            "ที่ดิน": "land",
-            "บ้าน": "house", 
-            "อาคาร": "building",
-            "คอนโด": "condo"
-        }
-        
-        for thai_keyword, eng_type in land_type_keywords.items():
-            if thai_keyword in query:
-                filter_conditions.append(
-                    MetadataFilter(key="land_type", value=eng_type, operator=FilterOperator.EQ)
-                )
-                break
+        # Note: Removed implicit deed type filtering as "ที่ดิน" is too generic
+        # and doesn't map well to specific deed_type_category values.
+        # Explicit filters can still be used for deed_type_category if needed.
         
         if filter_conditions:
             return MetadataFilters(filters=filter_conditions)

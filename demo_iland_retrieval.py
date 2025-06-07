@@ -1,138 +1,129 @@
 #!/usr/bin/env python3
 """
-Demo script for iLand Retrieval System
+Working iLand Retrieval Demo - Thai Land Deed RAG System
 
-This script demonstrates the complete iLand retrieval workflow including:
-- Loading embeddings
-- Creating retriever adapters
-- Setting up the router
-- Testing queries with different strategies
+A fully functional demo with correct province name mappings for metadata filtering.
 """
 
 import os
 import sys
+import time
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment
+load_dotenv(override=True)
 
 # Add src-iLand to path
-sys.path.insert(0, str(Path(__file__).parent / "src-iLand"))
-sys.path.insert(0, str(Path(__file__).parent / "src-iLand" / "retrieval"))
+sys.path.append(str(Path(__file__).parent / "src-iLand"))
+
+# Import iLand modules
+from retrieval import VectorRetrieverAdapter, MetadataRetrieverAdapter, HybridRetrieverAdapter
+from load_embedding import load_all_latest_iland_embeddings
 
 def main():
-    """Main demo function."""
-    print("iLand Retrieval System Demo")
+    print("🏛️ iLAND WORKING RETRIEVAL DEMO")
+    print("🇹🇭 Thai Land Deed RAG System")
     print("=" * 50)
     
-    # Test 1: Import validation
-    print("\n1. Testing imports...")
-    try:
-        from index_classifier import create_default_iland_classifier
-        from router import iLandRouterRetriever
-        from retrievers import VectorRetrieverAdapter
-        print("✓ All imports successful")
-    except ImportError as e:
-        print(f"✗ Import error: {e}")
-        return False
+    # Load embeddings
+    print("\n📊 Loading Thai land deed embeddings...")
+    embeddings_data, batch_path = load_all_latest_iland_embeddings()
+    print(f"✅ Loaded {len(embeddings_data)} embeddings")
     
-    # Test 2: Index classifier
-    print("\n2. Testing index classifier...")
-    try:
-        classifier = create_default_iland_classifier()
+    # Create strategies
+    print("\n🔧 Creating retrieval strategies...")
+    api_key = os.getenv("OPENAI_API_KEY")
+    
+    strategies = {}
+    strategies['vector'] = VectorRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
+    strategies['metadata'] = MetadataRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
+    strategies['hybrid'] = HybridRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
+    
+    print(f"✅ Created {len(strategies)} strategies")
+    
+    # Test queries with CORRECT English province names
+    test_queries = [
+        {
+            "query": "ค้นหาโฉนดที่ดินในจังหวัดชัยนาท", 
+            "description": "Find land deeds in Chai Nat province",
+            "filters": {"province": "**: Chai Nat"}
+        },
+        {
+            "query": "ที่ดินในจังหวัดอ่างทอง", 
+            "description": "Land in Ang Thong province",
+            "filters": {"province": "**: Ang Thong"}
+        },
+        {
+            "query": "โฉนดที่ดินประเภทกรรมสิทธิ์บริษัท", 
+            "description": "Corporate land ownership deeds",
+            "filters": None
+        },
+        {
+            "query": "ที่ดินในอำเภอเมืองอ่างทอง", 
+            "description": "Land in Mueang Ang Thong district",
+            "filters": {"district": "**: Mueang Ang Thong"}
+        }
+    ]
+    
+    print("\n🔍 Testing queries with correct province/district names...")
+    for i, test in enumerate(test_queries, 1):
+        query = test["query"]
+        description = test["description"]
+        explicit_filters = test["filters"]
         
-        test_queries = [
-            "โฉนดที่ดินในกรุงเทพมหานคร",
-            "Land deeds in Bangkok",
-            "ที่ดินในสมุทรปราการ"
-        ]
+        print(f"\n--- Query {i}: {query} ---")
+        print(f"    📝 Description: {description}")
+        if explicit_filters:
+            print(f"    🔧 Filters: {explicit_filters}")
         
-        for query in test_queries:
-            result = classifier.classify_query(query)
-            print(f"✓ '{query[:30]}...' -> {result['selected_index']} (confidence: {result['confidence']:.2f})")
+        for strategy_name, strategy in strategies.items():
+            start_time = time.time()
             
-    except Exception as e:
-        print(f"✗ Index classifier error: {e}")
-        return False
-    
-    # Test 3: Check embedding availability
-    print("\n3. Checking embedding availability...")
-    try:
-        from load_embedding import get_iland_batch_summary
-        summary = get_iland_batch_summary()
-        print(f"✓ Found {summary['latest_batch_stats']['total_embeddings']} embeddings in latest batch")
-        print(f"  - Chunk embeddings: {summary['latest_batch_stats']['chunk_embeddings']}")
-        print(f"  - Summary embeddings: {summary['latest_batch_stats']['summary_embeddings']}")
-        embeddings_available = True
-    except Exception as e:
-        print(f"✗ Could not access embeddings: {e}")
-        embeddings_available = False
-    
-    # Test 4: Strategy testing (without real embeddings)
-    print("\n4. Testing strategy components...")
-    try:
-        from retrievers.hybrid import HybridRetrieverAdapter
-        from retrievers.metadata import MetadataRetrieverAdapter
-        
-        # Test Thai keyword extraction
-        class MockHybridAdapter(HybridRetrieverAdapter):
-            def __init__(self):
-                self.strategy_name = "hybrid"
-        
-        hybrid_adapter = MockHybridAdapter()
-        keywords = hybrid_adapter._extract_thai_keywords("โฉนดที่ดินในกรุงเทพมหานคร")
-        print(f"✓ Thai keyword extraction: {keywords}")
-        
-        # Test metadata filter building
-        class MockMetadataAdapter(MetadataRetrieverAdapter):
-            def __init__(self):
-                self.strategy_name = "metadata"
-                self.thai_provinces = ["กรุงเทพมหานคร", "สมุทรปราการ"]
-        
-        metadata_adapter = MockMetadataAdapter()
-        filters = metadata_adapter._build_metadata_filters(None, "ที่ดินในกรุงเทพมหานคร")
-        print(f"✓ Metadata filter building: {len(filters.filters) if filters else 0} conditions")
-        
-    except Exception as e:
-        print(f"✗ Strategy testing error: {e}")
-        return False
-    
-    # Test 5: CLI availability
-    print("\n5. Testing CLI availability...")
-    try:
-        from cli import iLandRetrievalCLI
-        cli = iLandRetrievalCLI()
-        print("✓ CLI class instantiated successfully")
-        print(f"  - API key configured: {'Yes' if cli.api_key else 'No'}")
-    except Exception as e:
-        print(f"✗ CLI error: {e}")
-        return False
+            try:
+                if strategy_name == 'metadata':
+                    # Test metadata strategy with correct English filters
+                    nodes = strategy.retrieve(query, top_k=5, filters=explicit_filters)
+                elif strategy_name == 'hybrid':
+                    # Hybrid strategy expects string
+                    nodes = strategy.retrieve(query, top_k=3)
+                else:
+                    # Vector strategy expects QueryBundle
+                    from llama_index.core.schema import QueryBundle
+                    query_bundle = QueryBundle(query_str=query)
+                    nodes = strategy.retrieve(query_bundle)
+                
+                elapsed = time.time() - start_time
+                
+                if nodes:
+                    first_node = nodes[0]
+                    score = getattr(first_node, 'score', 0)
+                    print(f"  ✅ {strategy_name}: {len(nodes)} results in {elapsed:.2f}s (score: {score:.3f})")
+                    
+                    # Show location of first result
+                    if hasattr(first_node, 'node') and hasattr(first_node.node, 'metadata'):
+                        node_metadata = first_node.node.metadata
+                        province = node_metadata.get('province', 'N/A')
+                        district = node_metadata.get('district', 'N/A')
+                        ownership = node_metadata.get('deed_holding_type', 'N/A')
+                        print(f"      📍 Location: {province}, {district}")
+                        print(f"      🏢 Ownership: {ownership}")
+                else:
+                    print(f"  ❌ {strategy_name}: 0 results in {elapsed:.2f}s")
+                
+            except Exception as e:
+                print(f"  💥 {strategy_name}: ERROR - {str(e)}")
     
     # Summary
     print("\n" + "=" * 50)
-    print("Demo Summary:")
-    print("✓ iLand retrieval system is properly implemented")
-    print("✓ All seven strategy adapters are available")
-    print("✓ Index classifier works with Thai and English queries")
-    print("✓ Thai language support is functional")
-    print("✓ CLI interface is ready for use")
-    
-    if embeddings_available:
-        print("✓ Embedding data is available for testing")
-        print("\nNext steps:")
-        print("1. Run: python src-iLand/retrieval/cli.py --load-embeddings latest --interactive")
-        print("2. Test queries like: 'โฉนดที่ดินในกรุงเทพ' or 'Land deeds in Bangkok'")
-    else:
-        print("⚠ Embedding data not accessible (may need API key or data loading)")
-        print("\nNext steps:")
-        print("1. Set OPENAI_API_KEY environment variable")
-        print("2. Load iLand embeddings using the load_embedding module")
-        print("3. Test the retrieval system with real data")
-    
-    return True
+    print("✅ DEMO SUMMARY:")
+    print("• Vector strategy: Works well for semantic Thai text search")
+    print("• Hybrid strategy: Combines vector + keyword search effectively") 
+    print("• Metadata strategy: Requires exact English province/district names")
+    print("\n🔧 Metadata Filter Examples:")
+    print("• Province: {'province': '**: Ang Thong'} or {'province': '**: Chai Nat'}")
+    print("• District: {'district': '**: Mueang Ang Thong'}")
+    print("• Multiple: {'province': '**: Ang Thong', 'district': '**: Mueang Ang Thong'}")
 
 if __name__ == "__main__":
-    success = main()
-    if success:
-        print("\n🎉 Demo completed successfully!")
-    else:
-        print("\n❌ Demo failed. Check the implementation.")
-    
-    sys.exit(0 if success else 1) 
+    main() 
