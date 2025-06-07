@@ -41,7 +41,7 @@ from .utils import (
     get_iland_batch_summary
 )
 
-from .demo import demonstrate_iland_loading
+from .load_embedding_complete import demonstrate_iland_loading
 
 # Version information
 __version__ = "1.0.0"

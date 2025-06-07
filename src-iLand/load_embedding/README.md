@@ -1,52 +1,107 @@
 # iLand Load Embedding Module
 
-A modular system for loading and reconstructing indices from iLand Thai land deed embeddings. This module has been refactored into focused components following coding best practices (each module under 300 lines).
+A comprehensive system for loading and reconstructing vector indices from iLand Thai land deed embeddings. This module provides production-ready tools for building RAG (Retrieval-Augmented Generation) systems with Thai land deed data.
 
-## 🏗️ Modular Architecture
+## 🏗️ Architecture Overview
 
-The module is organized into focused components:
+The module follows a modular architecture with clear separation of concerns:
 
-### Core Modules
-
-- **`models.py`** (141 lines) - Configuration classes and constants
-- **`embedding_loader.py`** (351 lines) - iLandEmbeddingLoader class for loading embeddings
-- **`index_reconstructor.py`** (274 lines) - iLandIndexReconstructor class for creating indices
-- **`validation.py`** (310 lines) - Validation and analysis functions
-- **`utils.py`** (280 lines) - Utility functions for common operations
-- **`demo.py`** (150 lines) - Demonstration functions
-
-### Support Files
-
-- **`__init__.py`** - Clean public API exports
-- **`load_embedding.py`** (32 lines) - Backward compatibility module
-- **`example_usage.py`** - Updated examples using modular structure
-
-## 🚀 Quick Start
-
-### Basic Usage
-
-```python
-from src_iland.load_embedding import (
-    EmbeddingConfig,
-    iLandEmbeddingLoader,
-    load_latest_iland_embeddings,
-    create_iland_index_from_latest_batch
-)
-
-# Simple loading
-embeddings, batch_path = load_latest_iland_embeddings("chunks")
-print(f"Loaded {len(embeddings)} embeddings from {batch_path.name}")
-
-# Create index (requires OPENAI_API_KEY)
-index = create_iland_index_from_latest_batch(use_chunks=True, max_embeddings=100)
+```
+load_embedding/
+├── __init__.py                  # Module exports and public API
+├── models.py                    # Configuration classes and constants  
+├── embedding_loader.py          # Core loading functionality
+├── index_reconstructor.py       # Index creation from embeddings
+├── validation.py               # Data quality validation and analysis
+├── utils.py                    # Convenient utility functions
+├── load_embedding_complete.py   # Complete demo with validation & indexing
+├── example_usage.py            # Comprehensive usage examples
+└── load_embedding.py           # Backward compatibility module
 ```
 
-### Configuration-Based Usage
+### Key Components
+
+- **`EmbeddingConfig`**: Configure embedding models, API keys, directories
+- **`FilterConfig`**: Configure data filtering by province, deed type, area  
+- **`iLandEmbeddingLoader`**: Load embeddings from iLand processing pipeline
+- **`iLandIndexReconstructor`**: Create LlamaIndex indices for querying
+- **Validation functions**: Analyze embedding quality and Thai metadata
+- **Utility functions**: Quick access to common operations
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+
+1. **Environment Setup**
+   ```bash
+   # Set your OpenAI API key (required for index creation)
+   export OPENAI_API_KEY="your-openai-api-key"
+   
+   # Or create a .env file
+   echo "OPENAI_API_KEY=your-openai-api-key" > .env
+   ```
+
+2. **Data Requirements**
+   - Processed embedding files from the iLand docs_embedding pipeline
+   - Expected location: `data/embedding/embeddings_iland_YYYYMMDD_HHMMSS/`
+   - Files should contain: `batch_N/chunks/`, `batch_N/summaries/`, `batch_N/indexnodes/` directories
+
+### Running Load Embedding - 3 Ways
+
+#### 🎯 Method 1: Complete Loading (Recommended for First Time)
+
+```bash
+# From the src-iLand directory
+cd src-iLand
+
+# Run the complete embedding loading with validation, filtering, and index creation
+python -m load_embedding.load_embedding_complete
+
+# Or run specific examples
+python -m load_embedding.example_usage
+```
+
+This will:
+- ✅ Find and load your latest embedding batch
+- ✅ Show statistics about your data  
+- ✅ Validate embedding quality
+- ✅ Create sample indices (if API key is set)
+- ✅ Test Thai language queries
+
+#### 🎯 Method 2: Programmatic Usage (Recommended for Development)
 
 ```python
-from src_iland.load_embedding import EmbeddingConfig, FilterConfig, iLandEmbeddingLoader
+from load_embedding import load_latest_iland_embeddings, create_iland_index_from_latest_batch
 
-# Configure loading
+# Load embeddings from specific sub-batch
+embeddings, batch_path = load_latest_iland_embeddings(
+    embedding_type="chunks",
+    sub_batch="batch_1"
+)
+
+# Load ALL embeddings of a type from latest batch (combines all sub-batches)
+all_chunks, batch_path = load_all_latest_iland_embeddings("chunks")
+
+# Create index for querying with filtering
+index = create_iland_index_from_latest_batch(
+    use_chunks=True,
+    use_summaries=False,
+    max_embeddings=100,
+    province_filter="กรุงเทพมหานคร"
+)
+
+# Query in Thai
+query_engine = index.as_query_engine(similarity_top_k=3)
+response = query_engine.query("ที่ดินประเภทโฉนดในกรุงเทพมีกี่แปลง?")
+```
+
+#### 🎯 Method 3: Configuration-Based Usage (Recommended for Production)
+
+```python
+from pathlib import Path
+from load_embedding import EmbeddingConfig, FilterConfig, iLandEmbeddingLoader
+
+# Configure your setup
 config = EmbeddingConfig(
     embedding_dir=Path("data/embedding"),
     embed_model="text-embedding-3-small",
@@ -57,186 +112,409 @@ config = EmbeddingConfig(
 filter_config = FilterConfig(
     provinces=["กรุงเทพมหานคร", "เชียงใหม่"],
     deed_types=["chanote", "nor_sor_3"],
-    max_embeddings=500
+    min_area_rai=1.0,
+    max_area_rai=50.0,
+    max_embeddings=1000
 )
 
 # Load and filter
 loader = iLandEmbeddingLoader(config)
-embeddings, _ = loader.load_all_embeddings_of_type("chunks")
-filtered = loader.apply_filter_config(embeddings, filter_config)
+result = loader.load_all_embeddings_of_type("chunks")
+filtered = loader.apply_filter_config(result.embeddings, filter_config)
+
+print(f"Filtered from {len(result.embeddings)} to {len(filtered)} embeddings")
 ```
 
-## 📊 Key Features
+## 📋 Step-by-Step Usage Instructions
 
-### Thai-Specific Functionality
-- **Province filtering**: All 77 Thai provinces supported
-- **Deed type filtering**: chanote, nor_sor_3, nor_sor_3_kor, etc.
-- **Area filtering**: Filter by land area in Thai units (rai, ngan, wa)
-- **Thai metadata validation**: Comprehensive validation of Thai land deed fields
-
-### LlamaIndex Integration
-- **Production RAG patterns**: Ready-to-use query engines
-- **Multiple embedding types**: chunks, summaries, indexnodes
-- **Flexible index creation**: Province-specific, deed-type-specific, multi-filtered
-- **DocumentSummaryIndex support**: For hierarchical document structures
-
-### Data Structure Compatibility
-- **Batch processing**: Works with `data/embedding/embeddings_iland_xx` structure
-- **Multiple sub-batches**: Handles batch_1, batch_2, etc. automatically
-- **Multiple file formats**: .pkl (full data), .npy (vectors), .json (metadata)
-
-## 🔧 API Reference
-
-### Configuration Classes
+### Step 1: Verify Your Data
 
 ```python
-# Embedding configuration
-config = EmbeddingConfig(
-    embedding_dir=Path("data/embedding"),
-    embed_model="text-embedding-3-small", 
-    llm_model="gpt-4o-mini",
-    api_key="your-openai-key"  # or from environment
-)
+from load_embedding import get_iland_batch_summary
 
-# Filter configuration
-filter_config = FilterConfig(
-    provinces=["กรุงเทพมหานคร"],
-    deed_types=["chanote"],
-    min_area_rai=1.0,
-    max_area_rai=10.0,
-    max_embeddings=1000
-)
-```
-
-### Loading Functions
-
-```python
-# Load from specific sub-batch
-embeddings, batch_path = load_latest_iland_embeddings(
-    embedding_type="chunks",
-    sub_batch="batch_1"
-)
-
-# Load from all sub-batches
-all_embeddings, batch_path = load_all_latest_iland_embeddings("chunks")
-
-# Get batch summary
+# Check what data is available
 summary = get_iland_batch_summary()
+print(f"Found {summary['total_batches']} batches")
+print(f"Latest batch: {summary['latest_batch']}")
+if summary['latest_batch_stats']:
+    print(f"Total embeddings: {summary['latest_batch_stats']['total_embeddings']}")
 ```
 
-### Index Creation
+### Step 2: Load and Validate Embeddings
 
 ```python
-# Basic index
-index = create_iland_index_from_latest_batch(use_chunks=True)
+from load_embedding import load_all_latest_iland_embeddings, validate_iland_embeddings
 
-# Filtered index
+# Load all chunk embeddings from latest batch (combines all sub-batches)
+embeddings, batch_path = load_all_latest_iland_embeddings("chunks")
+
+# Validate quality
+stats = validate_iland_embeddings(embeddings)
+print(f"✅ Loaded {stats['total_count']} embeddings")
+print(f"📍 Found {len(stats['thai_metadata']['provinces'])} provinces")
+print(f"📋 Found {len(stats['thai_metadata']['deed_types'])} deed types")
+```
+
+### Step 3: Create Index for Querying
+
+```python
+from load_embedding import create_iland_index_from_latest_batch
+
+# Create index with filtering
 index = create_iland_index_from_latest_batch(
     use_chunks=True,
-    use_summaries=True,
-    province_filter="กรุงเทพมหานคร",
-    deed_type_filter="chanote",
-    max_embeddings=500
+    use_summaries=False,  # Optional: include summary embeddings
+    use_indexnodes=False, # Optional: include indexnode embeddings
+    province_filter="กรุงเทพมหานคร",  # Optional: filter by province
+    max_embeddings=500  # Limit for performance
 )
 
-# Province-specific index
-from src_iland.load_embedding import create_province_specific_iland_index
-index = create_province_specific_iland_index("เชียงใหม่")
+# Set up query engine
+query_engine = index.as_query_engine(
+    similarity_top_k=5,
+    response_mode="tree_summarize"
+)
 ```
 
-### Validation and Analysis
+### Step 4: Query Your Data
 
 ```python
-from src_iland.load_embedding import validate_iland_embeddings, generate_validation_report
+# Thai language queries
+thai_queries = [
+    "ที่ดินในจังหวัดใดมีพื้นที่มากที่สุด?",
+    "โฉนดประเภทใดพบมากที่สุด?", 
+    "ที่ดินเพื่อการเกษตรมีกี่แปลง?",
+    "พื้นที่ที่ดินเฉลี่ยในกรุงเทพเมืองคือเท่าใด?"
+]
 
-# Basic validation
-stats = validate_iland_embeddings(embeddings)
-print(f"Found {len(stats['thai_metadata']['provinces'])} provinces")
+for query in thai_queries:
+    response = query_engine.query(query)
+    print(f"❓ {query}")
+    print(f"✅ {response}\n")
+```
 
-# Comprehensive report
+## 🛠️ Advanced Usage
+
+### Multi-Batch Loading
+
+The system supports loading from multiple sub-batches within a single embedding batch:
+
+```python
+from load_embedding import iLandEmbeddingLoader
+
+loader = iLandEmbeddingLoader()
+latest_batch = loader.get_latest_iland_batch()
+
+# Load ALL embeddings from all sub-batches
+all_batch_data = loader.load_all_embeddings_from_batch(latest_batch)
+
+# Access by sub-batch and type
+for sub_batch, emb_types in all_batch_data.items():
+    print(f"{sub_batch}: {len(emb_types['chunks'])} chunks, {len(emb_types['summaries'])} summaries")
+```
+
+### Advanced Filtering
+
+```python
+from load_embedding import EmbeddingConfig, FilterConfig, iLandEmbeddingLoader
+
+# Advanced filtering with multiple criteria
+filter_config = FilterConfig(
+    provinces=["กรุงเทพมหานคร", "นนทบุรี", "ปทุมธานี"],  # Multiple provinces
+    deed_types=["chanote"],  # Only full ownership titles
+    min_area_rai=1.0,  # Minimum 1 rai
+    max_area_rai=50.0,  # Maximum 50 rai
+    max_embeddings=1000  # Performance limit
+)
+
+loader = iLandEmbeddingLoader()
+result = loader.load_all_embeddings_of_type("chunks")
+filtered = loader.apply_filter_config(result.embeddings, filter_config)
+
+print(f"Filtered from {len(result.embeddings)} to {len(filtered)} embeddings")
+```
+
+### Creating Specialized Indices
+
+```python
+# Province-specific index
+from load_embedding import create_province_specific_iland_index
+bangkok_index = create_province_specific_iland_index("กรุงเทพมหานคร")
+
+# Deed-type-specific index  
+from load_embedding import create_deed_type_specific_iland_index
+chanote_index = create_deed_type_specific_iland_index(["chanote", "nor_sor_3"])
+
+# Multi-type index with summaries and indexnodes
+multi_index = create_iland_index_from_latest_batch(
+    use_chunks=True,
+    use_summaries=True,
+    use_indexnodes=True,
+    max_embeddings=200
+)
+```
+
+### Batch Processing Multiple Provinces
+
+```python
+from load_embedding import get_available_provinces, create_province_specific_iland_index
+
+# Get all available provinces
+provinces = get_available_provinces()
+print(f"Available provinces: {provinces[:5]}...")  # Show first 5
+
+# Create indices for top provinces
+top_provinces = ["กรุงเทพมหานคร", "เชียงใหม่", "ภูเก็ต", "ขอนแก่น", "สงขลา"]
+province_indices = {}
+
+for province in top_provinces:
+    try:
+        index = create_province_specific_iland_index(province)
+        province_indices[province] = index
+        print(f"✅ Created index for {province}")
+    except Exception as e:
+        print(f"❌ Failed to create index for {province}: {e}")
+```
+
+## 🔍 Troubleshooting
+
+### Common Issues and Solutions
+
+1. **"No iLand embedding batches found"**
+   ```bash
+   # Check if data exists (from project root)
+   ls data/embedding/embeddings_iland_*
+   
+   # Verify directory structure
+   python -c "from load_embedding import get_iland_batch_summary; print(get_iland_batch_summary())"
+   ```
+
+2. **"No API key available"**
+   ```bash
+   # Set environment variable
+   export OPENAI_API_KEY="your-key-here"
+   
+   # Or check current setting
+   echo $OPENAI_API_KEY
+   ```
+
+3. **"Failed to create index"**
+   ```python
+   # Check embeddings are valid
+   from load_embedding import validate_iland_embeddings, load_all_latest_iland_embeddings
+   embeddings, _ = load_all_latest_iland_embeddings("chunks")
+   stats = validate_iland_embeddings(embeddings)
+   print(f"Issues found: {stats['issues']}")
+   ```
+
+4. **Memory issues with large datasets**
+   ```python
+   # Use smaller batch sizes
+   index = create_iland_index_from_latest_batch(
+       use_chunks=True,
+       max_embeddings=100  # Reduce this number
+   )
+   ```
+
+5. **Import errors**
+   ```bash
+   # Make sure you're in the src-iLand directory
+   cd src-iLand
+   
+   # Run as module
+   python -m load_embedding.load_embedding_complete
+   ```
+
+### Debug Mode
+
+```python
+# Enable verbose logging
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Use validation report for detailed analysis
+from load_embedding import generate_validation_report, load_all_latest_iland_embeddings
+embeddings, _ = load_all_latest_iland_embeddings("chunks")
 report = generate_validation_report(embeddings)
 print(report)
 ```
 
-## 🌏 Thai Land Deed Support
+## 📊 Understanding Your Data
+
+### Available Embedding Types
+
+- **`chunks`** - Document chunks (best for detailed queries)
+- **`summaries`** - Document summaries (best for overview queries) 
+- **`indexnodes`** - Hierarchical nodes (best for structured queries)
+
+### Data Structure
+
+iLand embedding batches are organized as:
+```
+data/embedding/embeddings_iland_YYYYMMDD_HHMMSS/
+├── batch_1/
+│   ├── chunks/
+│   │   ├── batch_1_chunks_full.pkl
+│   │   ├── batch_1_chunks_vectors.npy
+│   │   └── batch_1_chunks_metadata.json
+│   ├── summaries/
+│   └── indexnodes/
+├── batch_2/
+├── combined_statistics.json
+└── ...
+```
+
+### Thai Land Deed Metadata
+
+The system recognizes these Thai-specific fields:
+
+- **Location**: `province`, `district`, `subdistrict` (จังหวัด, อำเภอ, ตำบล)
+- **Deed Types**: `chanote`, `nor_sor_3`, `sor_por_kor` (โฉนด, นส.3, สปก.)
+- **Land Use**: `residential`, `agricultural`, `commercial` (ที่อยู่อาศัย, เกษตร, พาณิชย์)
+- **Area**: `area_rai`, `area_ngan`, `area_wa` (ไร่, งาน, ตารางวา)
+- **Ownership**: `individual`, `company`, `government` (บุคคล, บริษัท, รัฐ)
+- **Coordinates**: `longitude`, `latitude`, `coordinates_formatted` (พิกัดภูมิศาสตร์)
 
 ### Supported Provinces (77 total)
-All Thai provinces including: กรุงเทพมหานคร, เชียงใหม่, ภูเก็ต, etc.
 
-### Supported Deed Types
-- `chanote` - โฉนด (Full ownership title)
-- `nor_sor_3` - นส.3 (Land use certificate)
-- `nor_sor_3_kor` - นส.3ก (Upgraded land use certificate)
-- `sor_por_kor` - สปก. (Land allocation certificate)
-- And more...
+```python
+# See all supported provinces
+from load_embedding import THAI_PROVINCES
+print(f"Supported provinces: {len(THAI_PROVINCES)}")
+print("Examples:", THAI_PROVINCES[:5])
+```
 
-### Thai Metadata Fields (47+ fields)
-- `province` - จังหวัด
-- `district` - อำเภอ
-- `subdistrict` - ตำบล
-- `deed_type_category` - ประเภทโฉนด
-- `land_use_category` - ประเภทการใช้ที่ดิน
-- `ownership_category` - ประเภทความเป็นเจ้าของ
-- `search_text` - ข้อความค้นหา (includes area information)
+## 📚 Module API Reference
 
-## 🧪 Testing and Validation
+### Configuration Classes
 
-### Run Demonstrations
+```python
+# EmbeddingConfig - Core configuration
+config = EmbeddingConfig(
+    embedding_dir=Path("data/embedding"),
+    embed_model="text-embedding-3-small", 
+    llm_model="gpt-4o-mini",
+    api_key=None  # Uses environment variable
+)
+
+# FilterConfig - Filtering options
+filter_config = FilterConfig(
+    provinces=["กรุงเทพมหานคร"],
+    deed_types=["chanote"],
+    min_area_rai=1.0,
+    max_area_rai=100.0,
+    max_embeddings=1000
+)
+```
+
+### Core Classes
+
+```python
+# iLandEmbeddingLoader - Load embeddings from disk
+loader = iLandEmbeddingLoader(config)
+result = loader.load_all_embeddings_of_type("chunks")
+filtered = loader.apply_filter_config(result.embeddings, filter_config)
+
+# iLandIndexReconstructor - Create indices
+reconstructor = iLandIndexReconstructor(config)
+index = reconstructor.create_vector_index_from_embeddings(embeddings)
+```
+
+### Utility Functions
+
+```python
+# Quick loading functions
+embeddings, path = load_latest_iland_embeddings("chunks", "batch_1")
+all_embeddings, path = load_all_latest_iland_embeddings("chunks")
+
+# Index creation functions
+index = create_iland_index_from_latest_batch(use_chunks=True, max_embeddings=100)
+bangkok_index = create_province_specific_iland_index("กรุงเทพมหานคร")
+
+# Analysis functions
+summary = get_iland_batch_summary()
+provinces = get_available_provinces()
+stats = validate_iland_embeddings(embeddings)
+```
+
+## 🔗 Integration
+
+This module integrates with the complete iLand pipeline:
+
+1. **Data Processing** (`../data_processing/`) → Process CSV files to documents
+2. **Document Embedding** (`../docs_embedding/`) → Generate embeddings from documents  
+3. **Load Embedding** (`../load_embedding/`) → **This module** → Load embeddings and create indices
+4. **Your RAG Application** → Query the created indices
+
+## 📈 Performance Tips
+
+- Start with `max_embeddings=100` for testing
+- Use province filtering to reduce data size
+- Prefer `chunks` for detailed queries, `summaries` for overview
+- Monitor memory usage with large datasets
+- Use `similarity_top_k=3-5` for balanced performance
+- Load specific sub-batches instead of all embeddings when possible
+
+## 🎯 Running Examples
+
 ```bash
-# Full demonstration
-python -m src_iland.load_embedding.demo
+# Navigate to the module directory
+cd src-iLand
 
-# Example usage
-python -m src_iland.load_embedding.example_usage
+# Run complete embedding loading with all features
+python -m load_embedding.load_embedding_complete
 
-# Backward compatibility
-python -m src_iland.load_embedding.load_embedding
+# Run specific example scenarios
+python -m load_embedding.example_usage
+
+# Test backward compatibility
+python -m load_embedding.load_embedding
+
+# Or run individual functions
+python -c "from load_embedding import demonstrate_iland_loading; demonstrate_iland_loading()"
 ```
 
-### Validation Results
-The module provides comprehensive validation including:
-- Embedding dimension consistency
-- Text and vector presence validation
-- Thai metadata completeness
-- Province and deed type distribution analysis
-- Quality scoring (0.0-1.0)
+## 📝 Example Use Cases
 
-## 🔄 Integration with iLand Pipeline
+### 1. Basic Data Exploration
+```python
+from load_embedding import get_iland_batch_summary, validate_iland_embeddings, load_all_latest_iland_embeddings
 
-This module integrates seamlessly with the complete iLand workflow:
+# Get overview
+summary = get_iland_batch_summary()
+print(f"Found {summary['total_batches']} batches with {summary['latest_batch_stats']['total_embeddings']} embeddings")
 
-1. **Data Processing** (`src-iLand/data_processing/`) - CSV analysis and document processing
-2. **Document Embedding** (`src-iLand/docs_embedding/`) - Embedding generation and storage
-3. **Load Embedding** (`src-iLand/load_embedding/`) - **This module** - Loading and index reconstruction
-
-## 📈 Performance Considerations
-
-- **Batch loading**: Efficiently handles large embedding sets
-- **Memory management**: Configurable limits via `max_embeddings`
-- **Lazy loading**: Only loads requested embedding types
-- **Caching**: Reuses loaded embeddings within session
-
-## 🛠️ Development
-
-### Adding New Features
-1. Keep modules under 300 lines (coding rule compliance)
-2. Add new functionality to appropriate module
-3. Update `__init__.py` exports
-4. Add examples to `example_usage.py`
-5. Update this README
-
-### Module Dependencies
-```
-models.py (base)
-├── embedding_loader.py (depends on models)
-├── index_reconstructor.py (depends on models, embedding_loader)
-├── validation.py (standalone)
-├── utils.py (depends on all above)
-└── demo.py (depends on all above)
+# Load and analyze
+embeddings, _ = load_all_latest_iland_embeddings("chunks")
+stats = validate_iland_embeddings(embeddings)
+print(f"Provinces: {list(stats['thai_metadata']['provinces'])[:5]}")
 ```
 
-## 🔗 Related Documentation
+### 2. Province-Specific Analysis
+```python
+from load_embedding import create_province_specific_iland_index
 
-- [Data Processing Module](../data_processing/README.md)
-- [Document Embedding Module](../docs_embedding/README.md)
-- [Main Project README](../../README.md) 
+# Create Bangkok-specific index
+bangkok_index = create_province_specific_iland_index("กรุงเทพมหานคร")
+query_engine = bangkok_index.as_query_engine()
+
+# Query Bangkok land data
+response = query_engine.query("พื้นที่ที่ดินเฉลี่ยในกรุงเทพคือเท่าใด?")
+```
+
+### 3. Multi-Type Index Creation
+```python
+from load_embedding import create_iland_index_from_latest_batch
+
+# Comprehensive index with chunks, summaries, and indexnodes
+comprehensive_index = create_iland_index_from_latest_batch(
+    use_chunks=True,
+    use_summaries=True,
+    use_indexnodes=True,
+    max_embeddings=500
+)
+```
+
+---
+
+**Ready to start?** Run `python -m load_embedding.load_embedding_complete` for complete embedding loading with validation and indexing! 

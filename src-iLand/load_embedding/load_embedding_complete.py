@@ -1,8 +1,11 @@
 """
-demo.py - Demonstration functions for iLand embedding loading
+load_embedding_complete.py - Complete embedding loading with validation, filtering, and indexing
 
-This module contains demonstration functions to showcase the capabilities
-of the iLand embedding loading pipeline.
+This module provides comprehensive functionality for loading iLand embeddings with:
+- Full validation and quality analysis
+- Advanced filtering by province, deed type, and area
+- Index creation and testing capabilities
+- Production-ready embedding loading pipeline
 """
 
 import os

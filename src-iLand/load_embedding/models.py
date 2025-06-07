@@ -15,8 +15,11 @@ load_dotenv(override=True)
 
 # ---------- CONFIGURATION CONSTANTS -----------------------------------------
 
-# Paths
-EMBEDDING_DIR = Path("data/embedding")
+# Paths - Use absolute path relative to project root
+# Get the project root directory (go up from src-iLand/load_embedding/)
+_current_file = Path(__file__)
+_project_root = _current_file.parent.parent.parent
+EMBEDDING_DIR = _project_root / "data" / "embedding"
 DEFAULT_EMBED_MODEL = "text-embedding-3-small"
 DEFAULT_LLM_MODEL = "gpt-4o-mini"
 

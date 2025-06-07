@@ -20,7 +20,7 @@ from .embedding_loader import *
 from .index_reconstructor import *
 from .validation import *
 from .utils import *
-from .demo import *
+from .load_embedding_complete import *
 
 # Maintain the original demonstration function name
 demonstrate_iland_loading = demonstrate_iland_loading
