@@ -21,26 +21,51 @@ sys.path.append(str(Path(__file__).parent / "src-iLand"))
 from retrieval import VectorRetrieverAdapter, MetadataRetrieverAdapter, HybridRetrieverAdapter
 from load_embedding import load_all_latest_iland_embeddings
 
+# Import response synthesis
+from llama_index.core.response_synthesizers import ResponseMode
+from llama_index.core import get_response_synthesizer
+from llama_index.llms.openai import OpenAI
+
 def main():
     print("🏛️ iLAND WORKING RETRIEVAL DEMO")
     print("🇹🇭 Thai Land Deed RAG System")
     print("=" * 50)
     
+    # Check API key
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("❌ Error: OPENAI_API_KEY not found in environment variables")
+        return
+    
     # Load embeddings
     print("\n📊 Loading Thai land deed embeddings...")
-    embeddings_data, batch_path = load_all_latest_iland_embeddings()
-    print(f"✅ Loaded {len(embeddings_data)} embeddings")
+    try:
+        embeddings_data, batch_path = load_all_latest_iland_embeddings()
+        print(f"✅ Loaded {len(embeddings_data)} embeddings")
+    except Exception as e:
+        print(f"❌ Error loading embeddings: {e}")
+        return
     
-    # Create strategies
+    # Create strategies and response synthesizer
     print("\n🔧 Creating retrieval strategies...")
-    api_key = os.getenv("OPENAI_API_KEY")
     
-    strategies = {}
-    strategies['vector'] = VectorRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
-    strategies['metadata'] = MetadataRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
-    strategies['hybrid'] = HybridRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
-    
-    print(f"✅ Created {len(strategies)} strategies")
+    try:
+        strategies = {}
+        strategies['vector'] = VectorRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
+        strategies['metadata'] = MetadataRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
+        strategies['hybrid'] = HybridRetrieverAdapter.from_iland_embeddings(embeddings_data, api_key=api_key)
+        
+        # Create response synthesizer for generating answers
+        llm = OpenAI(model="gpt-4o-mini", api_key=api_key)
+        response_synthesizer = get_response_synthesizer(
+            response_mode=ResponseMode.COMPACT,
+            llm=llm
+        )
+        
+        print(f"✅ Created {len(strategies)} strategies and response synthesizer")
+    except Exception as e:
+        print(f"❌ Error creating strategies: {e}")
+        return
     
     # Test queries with CORRECT English province names
     test_queries = [
@@ -108,6 +133,15 @@ def main():
                         ownership = node_metadata.get('deed_holding_type', 'N/A')
                         print(f"      📍 Location: {province}, {district}")
                         print(f"      🏢 Ownership: {ownership}")
+                    
+                    # Generate RAG response
+                    try:
+                        response = response_synthesizer.synthesize(query, nodes)
+                        print(f"      🤖 RAG Response:")
+                        print(f"         {response.response[:200]}...")
+                    except Exception as e:
+                        print(f"      ⚠️ Response generation failed: {str(e)[:100]}...")
+                        
                 else:
                     print(f"  ❌ {strategy_name}: 0 results in {elapsed:.2f}s")
                 

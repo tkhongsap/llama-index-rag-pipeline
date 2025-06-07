@@ -15,19 +15,35 @@ from pathlib import Path
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from .router import iLandRouterRetriever
-from .index_classifier import create_default_iland_classifier
-from .cache import iLandCacheManager
-from .parallel_executor import ParallelStrategyExecutor
-from .retrievers import (
-    VectorRetrieverAdapter,
-    SummaryRetrieverAdapter,
-    RecursiveRetrieverAdapter,
-    MetadataRetrieverAdapter,
-    ChunkDecouplingRetrieverAdapter,
-    HybridRetrieverAdapter,
-    PlannerRetrieverAdapter
-)
+try:
+    from .router import iLandRouterRetriever
+    from .index_classifier import create_default_iland_classifier
+    from .cache import iLandCacheManager
+    from .parallel_executor import ParallelStrategyExecutor
+    from .retrievers import (
+        VectorRetrieverAdapter,
+        SummaryRetrieverAdapter,
+        RecursiveRetrieverAdapter,
+        MetadataRetrieverAdapter,
+        ChunkDecouplingRetrieverAdapter,
+        HybridRetrieverAdapter,
+        PlannerRetrieverAdapter
+    )
+except ImportError:
+    # Fallback to absolute imports when running from different directory
+    from retrieval.router import iLandRouterRetriever
+    from retrieval.index_classifier import create_default_iland_classifier
+    from retrieval.cache import iLandCacheManager
+    from retrieval.parallel_executor import ParallelStrategyExecutor
+    from retrieval.retrievers import (
+        VectorRetrieverAdapter,
+        SummaryRetrieverAdapter,
+        RecursiveRetrieverAdapter,
+        MetadataRetrieverAdapter,
+        ChunkDecouplingRetrieverAdapter,
+        HybridRetrieverAdapter,
+        PlannerRetrieverAdapter
+    )
 
 # Import iLand embedding utilities
 try:
@@ -43,6 +59,17 @@ except ImportError:
     load_all_latest_iland_embeddings = None
     get_iland_batch_summary = None
 
+# Import response synthesis for natural language responses
+try:
+    from llama_index.core.response_synthesizers import ResponseMode
+    from llama_index.core import get_response_synthesizer
+    from llama_index.llms.openai import OpenAI
+except ImportError:
+    print("Warning: Could not import response synthesis utilities")
+    ResponseMode = None
+    get_response_synthesizer = None
+    OpenAI = None
+
 
 class iLandRetrievalCLI:
     """Command line interface for iLand retrieval system."""
@@ -54,9 +81,28 @@ class iLandRetrievalCLI:
         self.api_key = os.getenv("OPENAI_API_KEY")
         self.cache_manager = None
         self.parallel_executor = None
+        self.response_synthesizer = None
         
         if not self.api_key:
             print("Warning: OPENAI_API_KEY not found in environment variables")
+        
+        # Initialize response synthesizer for natural language responses
+        self._initialize_response_synthesizer()
+    
+    def _initialize_response_synthesizer(self):
+        """Initialize the response synthesizer for generating natural language responses."""
+        if not self.api_key or not get_response_synthesizer or not OpenAI:
+            print("Warning: Response synthesis not available (missing API key or dependencies)")
+            return
+        
+        try:
+            llm = OpenAI(model="gpt-4.1-mini", api_key=self.api_key)
+            self.response_synthesizer = get_response_synthesizer(
+                response_mode=ResponseMode.COMPACT,
+                llm=llm
+            )
+        except Exception as e:
+            print(f"Warning: Could not initialize response synthesizer: {e}")
     
     def load_embeddings(self, embedding_type: str = "all") -> bool:
         """
@@ -231,6 +277,20 @@ class iLandRetrievalCLI:
                 print(f"Confidence: Index={first_result['index_confidence']:.2f}, Strategy={first_result['strategy_confidence']:.2f}")
                 print()
                 
+                # Generate natural language response
+                if self.response_synthesizer and nodes:
+                    try:
+                        print("🤖 Natural Language Response:")
+                        print("-" * 40)
+                        response = self.response_synthesizer.synthesize(query_text, nodes)
+                        print(response.response)
+                        print()
+                    except Exception as e:
+                        print(f"⚠️ Response generation failed: {str(e)[:100]}...")
+                        print()
+                
+                print("📄 Retrieved Documents:")
+                print("-" * 40)
                 for result in results:
                     print(f"[{result['rank']}] Score: {result['score']:.3f}")
                     print(f"Text: {result['text']}")
@@ -287,6 +347,14 @@ class iLandRetrievalCLI:
                     strategy_results.append(query_result)
                     
                     print(f"  Query {i+1}: {len(nodes)} results, {latency:.2f}s, top_score={query_result['top_score']:.3f}")
+                    
+                    # Generate RAG response for the first query or if specifically requested
+                    if i == 0 and self.response_synthesizer and nodes:
+                        try:
+                            response = self.response_synthesizer.synthesize(query, nodes)
+                            print(f"    🤖 RAG Response: {response.response[:150]}...")
+                        except Exception as e:
+                            print(f"    ⚠️ Response generation failed: {str(e)[:50]}...")
                     
                 except Exception as e:
                     print(f"  Query {i+1}: ERROR - {e}")
@@ -459,6 +527,85 @@ class iLandRetrievalCLI:
         else:
             print("Cache manager not initialized")
     
+    def detailed_rag_response(self, query_text: str):
+        """
+        Generate a detailed RAG response for a query.
+        
+        Args:
+            query_text: Query string (may contain Thai text)
+        """
+        if not self.router:
+            print("Router not initialized. Please load embeddings first.")
+            return
+        
+        if not self.response_synthesizer:
+            print("Response synthesizer not available. Check API key and dependencies.")
+            return
+        
+        try:
+            print(f"\n🤖 Generating RAG Response for: '{query_text}'")
+            print("=" * 60)
+            
+            start_time = time.time()
+            
+            # Execute query to get retrieved documents
+            from llama_index.core.schema import QueryBundle
+            query_bundle = QueryBundle(query_str=query_text)
+            nodes = self.router._retrieve(query_bundle)
+            
+            retrieval_time = time.time() - start_time
+            
+            if not nodes:
+                print("❌ No documents retrieved for this query.")
+                return
+            
+            # Generate response
+            synthesis_start = time.time()
+            response = self.response_synthesizer.synthesize(query_text, nodes)
+            synthesis_time = time.time() - synthesis_start
+            
+            total_time = time.time() - start_time
+            
+            # Display results
+            print(f"📊 Performance Metrics:")
+            print(f"  Documents retrieved: {len(nodes)}")
+            print(f"  Retrieval time: {retrieval_time:.2f}s")
+            print(f"  Response synthesis time: {synthesis_time:.2f}s")
+            print(f"  Total time: {total_time:.2f}s")
+            print()
+            
+            # Show routing information
+            if nodes:
+                metadata = getattr(nodes[0].node, 'metadata', {})
+                index = metadata.get("selected_index", "unknown")
+                strategy = metadata.get("selected_strategy", "unknown")
+                print(f"🎯 Routing Information:")
+                print(f"  Selected index: {index}")
+                print(f"  Selected strategy: {strategy}")
+                print()
+            
+            print(f"🤖 Generated Response:")
+            print("-" * 40)
+            print(response.response)
+            print()
+            
+            print(f"📚 Source Documents:")
+            print("-" * 40)
+            for i, node in enumerate(nodes[:3], 1):  # Show top 3 sources
+                metadata = node.node.metadata
+                province = metadata.get('province', 'N/A')
+                district = metadata.get('district', 'N/A')
+                ownership = metadata.get('deed_holding_type', 'N/A')
+                
+                print(f"[{i}] Score: {node.score:.3f}")
+                print(f"    Location: {province}, {district}")
+                print(f"    Ownership: {ownership}")
+                print(f"    Text: {node.node.text[:150]}...")
+                print()
+            
+        except Exception as e:
+            print(f"❌ Error generating RAG response: {e}")
+    
     def interactive_mode(self):
         """Start interactive query mode."""
         print("\niLand Retrieval Interactive Mode")
@@ -470,6 +617,7 @@ class iLandRetrievalCLI:
         print("  /summary - Show batch summary")
         print("  /strategies <query> - Test query with all strategies")
         print("  /parallel <query> - Test parallel strategy execution")
+        print("  /response <query> - Get detailed RAG response for query")
         print("  /cache-stats - Show cache statistics")
         print("  /clear-cache - Clear all caches")
         print()
@@ -483,7 +631,7 @@ class iLandRetrievalCLI:
                 elif query == "/quit":
                     break
                 elif query == "/help":
-                    print("Commands: /quit, /help, /summary, /strategies <query>, /parallel <query>, /cache-stats, /clear-cache")
+                    print("Commands: /quit, /help, /summary, /strategies <query>, /parallel <query>, /response <query>, /cache-stats, /clear-cache")
                 elif query == "/summary":
                     self.show_batch_summary()
                 elif query == "/cache-stats":
@@ -498,6 +646,10 @@ class iLandRetrievalCLI:
                     test_query = query[10:]  # Remove "/parallel "
                     if test_query:
                         self.test_parallel_strategies(test_query, top_k=5)
+                elif query.startswith("/response "):
+                    test_query = query[10:]  # Remove "/response "
+                    if test_query:
+                        self.detailed_rag_response(test_query)
                 else:
                     self.query(query)
                     
@@ -553,6 +705,7 @@ def main():
     parser.add_argument("--strategy-selector", choices=["llm", "heuristic", "round_robin"],
                        default="llm", help="Strategy selection method")
     parser.add_argument("--query", type=str, help="Execute a single query")
+    parser.add_argument("--rag-response", type=str, help="Generate detailed RAG response for query")
     parser.add_argument("--interactive", action="store_true", help="Start interactive mode")
     parser.add_argument("--test-queries", nargs="+", help="Test multiple queries")
     parser.add_argument("--top-k", type=int, default=5, help="Number of results to return")
@@ -599,6 +752,13 @@ def main():
             print("Router not initialized. Use --load-embeddings first.")
             return
         cli.query(args.query, args.top_k)
+    
+    # Generate detailed RAG response
+    elif args.rag_response:
+        if not cli.router:
+            print("Router not initialized. Use --load-embeddings first.")
+            return
+        cli.detailed_rag_response(args.rag_response)
     
     # Test multiple queries
     elif args.test_queries:

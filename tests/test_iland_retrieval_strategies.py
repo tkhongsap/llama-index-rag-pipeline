@@ -35,7 +35,7 @@ try:
     from router import iLandRouterRetriever
     from index_classifier import create_default_iland_classifier
     from cache import iLandCacheManager
-    from retrievers.base import BaseRetrieverAdapter
+    from src_iLand.retrieval.retrievers.base import BaseRetrieverAdapter
 except ImportError as e:
     pytest.skip(f"iLand modules not available: {e}", allow_module_level=True)
 

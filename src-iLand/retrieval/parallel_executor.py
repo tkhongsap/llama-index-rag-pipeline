@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from llama_index.core.schema import NodeWithScore
 
-from retrievers.base import BaseRetrieverAdapter
+from .retrievers.base import BaseRetrieverAdapter
 
 
 class ParallelStrategyExecutor:

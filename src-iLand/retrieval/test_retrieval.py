@@ -124,7 +124,7 @@ def test_adapter_creation():
         # Test basic adapter class structure
         try:
             # Import only if available
-            from retrievers.vector import VectorRetrieverAdapter
+            from .retrievers.vector import VectorRetrieverAdapter
             print("✓ VectorRetrieverAdapter class available")
         except ImportError:
             print("⚠️ VectorRetrieverAdapter not available - check implementation")
@@ -141,7 +141,7 @@ def test_thai_keyword_extraction():
     print("\nTesting Thai keyword extraction...")
     
     try:
-        from retrievers.hybrid import HybridRetrieverAdapter
+        from .retrievers.hybrid import HybridRetrieverAdapter
         
         # Create a mock adapter to test keyword extraction
         class MockHybridAdapter(HybridRetrieverAdapter):
@@ -178,7 +178,7 @@ def test_metadata_filters():
     print("\nTesting metadata filter building...")
     
     try:
-        from retrievers.metadata import MetadataRetrieverAdapter
+        from .retrievers.metadata import MetadataRetrieverAdapter
         
         # Create a mock adapter to test filter building
         class MockMetadataAdapter(MetadataRetrieverAdapter):
