@@ -40,27 +40,10 @@ def setup_imports():
         )
         imports['retrieval'] = True
     except ImportError:
-        # Fallback to absolute imports
-        try:
-            from retrieval.router import iLandRouterRetriever
-            from retrieval.index_classifier import create_default_iland_classifier
-            from retrieval.cache import iLandCacheManager
-            from retrieval.parallel_executor import ParallelStrategyExecutor
-            from retrieval.retrievers import (
-                VectorRetrieverAdapter,
-                SummaryRetrieverAdapter,
-                RecursiveRetrieverAdapter,
-                MetadataRetrieverAdapter,
-                ChunkDecouplingRetrieverAdapter,
-                HybridRetrieverAdapter,
-                PlannerRetrieverAdapter
-            )
-            imports['retrieval'] = True
-        except ImportError:
-            print("Warning: Could not import retrieval components")
-            imports['retrieval'] = False
+        print("Warning: Could not import retrieval components")
+        imports['retrieval'] = False
     
-    # Try to import embedding utilities
+    # Import embedding utilities from updated load_embedding module
     try:
         sys.path.insert(0, str(Path(__file__).parent.parent))
         from load_embedding import (
@@ -73,15 +56,15 @@ def setup_imports():
             'load_all': load_all_latest_iland_embeddings,
             'batch_summary': get_iland_batch_summary
         }
-    except ImportError:
-        print("Warning: Could not import iLand embedding utilities")
+    except ImportError as e:
+        print(f"Warning: Could not import iLand embedding utilities: {e}")
         imports['embeddings'] = {
             'load_latest': None,
             'load_all': None,
             'batch_summary': None
         }
     
-    # Try to import response synthesis
+    # Import response synthesis utilities
     try:
         from llama_index.core.response_synthesizers import ResponseMode
         from llama_index.core import get_response_synthesizer
@@ -91,8 +74,8 @@ def setup_imports():
             'get_response_synthesizer': get_response_synthesizer,
             'OpenAI': OpenAI
         }
-    except ImportError:
-        print("Warning: Could not import response synthesis utilities")
+    except ImportError as e:
+        print(f"Warning: Could not import response synthesis utilities: {e}")
         imports['synthesis'] = {
             'ResponseMode': None,
             'get_response_synthesizer': None,
@@ -168,34 +151,5 @@ def get_retrieval_components():
                 'planner': PlannerRetrieverAdapter
             }
         }
-    except ImportError:
-        # Fallback to absolute imports
-        from retrieval.router import iLandRouterRetriever
-        from retrieval.index_classifier import create_default_iland_classifier
-        from retrieval.cache import iLandCacheManager
-        from retrieval.parallel_executor import ParallelStrategyExecutor
-        from retrieval.retrievers import (
-            VectorRetrieverAdapter,
-            SummaryRetrieverAdapter,
-            RecursiveRetrieverAdapter,
-            MetadataRetrieverAdapter,
-            ChunkDecouplingRetrieverAdapter,
-            HybridRetrieverAdapter,
-            PlannerRetrieverAdapter
-        )
-        
-        return {
-            'router': iLandRouterRetriever,
-            'classifier': create_default_iland_classifier,
-            'cache': iLandCacheManager,
-            'parallel': ParallelStrategyExecutor,
-            'adapters': {
-                'vector': VectorRetrieverAdapter,
-                'summary': SummaryRetrieverAdapter,
-                'recursive': RecursiveRetrieverAdapter,
-                'metadata': MetadataRetrieverAdapter,
-                'chunk_decoupling': ChunkDecouplingRetrieverAdapter,
-                'hybrid': HybridRetrieverAdapter,
-                'planner': PlannerRetrieverAdapter
-            }
-        } 
+    except ImportError as e:
+        raise ImportError(f"Could not import retrieval components: {e}") 

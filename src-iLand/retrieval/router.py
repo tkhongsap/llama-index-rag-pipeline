@@ -86,8 +86,11 @@ class iLandRouterRetriever(BaseRetriever):
     
     def _setup_models(self):
         """Setup LLM for strategy selection."""
+        if not self.api_key:
+            raise ValueError("OpenAI API key is required for LLM-based strategy selection")
+        
         Settings.llm = OpenAI(
-            model="gpt-4.1-mini",
+            model="gpt-4o-mini",
             temperature=0,
             api_key=self.api_key
         )

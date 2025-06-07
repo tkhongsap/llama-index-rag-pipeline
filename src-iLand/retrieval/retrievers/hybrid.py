@@ -12,6 +12,17 @@ from llama_index.core.retrievers import VectorIndexRetriever
 
 from .base import BaseRetrieverAdapter
 
+# Import from updated iLand embedding loading modules
+try:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from load_embedding import iLandIndexReconstructor, EmbeddingConfig
+except ImportError as e:
+    print(f"Warning: Could not import iLand embedding utilities: {e}")
+    iLandIndexReconstructor = None
+    EmbeddingConfig = None
+
 
 class HybridRetrieverAdapter(BaseRetrieverAdapter):
     """Adapter for hybrid search retrieval on iLand data."""
@@ -184,12 +195,9 @@ class HybridRetrieverAdapter(BaseRetrieverAdapter):
         Returns:
             HybridRetrieverAdapter instance for iLand data
         """
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-        from load_embedding import iLandIndexReconstructor
+        if not iLandIndexReconstructor or not EmbeddingConfig:
+            raise ImportError("iLand embedding utilities not available")
         
-        from load_embedding.models import EmbeddingConfig
         config = EmbeddingConfig(api_key=api_key)
         reconstructor = iLandIndexReconstructor(config=config)
         vector_index = reconstructor.create_vector_index_from_embeddings(

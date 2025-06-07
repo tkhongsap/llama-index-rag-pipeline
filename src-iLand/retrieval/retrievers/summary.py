@@ -13,6 +13,17 @@ from llama_index.core.query_engine import RetrieverQueryEngine
 
 from .base import BaseRetrieverAdapter
 
+# Import from updated iLand embedding loading modules
+try:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from load_embedding import iLandIndexReconstructor, EmbeddingConfig
+except ImportError as e:
+    print(f"Warning: Could not import iLand embedding utilities: {e}")
+    iLandIndexReconstructor = None
+    EmbeddingConfig = None
+
 
 class SummaryRetrieverAdapter(BaseRetrieverAdapter):
     """Adapter for summary-first retrieval on iLand data."""
@@ -72,12 +83,9 @@ class SummaryRetrieverAdapter(BaseRetrieverAdapter):
         Returns:
             SummaryRetrieverAdapter instance for iLand data
         """
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-        from load_embedding import iLandIndexReconstructor
+        if not iLandIndexReconstructor or not EmbeddingConfig:
+            raise ImportError("iLand embedding utilities not available")
         
-        from load_embedding.models import EmbeddingConfig
         config = EmbeddingConfig(api_key=api_key)
         reconstructor = iLandIndexReconstructor(config=config)
         summary_index = reconstructor.create_vector_index_from_embeddings(

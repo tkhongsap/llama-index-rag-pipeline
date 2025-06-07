@@ -44,7 +44,7 @@ class iLandRetrievalCLI:
                 print_warning("Response synthesis not available (missing dependencies)")
                 return
             
-            llm = synthesis_imports['OpenAI'](model="gpt-4.1-mini", api_key=self.api_key)
+            llm = synthesis_imports['OpenAI'](model="gpt-4o-mini", api_key=self.api_key)
             self.response_synthesizer = synthesis_imports['get_response_synthesizer'](
                 response_mode=synthesis_imports['ResponseMode'].COMPACT,
                 llm=llm
