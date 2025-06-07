@@ -45,33 +45,57 @@ class DocumentProcessor:
         
         return " ".join(parts) if parts else "ไม่ระบุ"
     
+    def _validate_coordinates(self, longitude: float, latitude: float) -> bool:
+        """Return True if coordinates are within expected bounds."""
+        return 0 <= longitude <= 180 and 0 <= latitude <= 90
+
+    def _format_coordinates(self, longitude: float, latitude: float) -> Dict[str, Any]:
+        return {
+            'longitude': longitude,
+            'latitude': latitude,
+            'coordinates_formatted': f"{latitude:.6f}, {longitude:.6f}",
+            'google_maps_url': f"https://www.google.com/maps?q={latitude},{longitude}"
+        }
+
     def parse_geom_point(self, geom_point_str: str) -> Dict[str, Any]:
-        """Parse POINT(longitude latitude) format and return lat/lng"""
+        """Parse coordinates from various POINT formats."""
         if not geom_point_str or not isinstance(geom_point_str, str):
             return {}
-        
-        # Clean the string and match POINT format
+
         cleaned = geom_point_str.strip()
-        
-        # Match patterns like "POINT (100.4514 14.5486)" or "POINT(100.4514 14.5486)"
-        point_pattern = r'POINT\s*\(\s*([-+]?\d*\.?\d+)\s+([-+]?\d*\.?\d+)\s*\)'
+
+        # Match patterns like "POINT(100.4514 14.5486)" or "POINT(100.4514,14.5486)"
+        point_pattern = r'POINT\s*\(\s*([-+]?\d*\.?\d+)\s*(?:,|\s)\s*([-+]?\d*\.?\d+)\s*\)'
         match = re.search(point_pattern, cleaned, re.IGNORECASE)
-        
         if match:
             try:
-                longitude = float(match.group(1))
-                latitude = float(match.group(2))
-                
-                return {
-                    'longitude': longitude,
-                    'latitude': latitude,
-                    'coordinates_formatted': f"{latitude:.6f}, {longitude:.6f}",
-                    'google_maps_url': f"https://www.google.com/maps?q={latitude},{longitude}"
-                }
+                lon = float(match.group(1))
+                lat = float(match.group(2))
+                if self._validate_coordinates(lon, lat):
+                    return self._format_coordinates(lon, lat)
+                logger.warning(f"Coordinates out of range in '{geom_point_str}'")
             except (ValueError, AttributeError) as e:
                 logger.warning(f"Failed to parse coordinates from '{geom_point_str}': {e}")
-                return {}
-        
+            return {}
+
+        # Fallback for formats like "14.5486 100.4514" or "14.5486,100.4514"
+        pair_pattern = r'^\s*([-+]?\d*\.?\d+)\s*(?:,|\s)\s*([-+]?\d*\.?\d+)\s*$'
+        match = re.search(pair_pattern, cleaned)
+        if match:
+            try:
+                first = float(match.group(1))
+                second = float(match.group(2))
+                # Assume lat lon first
+                lat, lon = first, second
+                if self._validate_coordinates(lon, lat):
+                    return self._format_coordinates(lon, lat)
+                # Try lon lat order if above failed
+                lon, lat = first, second
+                if self._validate_coordinates(lon, lat):
+                    return self._format_coordinates(lon, lat)
+                logger.warning(f"Coordinates out of range in '{geom_point_str}'")
+            except ValueError as e:
+                logger.warning(f"Failed to parse coordinates from '{geom_point_str}': {e}")
         return {}
     
     def extract_metadata_from_row(self, row: pd.Series) -> Dict[str, Any]:
