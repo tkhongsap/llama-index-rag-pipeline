@@ -258,9 +258,36 @@ class CSVAnalyzer:
         # Check for dates first
         if series.dtype == 'object':
             # Try to parse as date with common Thai/international formats
-            sample_values = series.dropna().head(10)
+            sample_values = series.dropna().astype(str).head(10)
             if len(sample_values) > 0:
                 try:
+                    # Additional handling for Thai Buddhist Era dates
+                    be_match = 0
+                    be_patterns = [
+                        re.compile(r'^(\d{1,2})/(\d{1,2})/(\d{4})$'),  # 25/09/2567
+                        re.compile(r'^(\d{4})-(\d{1,2})-(\d{1,2})$'),   # 2567-09-25
+                    ]
+
+                    for val in sample_values:
+                        for pat in be_patterns:
+                            m = pat.match(val.strip())
+                            if m:
+                                if pat.pattern.startswith('^(\\d{1,2})/'):
+                                    d, mth, y = map(int, m.groups())
+                                else:
+                                    y, mth, d = map(int, m.groups())
+                                if y > 2500:
+                                    y -= 543  # convert BE to CE
+                                try:
+                                    pd.Timestamp(year=y, month=mth, day=d)
+                                    be_match += 1
+                                    break
+                                except Exception:
+                                    pass
+
+                    if be_match >= len(sample_values) * 0.7:
+                        return 'date'
+
                     # Try common date formats first to avoid warnings
                     common_formats = [
                         '%Y-%m-%d',      # 2023-12-31
