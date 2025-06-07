@@ -506,6 +506,42 @@ class iLandRetrievalCLI:
                 break
             except Exception as e:
                 print(f"Error: {e}")
+    
+    def test_retrieval_strategies(self, strategy_selector: str = "llm") -> Dict[str, Any]:
+        """
+        Run comprehensive retrieval strategy tests.
+        
+        Args:
+            strategy_selector: Strategy selection method to test
+            
+        Returns:
+            Test results
+        """
+        try:
+            # Import the test suite
+            import sys
+            from pathlib import Path
+            tests_dir = Path(__file__).parent.parent.parent / 'tests'
+            sys.path.insert(0, str(tests_dir))
+            
+            from test_iland_retrieval_strategies import iLandRetrievalStrategyTester
+            
+            print(f"\nRunning iLand Retrieval Strategy Tests")
+            print(f"Strategy Selector: {strategy_selector}")
+            print("=" * 60)
+            
+            # Create and run tester
+            tester = iLandRetrievalStrategyTester()
+            results = tester.run_all_tests(strategy_selector)
+            
+            return results
+            
+        except ImportError as e:
+            print(f"Error importing test suite: {e}")
+            return {}
+        except Exception as e:
+            print(f"Error running strategy tests: {e}")
+            return {}
 
 
 def main():
@@ -526,6 +562,8 @@ def main():
     parser.add_argument("--parallel-query", type=str, help="Test parallel execution with query")
     parser.add_argument("--cache-stats", action="store_true", help="Show cache statistics")
     parser.add_argument("--clear-cache", action="store_true", help="Clear all caches")
+    parser.add_argument("--test-retrieval-strategies", action="store_true", 
+                       help="Run comprehensive retrieval strategy tests")
     
     args = parser.parse_args()
     
@@ -596,6 +634,10 @@ def main():
             print("Router not initialized. Use --load-embeddings first.")
             return
         cli.interactive_mode()
+    
+    # Test retrieval strategies
+    elif args.test_retrieval_strategies:
+        cli.test_retrieval_strategies(args.strategy_selector)
     
     # Default: show help
     else:

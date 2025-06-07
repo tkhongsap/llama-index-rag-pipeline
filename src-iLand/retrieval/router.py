@@ -26,9 +26,9 @@ try:
     from src.agentic_retriever.log_utils import log_retrieval_call
 except ImportError:
     # Fallback logging function
-    def log_retrieval_call(query: str, index: str, strategy: str, 
-                          num_results: int, latency: float, confidence: float):
-        print(f"iLand Retrieval: {query[:50]}... -> {index}/{strategy} ({num_results} results, {latency:.2f}s)")
+    def log_retrieval_call(query: str, selected_index: str, selected_strategy: str, 
+                          latency_ms: float, confidence: float = None, **kwargs):
+        print(f"iLand Retrieval: {query[:50]}... -> {selected_index}/{selected_strategy} ({latency_ms:.1f}ms)")
 
 
 class iLandRouterRetriever(BaseRetriever):
@@ -452,10 +452,9 @@ REASONING: Simple semantic query requiring fast, reliable similarity search for 
         # Log the retrieval call
         log_retrieval_call(
             query=query,
-            index=selected_index,
-            strategy=selected_strategy,
-            num_results=len(nodes),
-            latency=latency,
+            selected_index=selected_index,
+            selected_strategy=selected_strategy,
+            latency_ms=latency * 1000,  # Convert to milliseconds
             confidence=min(index_confidence, strategy_confidence)
         )
         
