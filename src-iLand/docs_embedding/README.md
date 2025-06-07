@@ -86,6 +86,12 @@ storage.save_all_formats(embedding_data, stats)
 - **Batch processing**: Handles large document sets with progress tracking
 - **Error handling**: Robust error management with detailed logging
 - **Configuration**: Flexible settings for different processing scenarios
+- **Per-batch directories**: Saves IndexNode, chunk, and summary embeddings in
+  organized subfolders
+- **Metadata statistics**: Generates per-batch and combined statistics with
+  metadata field analysis
+- **API key validation**: Detects project vs standard keys with partial key
+  display for debugging
 
 ## 🚀 Quick Start
 
@@ -187,17 +193,23 @@ The pipeline generates organized output:
 
 ```
 output/
-├── embeddings_YYYYMMDD_HHMMSS/
-│   ├── embeddings.json         # Metadata and text content
-│   ├── embeddings.pkl          # LlamaIndex objects
-│   ├── embeddings.npy          # Embedding vectors
-│   └── statistics.json         # Processing statistics
+└── embeddings_iland_YYYYMMDD_HHMMSS/
+    ├── batch_1/
+    │   ├── indexnodes/                # IndexNode embeddings
+    │   ├── chunks/                    # Chunk embeddings
+    │   ├── summaries/                 # Summary embeddings
+    │   ├── combined/                  # All embeddings combined
+    │   └── batch_1_statistics.json    # Per-batch stats
+    ├── batch_2/
+    │   ...
+    └── combined_statistics.json       # Overall statistics
 ```
 
 ### Statistics Include:
 - Document processing metrics
 - Embedding generation counts
 - Thai metadata extraction success rates
+- Unique metadata field analysis
 - Processing time and performance data
 - Error logs and validation results
 
