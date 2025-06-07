@@ -26,10 +26,27 @@ class DocumentProcessor:
         if isinstance(value, str):
             # Clean whitespace
             value = value.strip()
+            # Normalize Thai punctuation to ASCII equivalents
+            punct_map = {
+                "\u2018": "'",  # ‘
+                "\u2019": "'",  # ’
+                "\u201c": '"',  # “
+                "\u201d": '"',  # ”
+                "\u2013": '-',  # –
+                "\u2014": '-',  # —
+                "\uff0c": ',',  # ，
+                "\uff01": '!',  # ！
+                "\uff1f": '?',  # ？
+                "\uff1a": ':',  # ：
+                "\uff1b": ';',  # ；
+                "\uff0e": '.',  # ．
+            }
+            value = value.translate(str.maketrans(punct_map))
             # Remove multiple spaces
             value = re.sub(r'\s+', ' ', value)
-            # Return None for empty strings
-            if not value or value.lower() in ['nan', 'null', 'none', '-']:
+            # Normalize common placeholders
+            placeholders = ['nan', 'null', 'none', '-', 'n/a', 'na', 'ไม่ระบุ']
+            if not value or value.lower() in placeholders or value in placeholders:
                 return None
         return value
     
