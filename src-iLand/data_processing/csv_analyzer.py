@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import logging
 from typing import List, Dict, Any
+from ..common.thai_provinces import THAI_PROVINCES
 # Handle both relative and absolute imports
 try:
     from .models import FieldMapping, DatasetConfig
@@ -19,19 +20,7 @@ class CSVAnalyzer:
     
     def _load_thai_provinces(self) -> List[str]:
         """Load list of Thai provinces for validation"""
-        return [
-            'อุดรธานี', 'อุตรดิตถ์', 'พะเยา', 'เพชรบุรี', 'กรุงเทพมหานคร',
-            'พิจิตร', 'ระยอง', 'สุราษฎร์ธานี', 'สมุทรปราการ', 'เชียงราย',
-            'พระนครศรีอยุธยา', 'นนทบุรี', 'ปทุมธานี', 'ชลบุรี', 'อ่างทอง',
-            'ลพบุรี', 'ชัยนาท', 'สระบุรี', 'จันทบุรี', 'ฉะเชิงเทรา',
-            'นครราชสีมา', 'บึงกาฬ', 'ปราจีนบุรี', 'นครนายก', 'อุบลราชธานี',
-            'ชัยภูมิ', 'เลย', 'หนองคาย', 'มหาสารคาม', 'นครพนม',
-            'เชียงใหม่', 'กำแพงเพชร', 'กาญจนบุรี', 'ลำพูน', 'ลำปาง',
-            'แพร่', 'แม่ฮ่องสอน', 'นครสวรรค์', 'อุทัยธานี', 'สุโขทัย',
-            'ตาก', 'พิษณุโลก', 'เพชรบูรณ์', 'สุพรรณบุรี', 'นครปฐม',
-            'สมุทรสาคร', 'ประจวบคีรีขันธ์', 'ภูเก็ต', 'ชุมพร', 'สงขลา',
-            'นราธิวาส', 'ขอนแก่น', 'นครศรีธรรมราช'
-        ]
+        return THAI_PROVINCES
     
     def analyze_csv_structure(self, csv_path: str) -> Dict[str, Any]:
         """Analyze CSV structure and suggest field mappings for iLand dataset"""
