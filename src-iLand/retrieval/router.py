@@ -87,7 +87,7 @@ class iLandRouterRetriever(BaseRetriever):
     def _setup_models(self):
         """Setup LLM for strategy selection."""
         Settings.llm = OpenAI(
-            model="gpt-4o-mini",
+            model="gpt-4.1-mini",
             temperature=0,
             api_key=self.api_key
         )

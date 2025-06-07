@@ -125,7 +125,9 @@ class ChunkDecouplingRetrieverAdapter(BaseRetrieverAdapter):
         sys.path.insert(0, str(Path(__file__).parent.parent.parent))
         from load_embedding import iLandIndexReconstructor
         
-        reconstructor = iLandIndexReconstructor(api_key=api_key)
+        from load_embedding.models import EmbeddingConfig
+        config = EmbeddingConfig(api_key=api_key)
+        reconstructor = iLandIndexReconstructor(config=config)
         
         chunk_index = reconstructor.create_vector_index_from_embeddings(
             chunk_embeddings, show_progress=False

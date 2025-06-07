@@ -72,9 +72,9 @@ class iLandRetrievalCLI:
         
         try:
             if embedding_type == "all" and load_all_latest_iland_embeddings:
-                embeddings_data = load_all_latest_iland_embeddings()
+                embeddings_data, batch_path = load_all_latest_iland_embeddings()
             elif embedding_type == "latest" and load_latest_iland_embeddings:
-                embeddings_data = load_latest_iland_embeddings()
+                embeddings_data, batch_path = load_latest_iland_embeddings()
             else:
                 print(f"Embedding type '{embedding_type}' not supported or utilities not available")
                 return False
@@ -83,7 +83,7 @@ class iLandRetrievalCLI:
                 print("No embedding data loaded")
                 return False
             
-            print(f"Loaded {len(embeddings_data)} embeddings")
+            print(f"Loaded {len(embeddings_data)} embeddings from {batch_path}")
             
             # Create adapters for the main iLand index
             index_name = "iland_land_deeds"

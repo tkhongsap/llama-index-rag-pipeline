@@ -85,7 +85,9 @@ class VectorRetrieverAdapter(BaseRetrieverAdapter):
         Returns:
             VectorRetrieverAdapter instance for iLand data
         """
-        reconstructor = iLandIndexReconstructor(api_key=api_key)
+        from load_embedding.models import EmbeddingConfig
+        config = EmbeddingConfig(api_key=api_key)
+        reconstructor = iLandIndexReconstructor(config=config)
         index = reconstructor.create_vector_index_from_embeddings(
             embeddings, 
             show_progress=False
