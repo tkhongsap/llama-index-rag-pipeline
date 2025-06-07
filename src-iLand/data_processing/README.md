@@ -73,17 +73,21 @@ markdown_files = converter.save_documents_as_markdown_files(documents)
 - **Warning-free operation**: Suppresses pandas date parsing warnings
 - **Better performance**: Uses specific formats when detected
 - **Reliable classification**: Only marks as dates when 50%+ values parse
+- **Buddhist Era support**: Understands Thai dates like 25/09/2567
 
 ### 🌏 Complete Thai Province Support
 - **All 52 provinces**: Updated from 15 to complete Thai province list
 - **Accurate mapping**: Matches your actual dataset structure
 - **Better organization**: Province-based file organization
+- **Single source of truth**: Province names now stored centrally
 
 ### 🎯 Improved Processing
 - **Batch processing**: Efficient handling of large datasets (17,799+ records)
 - **Progress tracking**: Real-time progress updates every 10 chunks
 - **Error resilience**: Continues processing despite individual record errors
 - **Memory efficient**: Processes in configurable chunks (default: 500 rows)
+- **Flexible geolocation parsing**: Supports multiple POINT coordinate formats
+- **Punctuation normalization**: Cleans Thai text for consistent tokens
 
 ## 🎯 Benefits of Refactoring
 
