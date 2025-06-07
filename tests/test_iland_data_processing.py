@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 import pytest
 
@@ -9,6 +10,8 @@ base = Path(__file__).resolve().parents[1] / 'src-iLand' / 'data_processing'
 models_spec = importlib.util.spec_from_file_location('models', base / 'models.py')
 models = importlib.util.module_from_spec(models_spec)
 models_spec.loader.exec_module(models)
+sys.modules['models'] = models
+sys.path.insert(0, str(base))
 
 docproc_spec = importlib.util.spec_from_file_location('docproc', base / 'document_processor.py')
 docproc = importlib.util.module_from_spec(docproc_spec)
@@ -61,3 +64,16 @@ def test_convert_row_to_document(tmp_path):
     assert Path(jsonl).exists()
     md_files = fm.save_documents_as_markdown_files([doc], prefix='doc', batch_size=1)
     assert md_files
+
+
+def test_clean_value_placeholders_and_punctuation():
+    processor = create_processor()
+
+    # Placeholder values should return None
+    assert processor.clean_value('ไม่ระบุ') is None
+    assert processor.clean_value(' N/A ') is None
+    assert processor.clean_value(' - ') is None
+
+    # Thai punctuation should be normalized
+    assert processor.clean_value('“ทดสอบ”') == '"ทดสอบ"'
+    assert processor.clean_value('ทดสอบ，ต่อไป') == 'ทดสอบ,ต่อไป'
