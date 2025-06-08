@@ -17,6 +17,7 @@ def test_metadata_extraction_and_title():
         'District: Bang Kapi\n'
         'Deed Serial No: 1234\n'
         'Land Rai: 2\n'
+        'Deed Total Square Wa: 200\n'
     )
     meta = extractor.extract_from_content(content)
     assert meta['deed_type'] == 'Chanote'
