@@ -1,15 +1,21 @@
 import importlib.util
 import sys
+import types
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1] / 'load_embedding'
 
-models_spec = importlib.util.spec_from_file_location('models', BASE_DIR / 'models.py')
+models_spec = importlib.util.spec_from_file_location('load_embedding.models', BASE_DIR / 'models.py')
 models = importlib.util.module_from_spec(models_spec)
 models_spec.loader.exec_module(models)
+sys.modules['load_embedding.models'] = models
 sys.modules['models'] = models
 
-loader_spec = importlib.util.spec_from_file_location('embedding_loader', BASE_DIR / 'embedding_loader.py')
+pkg = types.ModuleType('load_embedding')
+pkg.__path__ = [str(BASE_DIR)]
+sys.modules['load_embedding'] = pkg
+
+loader_spec = importlib.util.spec_from_file_location('load_embedding.embedding_loader', BASE_DIR / 'embedding_loader.py')
 embedding_loader = importlib.util.module_from_spec(loader_spec)
 loader_spec.loader.exec_module(embedding_loader)
 
