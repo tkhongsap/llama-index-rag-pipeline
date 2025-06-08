@@ -166,7 +166,7 @@ python -m src-iLand.retrieval.cli --batch-summary
 ```
 
 ### Streamlit Interface
-Launch a simple chat UI in your browser:
+Launch a WhatsApp-style chat UI in your browser:
 ```bash
 streamlit run src-iLand/retrieval/streamlit_cli.py
 ```
