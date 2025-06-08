@@ -1,199 +1,289 @@
-# iLand Data Processing - Refactored Architecture
+# iLand Data Processing Module
 
-This directory contains the refactored iLand data processing pipeline, broken down from a single 1176-line file into focused, maintainable modules following the coding rules.
+**Converts raw CSV datasets into structured documents ready for embedding and RAG retrieval.**
 
-## 🔧 Refactoring Summary
+This module processes Thai land deed CSV files into well-structured documents with rich metadata, organized sections, and multiple output formats (JSONL, Markdown). It's the first step in the iLand RAG pipeline.
 
-**Before**: Single `process_data_for_embedding.py` file with 1176 lines
-**After**: 8 focused modules, each under 300 lines
+## 🎯 Purpose
 
-## 📁 Module Structure
+**Input**: Raw CSV file with Thai land deed records  
+**Output**: Structured documents with rich metadata and organized sections  
+**Use Case**: Preparing data for embedding and retrieval in RAG applications
 
-### Core Modules
+## 🚀 Quick Start
 
-| Module | Lines | Purpose |
-|--------|-------|---------|
-| `models.py` | ~52 | Data classes and models (FieldMapping, DatasetConfig, SimpleDocument) |
-| `csv_analyzer.py` | ~359 | CSV structure analysis, smart encoding detection, and field mapping suggestions |
-| `config_manager.py` | ~99 | Configuration loading, saving, and report management |
-| `document_processor.py` | ~331 | Document processing, text generation, and metadata extraction |
-| `file_output.py` | ~236 | File output operations (JSONL, Markdown) |
-| `statistics_generator.py` | ~121 | Statistics generation and summary reporting |
-| `iland_converter.py` | ~153 | Main orchestrator class that coordinates all components |
-| `main.py` | ~67 | Simplified main execution script |
+### Prerequisites
+- CSV file at `data/input_docs/input_dataset_iLand.csv`
+- Python dependencies: `pandas`, `pathlib`, `json`, `logging`
 
-### Additional Files
-
-| Module | Lines | Purpose |
-|--------|-------|---------|
-| `run_processing.py` | ~99 | Standalone script for direct execution |
-| `__init__.py` | ~33 | Package initialization and exports |
-
-## 🚀 Usage
-
-### Recommended Usage (Module Approach)
-
+### Run Data Processing
 ```bash
-# Run as module (recommended)
+# From project root (RECOMMENDED)
+cd llama-index-rag-pipeline
 python -m src-iLand.data_processing.main
 
-# Run standalone script
-python src-iLand/data_processing/run_processing.py
+# From src-iLand directory
+cd src-iLand
+python -m data_processing.main
 ```
 
-### Programmatic Usage
+### Expected Output
+```
+✅ Configuration generated and saved
+📄 Documents processed in batches
+💾 JSONL file created: data/output_docs/iland_documents.jsonl
+📝 Markdown files: data/output_docs/iland_markdown_files/
+📊 Processing statistics displayed
+```
+
+## 📁 Module Architecture
+
+### Core Components
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `main.py` | Entry point and orchestration | ~67 |
+| `iland_converter.py` | Main converter class | ~153 |
+| `document_processor.py` | Document text generation and structuring | ~440 |
+| `csv_analyzer.py` | CSV analysis and field mapping | ~388 |
+| `config_manager.py` | Configuration management | ~99 |
+| `file_output.py` | Output file generation (JSONL, Markdown) | ~240 |
+| `statistics_generator.py` | Processing statistics | ~121 |
+| `models.py` | Data classes and models | ~52 |
+
+### Supporting Components
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `section_parser.py` | Section-based chunking for embeddings | ~348 |
+| `run_data_processing_standalone.py` | Standalone script execution | ~123 |
+| `__init__.py` | Package exports | ~33 |
+
+## 🔧 Core Functionality
+
+### 1. CSV Analysis (`csv_analyzer.py`)
+- **Smart encoding detection**: Handles various CSV encodings
+- **Field mapping**: Maps CSV columns to Thai land deed fields
+- **Data validation**: Identifies required and optional fields
+- **Statistical analysis**: Provides data quality insights
+
+### 2. Document Processing (`document_processor.py`)
+- **Structured text generation**: Creates well-organized document sections
+- **Thai metadata extraction**: Extracts 30+ Thai-specific fields
+- **Content organization**: Groups related information logically
+- **Quality assurance**: Validates generated documents
+
+### 3. Configuration Management (`config_manager.py`)
+- **Auto-configuration**: Generates config from CSV analysis
+- **Field mapping**: Manages CSV column to metadata mapping
+- **Reusable configs**: Saves configurations for future use
+
+### 4. File Output (`file_output.py`)
+- **JSONL format**: Machine-readable format for embeddings
+- **Markdown files**: Human-readable individual documents
+- **Batch processing**: Handles large datasets efficiently
+- **Directory organization**: Creates organized output structure
+
+## 📊 Document Structure
+
+### Generated Document Sections
+```markdown
+# Thai Land Deed Document
+
+## ข้อมูลโฉนด (Deed Information)
+- Deed serial number, type, book/page references
+
+## ที่ตั้ง (Location)
+- Province, district, subdistrict, detailed address
+
+## พิกัดภูมิศาสตร์ (Geolocation)
+- GPS coordinates, zone information
+
+## รายละเอียดที่ดิน (Land Details)
+- Land names, categories, characteristics
+
+## ขนาดพื้นที่ (Area Measurements)
+- Area in rai, ngan, wa with metric conversions
+
+## การจำแนกประเภท (Classification)
+- Land use categories, ownership types
+
+## วันที่สำคัญ (Important Dates)
+- Issue dates, expiry dates, registration dates
+
+## ข้อมูลการเงิน (Financial Information)
+- Valuations, taxes, fees
+
+## ข้อมูลเพิ่มเติม (Additional Information)
+- Notes, special conditions, references
+```
+
+### Metadata Fields (30+)
+```python
+{
+    # Core identification
+    "deed_serial_no": "12345/2567",
+    "deed_type": "โฉนดที่ดิน",
+    "province": "กรุงเทพมหานคร",
+    
+    # Location hierarchy
+    "location_hierarchy": "กรุงเทพฯ > คลองเตย > คลองเตย",
+    
+    # Area measurements
+    "area_rai": 2.5,
+    "area_ngan": 3.0,
+    "area_wa": 45.0,
+    "area_formatted": "2-3-45",
+    
+    # Enhanced categories
+    "area_category": "medium",
+    "deed_type_category": "chanote",
+    "region_category": "central",
+    "land_use_category": "residential",
+    
+    # Processing metadata
+    "processing_timestamp": "2024-01-15T10:30:00",
+    "source_file": "input_dataset_iLand.csv",
+    "row_number": 1
+}
+```
+
+## 🔄 Processing Flow
+
+```mermaid
+graph TD
+    A[CSV File] --> B[CSV Analyzer]
+    B --> C[Field Mapping]
+    C --> D[Document Processor] 
+    D --> E[Structured Documents]
+    E --> F[JSONL Output]
+    E --> G[Markdown Files]
+    F --> H[Statistics]
+    G --> H
+```
+
+1. **CSV Analysis**: Analyze structure and generate field mappings
+2. **Configuration**: Create or load processing configuration
+3. **Document Generation**: Process each row into structured document
+4. **Output Creation**: Save as JSONL and individual Markdown files
+5. **Statistics**: Generate processing and quality statistics
+
+## 🎯 Section-Based Chunking Integration
+
+The `section_parser.py` component provides section-aware chunking for the embedding pipeline:
 
 ```python
-from src_iLand.data_processing import iLandCSVConverter
+from data_processing.section_parser import LandDeedSectionParser
 
-# Create converter
-converter = iLandCSVConverter(input_csv_path, output_dir)
+parser = LandDeedSectionParser(
+    chunk_size=512,
+    chunk_overlap=50,
+    min_section_size=50
+)
 
-# Setup configuration (auto-generates from CSV analysis)
+# Parse structured document into section-based chunks
+chunks = parser.parse_simple_document_to_sections(document)
+```
+
+**Benefits**:
+- **Semantic coherence**: Chunks follow document structure
+- **Better retrieval**: Section-aware chunks improve search quality
+- **Metadata preservation**: Maintains section context in embeddings
+
+## 📈 Output Statistics
+
+### Processing Metrics
+- Total documents processed
+- Processing time and rate
+- Memory usage
+- Error counts and types
+
+### Data Quality Metrics
+- Field completeness rates
+- Data validation results
+- Content length distributions
+- Metadata coverage analysis
+
+### Document Statistics
+- Section count per document
+- Content length analysis
+- Field utilization rates
+- Category distributions
+
+## 🛠️ Configuration
+
+### Auto-Generated Configuration
+```python
+{
+    "name": "iland_deed_records",
+    "description": "Thai land deed processing configuration",
+    "field_mappings": [
+        {
+            "csv_field": "deed_no",
+            "target_field": "deed_serial_no",
+            "required": True,
+            "data_type": "string"
+        }
+        # ... more mappings
+    ]
+}
+```
+
+### Custom Configuration
+```python
+# Load custom configuration
+converter = iLandCSVConverter(csv_path, output_dir)
+config = converter.load_configuration("custom_config.json")
+
+# Or modify auto-generated config
 config = converter.setup_configuration(auto_generate=True)
-
-# Process documents in batches
-documents = converter.process_csv_to_documents(batch_size=500)
-
-# Save outputs
-jsonl_path = converter.save_documents_as_jsonl(documents)
-markdown_files = converter.save_documents_as_markdown_files(documents)
+config.field_mappings.append(custom_mapping)
 ```
 
-## ✨ Recent Improvements
+## 🔍 Troubleshooting
 
-### 🔧 Smart Encoding Detection
-- **Thai-optimized**: Tries `cp874` (Thai Windows encoding) first
-- **Clean output**: No more encoding warnings in logs
-- **Faster processing**: Finds correct encoding immediately
-- **Robust fallback**: Still handles UTF-8, UTF-8-sig, and latin-1
+### Common Issues
 
-### 📅 Enhanced Date Parsing
-- **Format-specific detection**: Tests common date formats first
-- **Warning-free operation**: Suppresses pandas date parsing warnings
-- **Better performance**: Uses specific formats when detected
-- **Reliable classification**: Only marks as dates when 50%+ values parse
-- **Buddhist Era support**: Understands Thai dates like 25/09/2567
+**"CSV file not found"**
+- Ensure `input_dataset_iLand.csv` is in `data/input_docs/`
+- Check file permissions and path
 
-### 🌏 Complete Thai Province Support
-- **All 52 provinces**: Updated from 15 to complete Thai province list
-- **Accurate mapping**: Matches your actual dataset structure
-- **Better organization**: Province-based file organization
-- **Single source of truth**: Province names now stored centrally
+**"Import errors"**
+- Run from correct directory (see Quick Start)
+- Verify all module files are present
 
-### 🎯 Improved Processing
-- **Batch processing**: Efficient handling of large datasets (17,799+ records)
-- **Progress tracking**: Real-time progress updates every 10 chunks
-- **Error resilience**: Continues processing despite individual record errors
-- **Memory efficient**: Processes in configurable chunks (default: 500 rows)
-- **Flexible geolocation parsing**: Supports multiple POINT coordinate formats
-- **Punctuation normalization**: Cleans Thai text for consistent tokens
+**"Encoding errors"**
+- CSV analyzer handles most encodings automatically
+- Check for special characters or corrupted files
 
-## 🎯 Benefits of Refactoring
+**"Memory issues with large datasets"**
+- Adjust `batch_size` parameter in configuration
+- Process in smaller chunks if needed
 
-1. **Maintainability**: Each module has a single responsibility
-2. **Testability**: Individual components can be tested in isolation
-3. **Reusability**: Components can be used independently
-4. **Readability**: Smaller, focused files are easier to understand
-5. **Extensibility**: New features can be added without modifying existing code
-6. **Performance**: Optimized for Thai datasets with smart encoding detection
-7. **Clean Output**: Professional logging without warning spam
-
-## 🔄 Component Relationships
-
-```
-iLandCSVConverter (Main Orchestrator)
-├── CSVAnalyzer (Smart CSV analysis + encoding detection)
-├── ConfigManager (Configuration + reporting)
-├── DocumentProcessor (Document processing + text generation)
-├── FileOutputManager (JSONL + Markdown output)
-└── StatisticsGenerator (Statistics + summaries)
-```
-
-## 📊 Key Features
-
-### Core Functionality
-- ✅ **Thai language support** for land deed records
-- ✅ **Smart encoding detection** (cp874, UTF-8, etc.)
-- ✅ **Automatic CSV structure analysis** with field mapping suggestions
-- ✅ **Configurable field mappings** for flexible data processing
-- ✅ **Batch processing** for large datasets (tested with 17,799+ records)
-- ✅ **Multiple output formats** (JSONL, Markdown)
-- ✅ **Province-based organization** (all 52 Thai provinces)
-
-### Quality & Reliability
-- ✅ **Comprehensive error handling** and logging
-- ✅ **Warning-free operation** (no encoding/date parsing spam)
-- ✅ **Statistics and reporting** with detailed summaries
-- ✅ **Progress tracking** with performance metrics
-- ✅ **Memory efficient** streaming processing
-- ✅ **Backward compatibility** with legacy interfaces
-
-## 🛠 Development Guidelines
-
-When modifying this code:
-
-1. **Keep modules under 300 lines** - Refactor if they grow larger
-2. **Single responsibility** - Each module should have one clear purpose
-3. **Avoid duplication** - Reuse existing functionality
-4. **Write tests** - Add tests for new functionality
-5. **Document changes** - Update this README when adding new modules
-6. **Maintain clean output** - Use appropriate log levels (INFO/DEBUG/WARNING)
-7. **Optimize for Thai data** - Consider encoding and language-specific needs
-
-## 🔍 Testing
-
-### Module Testing
+### Debug Mode
 ```python
-# Test smart CSV analysis
-from .csv_analyzer import CSVAnalyzer
-analyzer = CSVAnalyzer()
-analysis = analyzer.analyze_csv_structure("test.csv")  # Auto-detects encoding
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-# Test document processing
-from .document_processor import DocumentProcessor
-processor = DocumentProcessor(config)
-doc = processor.convert_row_to_document(row)
-
-# Test encoding detection
-result = analyzer.analyze_csv_structure("thai_file.csv")
-print(f"Detected encoding: {result['encoding_used']}")  # Should be cp874
+# Run with detailed logging
+converter = iLandCSVConverter(csv_path, output_dir, debug=True)
 ```
 
-### Integration Testing
-```bash
-# Test full pipeline
-python -m src-iLand.data_processing.main
+## 🚨 Important Notes
 
-# Test standalone
-python src-iLand/data_processing/run_processing.py
-```
+### Do I Need to Rerun?
+**Usually NO** - If you've already processed your CSV data, you don't need to rerun unless:
+- You have new CSV data to process
+- You need different output formats
+- You want to modify field mappings or document structure
 
-## 📈 Performance Metrics
+### Performance Considerations
+- **Large datasets**: Use batch processing (automatically handled)
+- **Memory usage**: Monitor for datasets >10GB
+- **Processing time**: ~100-500 docs/second depending on complexity
 
-**Recent Test Results** (17,799 records):
-- ⚡ **Processing time**: ~1.2 minutes
-- 🎯 **Success rate**: 100% (17,799/17,799 documents)
-- 📊 **Throughput**: ~2.0 seconds per 500-record chunk
-- 💾 **Memory usage**: Efficient streaming (configurable batch size)
-- 🌏 **Province coverage**: All 52 Thai provinces supported
-- 📁 **Output files**: 17,799 markdown files + 1 JSONL file
-
-## 🚀 Execution Options
-
-1. **Module approach** (recommended):
-   ```bash
-   python -m src-iLand.data_processing.main
-   ```
-
-2. **Standalone script**:
-   ```bash
-   python src-iLand/data_processing/run_processing.py
-   ```
-
-3. **Legacy compatibility**:
-   ```bash
-   python src-iLand/data_processing/process_data_for_embedding.py
-   ```
-
-All methods produce identical results with clean, professional output. 
+### Data Requirements
+- **CSV format**: Standard CSV with headers
+- **Encoding**: UTF-8 recommended (auto-detected)
+- **Required fields**: At least deed number or identifier
+- **Optional fields**: All other Thai land deed fields

@@ -54,8 +54,8 @@ except ImportError:
 
 # Configuration
 CONFIG = {
-    "data_dir": Path("../../example"),
-    "output_dir": Path("../../data/embedding"),
+    "data_dir": Path("../example"),
+    "output_dir": Path("../data/embedding"),
     "chunk_size": 1024,
     "chunk_overlap": 200,
     "embedding_model": "text-embedding-3-small",
@@ -68,7 +68,12 @@ CONFIG = {
     "enable_sentence_window": True,
     "enable_hierarchical_retrieval": True,
     "enable_query_router": True,
-    "enable_auto_metadata_filtering": True
+    "enable_auto_metadata_filtering": True,
+    # Section-based chunking for structured land deeds
+    "enable_section_chunking": True,
+    "section_chunk_size": 512,
+    "section_chunk_overlap": 50,
+    "min_section_size": 50
 }
 
 
@@ -332,9 +337,15 @@ class iLandBatchEmbeddingPipeline:
         indexnode_embeddings = self.embedding_processor.extract_indexnode_embeddings(
             doc_index_nodes, embed_model, batch_number
         )
-        chunk_embeddings = self.embedding_processor.extract_chunk_embeddings(
-            doc_summary_index, embed_model, batch_number
-        )
+        # Use section-based chunking if enabled
+        if self.config.get("enable_section_chunking", True):
+            chunk_embeddings = self._extract_section_based_chunks(
+                doc_summary_index, embed_model, batch_number
+            )
+        else:
+            chunk_embeddings = self.embedding_processor.extract_chunk_embeddings(
+                doc_summary_index, embed_model, batch_number
+            )
         summary_embeddings = self.embedding_processor.extract_summary_embeddings(
             doc_summary_index, embed_model, batch_number
         )
@@ -619,6 +630,127 @@ class iLandBatchEmbeddingPipeline:
         
         print(f"✅ Extracted {len(sentence_embeddings)} sentence window embeddings")
         return sentence_embeddings
+    
+    def _extract_section_based_chunks(
+        self, 
+        doc_summary_index: DocumentSummaryIndex, 
+        embed_model: OpenAIEmbedding, 
+        batch_number: int
+    ) -> List[Dict]:
+        """Extract embeddings using section-based chunking strategy."""
+        print(f"\n📄 EXTRACTING SECTION-BASED CHUNK EMBEDDINGS (Batch {batch_number}):")
+        print("-" * 60)
+        
+        # Import standalone section parser to avoid dependency issues
+        try:
+            from .standalone_section_parser import StandaloneLandDeedSectionParser, SimpleDocument
+        except ImportError:
+            print("❌ Could not import standalone section parser - falling back to standard chunking")
+            return self.embedding_processor.extract_chunk_embeddings(
+                doc_summary_index, embed_model, batch_number
+            )
+        
+        # Initialize standalone section parser
+        section_parser = StandaloneLandDeedSectionParser(
+            chunk_size=self.config.get("section_chunk_size", 512),
+            chunk_overlap=self.config.get("section_chunk_overlap", 50),
+            min_section_size=self.config.get("min_section_size", 50)
+        )
+        
+        section_embeddings = []
+        doc_ids = list(doc_summary_index.ref_doc_info.keys())
+        
+        for i, doc_id in enumerate(doc_ids):
+            try:
+                doc_info = doc_summary_index.ref_doc_info[doc_id]
+                doc_title = self.metadata_extractor.extract_document_title(doc_info.metadata, i + 1)
+                
+                print(f"\n📄 Processing {doc_title}:")
+                
+                # Get the original document text
+                original_doc = None
+                for node_id, node in doc_summary_index.docstore.docs.items():
+                    if hasattr(node, 'ref_doc_id') and node.ref_doc_id == doc_id:
+                        # Find the original document (usually the first/largest chunk)
+                        if not original_doc or len(node.text) > len(original_doc.text):
+                            original_doc = node
+                
+                if not original_doc:
+                    print(f"  ❌ Could not find original document for {doc_title}")
+                    continue
+                
+                # Parse into section-based chunks using standalone parser
+                section_nodes = section_parser.parse_document_to_sections(
+                    document_text=original_doc.text,
+                    metadata=doc_info.metadata
+                )
+                
+                print(f"  🔧 Created {len(section_nodes)} section-based chunks")
+                
+                # Embed each section chunk
+                for j, section_node in enumerate(section_nodes):
+                    try:
+                        print(f"  🔄 Embedding section chunk {j+1}...")
+                        
+                        # Manually embed the section text
+                        embedding_vector = embed_model.get_text_embedding(section_node.text)
+                        
+                        # Preserve enhanced metadata
+                        section_metadata = section_node.metadata.copy()
+                        section_metadata.update({
+                            "batch_number": batch_number,
+                            "doc_engine_id": f"batch_{batch_number}_doc_{i}",
+                            "original_doc_id": doc_id,
+                            "doc_title": doc_title,
+                            "text_length": len(section_node.text),
+                            "embedding_dim": len(embedding_vector) if embedding_vector else 0,
+                            "type": "section_chunk",
+                            "chunking_strategy": "section_based"
+                        })
+                        
+                        embedding_data = {
+                            "node_id": section_node.id_,
+                            "doc_id": doc_id,
+                            "doc_title": doc_title,
+                            "doc_engine_id": f"batch_{batch_number}_doc_{i}",
+                            "chunk_index": j,
+                            "text": section_node.text,
+                            "text_length": len(section_node.text),
+                            "embedding_vector": embedding_vector,
+                            "embedding_dim": len(embedding_vector) if embedding_vector else 0,
+                            "metadata": section_metadata,
+                            "type": "section_chunk",
+                            "batch_number": batch_number
+                        }
+                        
+                        section_embeddings.append(embedding_data)
+                        print(f"  ✅ Section chunk {j+1}: {len(section_node.text)} chars "
+                              f"(type: {section_metadata.get('chunk_type', 'unknown')}, "
+                              f"section: {section_metadata.get('section', 'unknown')})")
+                              
+                    except Exception as e:
+                        print(f"  ❌ Error embedding section chunk {j+1}: {str(e)}")
+                        
+            except Exception as e:
+                print(f"❌ Error processing document {i+1}: {str(e)}")
+        
+        # Generate section chunking statistics
+        if section_embeddings:
+            print(f"\n📊 SECTION CHUNKING STATISTICS:")
+            print("-" * 40)
+            chunk_types = {}
+            sections = {}
+            for emb in section_embeddings:
+                chunk_type = emb['metadata'].get('chunk_type', 'unknown')
+                section = emb['metadata'].get('section', 'unknown')
+                chunk_types[chunk_type] = chunk_types.get(chunk_type, 0) + 1
+                sections[section] = sections.get(section, 0) + 1
+            
+            print(f"Chunk types: {chunk_types}")
+            print(f"Sections: {sections}")
+            print(f"Total section chunks: {len(section_embeddings)}")
+        
+        return section_embeddings
     
     def create_production_query_engine(self, batch_number: int = None) -> iLandProductionQueryEngine:
         """Create a production-ready query engine from built indexes."""
