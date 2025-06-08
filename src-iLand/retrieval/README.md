@@ -165,6 +165,12 @@ python -m src-iLand.retrieval.cli --load-embeddings latest --query "ที่ด
 python -m src-iLand.retrieval.cli --batch-summary
 ```
 
+### Streamlit Interface
+Launch a simple chat UI in your browser:
+```bash
+streamlit run src-iLand/retrieval/streamlit_cli.py
+```
+
 ### Programmatic Usage
 
 ```python
