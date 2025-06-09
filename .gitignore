@@ -95,3 +95,8 @@ assets/*
 
 # Git rewrite temporary files
 .git-rewrite/
+
+# Model cache directories
+cache/
+*/cache/
+**/cache/

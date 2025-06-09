@@ -4,16 +4,30 @@ Supports both Hugging Face BGE models and OpenAI embeddings for comparison.
 """
 
 import os
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, TYPE_CHECKING
 from llama_index.core import DocumentSummaryIndex
 from llama_index.core.schema import IndexNode
 
-# Try importing embedding models
+# Handle conditional imports properly
+if TYPE_CHECKING:
+    # Only import for type checking, not at runtime
+    try:
+        from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+    except ImportError:
+        HuggingFaceEmbedding = None
+    
+    try:
+        from llama_index.embeddings.openai import OpenAIEmbedding
+    except ImportError:
+        OpenAIEmbedding = None
+
+# Try importing embedding models for runtime
 try:
     from llama_index.embeddings.huggingface import HuggingFaceEmbedding
     BGE_AVAILABLE = True
 except ImportError:
     BGE_AVAILABLE = False
+    HuggingFaceEmbedding = None
     print("⚠️ HuggingFace embeddings not available. Install with: pip install llama-index-embeddings-huggingface")
 
 try:
@@ -21,6 +35,7 @@ try:
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
+    OpenAIEmbedding = None
     print("⚠️ OpenAI embeddings not available. Install with: pip install llama-index-embeddings-openai")
 
 # Handle both module import and direct script execution
@@ -106,7 +121,7 @@ class BGEEmbeddingProcessor:
         else:
             raise ValueError(f"Unsupported embedding provider: {provider}. Use 'bge' or 'openai'")
     
-    def _initialize_bge_model(self) -> HuggingFaceEmbedding:
+    def _initialize_bge_model(self) -> Union["HuggingFaceEmbedding", None]:
         """Initialize BGE embedding model."""
         model_key = self.config.get("model_name", "bge-small-en-v1.5")
         
@@ -131,7 +146,7 @@ class BGEEmbeddingProcessor:
         self.model_info = model_config
         return embed_model
     
-    def _initialize_openai_model(self) -> OpenAIEmbedding:
+    def _initialize_openai_model(self) -> Union["OpenAIEmbedding", None]:
         """Initialize OpenAI embedding model."""
         model_name = self.config.get("model_name", "text-embedding-3-small")
         
