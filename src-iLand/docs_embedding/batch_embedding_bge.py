@@ -287,12 +287,29 @@ class iLandBGEBatchEmbeddingPipeline:
         """Build DocumentSummaryIndex with the configured models."""
         print(f"🏗️ Building DocumentSummaryIndex for batch {batch_number}...")
         
+        # DEBUG: Check input documents
+        print(f"🔍 DEBUG: Input documents:")
+        for i, doc in enumerate(docs[:3]):
+            print(f"  Doc {i}: text_len={len(doc.text)}, metadata_keys={list(doc.metadata.keys())}")
+            if doc.text:
+                text_preview = doc.text[:100] if doc.text else 'EMPTY'
+                print(f"    Text preview: '{text_preview}...'")
+        
         # Configure models
         embed_model = self.embedding_processor.embed_model
         splitter = SentenceSplitter(
             chunk_size=self.config["chunk_size"], 
             chunk_overlap=self.config["chunk_overlap"]
         )
+        
+        # DEBUG: Test text splitter
+        if docs:
+            test_chunks = splitter.split_text(docs[0].text)
+            print(f"🔍 DEBUG: Text splitter test on first doc:")
+            print(f"  Original text length: {len(docs[0].text)}")
+            print(f"  Number of chunks created: {len(test_chunks)}")
+            for i, chunk in enumerate(test_chunks[:3]):
+                print(f"    Chunk {i}: length={len(chunk)}, preview='{chunk[:50]}...'")
         
         Settings.embed_model = embed_model
         
@@ -303,22 +320,59 @@ class iLandBGEBatchEmbeddingPipeline:
                 use_async=True
             )
             
-            doc_summary_index = DocumentSummaryIndex.from_documents(
-                docs,
-                llm=self.llm,
-                embed_model=embed_model,
-                transformations=[splitter],
-                response_synthesizer=response_synthesizer,
-                show_progress=True,
-            )
+            # For BGE models, create index without embedding to avoid conflicts
+            # We'll manually embed the chunks later
+            if self.embedding_processor.provider == "bge":
+                print("🔍 DEBUG: Creating DocumentSummaryIndex without embedding for BGE model")
+                doc_summary_index = DocumentSummaryIndex.from_documents(
+                    docs,
+                    llm=self.llm,
+                    embed_model=None,  # Don't embed during index creation
+                    transformations=[splitter],
+                    response_synthesizer=response_synthesizer,
+                    show_progress=True,
+                )
+            else:
+                doc_summary_index = DocumentSummaryIndex.from_documents(
+                    docs,
+                    llm=self.llm,
+                    embed_model=embed_model,
+                    transformations=[splitter],
+                    response_synthesizer=response_synthesizer,
+                    show_progress=True,
+                )
         else:
             # Simple index without LLM summaries
-            doc_summary_index = DocumentSummaryIndex.from_documents(
-                docs,
-                embed_model=embed_model,
-                transformations=[splitter],
-                show_progress=True,
-            )
+            if self.embedding_processor.provider == "bge":
+                print("🔍 DEBUG: Creating simple DocumentSummaryIndex without embedding for BGE model")
+                doc_summary_index = DocumentSummaryIndex.from_documents(
+                    docs,
+                    embed_model=None,  # Don't embed during index creation
+                    transformations=[splitter],
+                    show_progress=True,
+                )
+            else:
+                doc_summary_index = DocumentSummaryIndex.from_documents(
+                    docs,
+                    embed_model=embed_model,
+                    transformations=[splitter],
+                    show_progress=True,
+                )
+        
+        # DEBUG: Check what was created in the index
+        print(f"🔍 DEBUG: DocumentSummaryIndex created:")
+        print(f"  Number of documents: {len(doc_summary_index.ref_doc_info)}")
+        print(f"  Number of nodes in docstore: {len(doc_summary_index.docstore.docs)}")
+        
+        # Check a few nodes in the docstore
+        node_items = list(doc_summary_index.docstore.docs.items())[:5]
+        for i, (node_id, node) in enumerate(node_items):
+            node_text = getattr(node, 'text', '')
+            print(f"    Node {i}: id={node_id[:20]}..., text_len={len(node_text)}, type={type(node).__name__}")
+            if hasattr(node, 'ref_doc_id'):
+                print(f"      ref_doc_id={getattr(node, 'ref_doc_id', 'None')}")
+            if node_text:
+                print(f"      text_preview='{node_text[:50]}...'")
         
         print("✅ Built DocumentSummaryIndex")
         return doc_summary_index
