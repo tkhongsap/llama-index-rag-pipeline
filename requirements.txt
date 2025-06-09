@@ -1,13 +1,16 @@
 pandas>=2.0.0
 llama-index>=0.9.0
 llama-index-core>=0.9.0
+llama-index-embeddings-huggingface>=0.1.0
 PyYAML>=6.0
 colorama>=0.4.6
 python-dotenv>=1.0.0
 streamlit>=1.34.0
-
-# Multi-model embedding support dependencies (BGE-M3)
-transformers>=4.36.0
-sentence-transformers>=2.3.0
-torch>=2.0.0
-FlagEmbedding>=1.2.0
+# BGE embedding dependencies
+sentence-transformers>=2.2.0
+transformers>=4.21.0
+torch>=1.12.0
+# For better performance
+accelerate>=0.20.0
+# Optional: for GPU support
+# nvidia-ml-py3>=7.352.0
