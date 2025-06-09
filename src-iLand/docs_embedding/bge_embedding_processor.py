@@ -209,6 +209,7 @@ class BGEEmbeddingProcessor:
                     "index_id": node.index_id,
                     "doc_title": node.metadata.get("doc_title", "unknown"),
                     "text": text,
+                    "text_length": len(text),
                     "original_text_length": len(node.text),
                     "processed_text_length": len(text),
                     "embedding_vector": embedding_vector,
@@ -253,12 +254,27 @@ class BGEEmbeddingProcessor:
                 
                 print(f"\n📄 Processing {doc_title} ({len(doc_chunks)} chunks):")
                 
+                # DEBUG: Check what chunks look like
+                print(f"🔍 DEBUG: First few chunks info:")
+                for debug_idx, chunk in enumerate(doc_chunks[:3]):
+                    print(f"  Chunk {debug_idx}: has_text={hasattr(chunk, 'text')}, text_len={len(getattr(chunk, 'text', ''))}, node_type={type(chunk).__name__}")
+                    if hasattr(chunk, 'text'):
+                        text_preview = getattr(chunk, 'text', '')[:100] if getattr(chunk, 'text', '') else 'EMPTY'
+                        print(f"    Text preview: '{text_preview}...'")
+                
                 for j, chunk in enumerate(doc_chunks):
                     try:
                         print(f"  🔄 Embedding chunk {j+1}...")
                         
+                        # DEBUG: Check chunk text before processing
+                        chunk_text = getattr(chunk, 'text', '')
+                        print(f"  🔍 DEBUG: chunk.text length = {len(chunk_text)}")
+                        if not chunk_text:
+                            print(f"  ⚠️ WARNING: Chunk {j+1} has empty text! Skipping...")
+                            continue
+                        
                         # Handle text length for different models
-                        text = self._prepare_text_for_embedding(chunk.text)
+                        text = self._prepare_text_for_embedding(chunk_text)
                         
                         # Manually embed the chunk text
                         embedding_vector = self.embed_model.get_text_embedding(text)
@@ -275,7 +291,8 @@ class BGEEmbeddingProcessor:
                             "doc_engine_id": f"batch_{batch_number}_doc_{i}",
                             "chunk_index": j,
                             "text": text,
-                            "original_text_length": len(chunk.text),
+                            "text_length": len(text),
+                            "original_text_length": len(chunk_text),
                             "processed_text_length": len(text),
                             "embedding_vector": embedding_vector,
                             "embedding_dim": len(embedding_vector) if embedding_vector else 0,
@@ -332,9 +349,10 @@ class BGEEmbeddingProcessor:
                     "node_id": f"summary_{doc_id}",
                     "doc_id": doc_id,
                     "doc_title": doc_title,
-                    "summary_text": text,
-                    "original_summary_length": len(doc_summary),
-                    "processed_summary_length": len(text),
+                    "text": text,
+                    "text_length": len(text),
+                    "original_text_length": len(doc_summary),
+                    "processed_text_length": len(text),
                     "embedding_vector": embedding_vector,
                     "embedding_dim": len(embedding_vector) if embedding_vector else 0,
                     "metadata": summary_metadata,
