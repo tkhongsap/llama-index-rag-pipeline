@@ -38,26 +38,47 @@ try:
     # Try relative imports first (when used as module)
     from .document_loader import iLandDocumentLoader
     from .metadata_extractor import iLandMetadataExtractor
-    from .embedding_processor import EmbeddingProcessor
     from .file_storage import EmbeddingStorage
+    # Import new multi-model embedding processor
+    try:
+        from .multi_model_embedding_processor import MultiModelEmbeddingProcessor as EmbeddingProcessor
+        from .embedding_config import EmbeddingConfiguration, get_embedding_config, get_config_from_environment
+        MULTI_MODEL_SUPPORT = True
+        print("✅ Multi-model embedding support enabled (BGE-M3 + OpenAI)")
+    except ImportError:
+        # Fallback to original embedding processor
+        from .embedding_processor import EmbeddingProcessor
+        MULTI_MODEL_SUPPORT = False
+        print("⚠️ Using legacy OpenAI-only embedding processor")
 except ImportError:
     # Fallback for direct script execution
     try:
         from document_loader import iLandDocumentLoader
         from metadata_extractor import iLandMetadataExtractor
-        from embedding_processor import EmbeddingProcessor
         from file_storage import EmbeddingStorage
+        # Import new multi-model embedding processor
+        try:
+            from multi_model_embedding_processor import MultiModelEmbeddingProcessor as EmbeddingProcessor
+            from embedding_config import EmbeddingConfiguration, get_embedding_config, get_config_from_environment
+            MULTI_MODEL_SUPPORT = True
+            print("✅ Multi-model embedding support enabled (BGE-M3 + OpenAI)")
+        except ImportError:
+            # Fallback to original embedding processor
+            from embedding_processor import EmbeddingProcessor
+            MULTI_MODEL_SUPPORT = False
+            print("⚠️ Using legacy OpenAI-only embedding processor")
     except ImportError as e:
         print(f"❌ Import Error: {e}")
         print("Make sure you're running from the correct directory with all module files present.")
         sys.exit(1)
 
-# Configuration
+# Configuration with multi-model embedding support
 CONFIG = {
     "data_dir": Path("../example"),
     "output_dir": Path("../data/embedding"),
     "chunk_size": 1024,
     "chunk_overlap": 200,
+    # Legacy embedding configuration (backward compatibility)
     "embedding_model": "text-embedding-3-small",
     "llm_model": "gpt-4o-mini",
     "summary_truncate_length": 1000,
@@ -73,7 +94,32 @@ CONFIG = {
     "enable_section_chunking": True,
     "section_chunk_size": 512,
     "section_chunk_overlap": 50,
-    "min_section_size": 50
+    "min_section_size": 50,
+    
+    # Multi-model embedding configuration (new)
+    "embedding_provider": "BGE_M3",  # Options: "BGE_M3", "OPENAI", "AUTO"
+    "embedding_config": {
+        "default_provider": "BGE_M3",
+        "providers": {
+            "BGE_M3": {
+                "model_name": "BAAI/bge-m3",
+                "device": "auto",
+                "batch_size": 32,
+                "normalize": True,
+                "trust_remote_code": True,
+                "max_length": 8192
+            },
+            "OPENAI": {
+                "model_name": "text-embedding-3-small",
+                "api_key_env": "OPENAI_API_KEY",
+                "batch_size": 20,
+                "retry_attempts": 3,
+                "timeout": 30
+            }
+        },
+        "fallback_enabled": True,
+        "fallback_order": ["BGE_M3", "OPENAI"]
+    }
 }
 
 
@@ -230,17 +276,67 @@ class iLandBatchEmbeddingPipeline:
     
     def __init__(self, config: Dict[str, Any] = CONFIG):
         self.config = config
+        
+        # Initialize embedding configuration
+        self._initialize_embedding_config()
+        
+        # Initialize API key for legacy/OpenAI usage
+        self.api_key = self._validate_api_key() if self._needs_openai_key() else None
+        
         self.document_loader = iLandDocumentLoader()
         self.metadata_extractor = iLandMetadataExtractor()
-        self.embedding_processor = EmbeddingProcessor()
-        self.storage = EmbeddingStorage()
-        self.api_key = self._validate_api_key()
+        
+        # Initialize embedding processor with multi-model support
+        if MULTI_MODEL_SUPPORT:
+            embedding_config = self.config.get("embedding_config", {})
+            # Apply environment overrides
+            env_overrides = get_config_from_environment()
+            if env_overrides:
+                embedding_config.update(env_overrides)
+                print(f"ℹ️ Applied environment configuration overrides: {list(env_overrides.keys())}")
+            
+            self.embedding_processor = EmbeddingProcessor(embedding_config)
+        else:
+            self.embedding_processor = EmbeddingProcessor()
+        
+        self.storage = EmbeddingStorage(self.config["output_dir"])
         
         # Production RAG enhancements
         self.sentence_window_index = None
         self.hierarchical_retriever = None
         self.query_router = None
         self.production_indexes = {}
+    
+    def _initialize_embedding_config(self):
+        """Initialize embedding configuration with backward compatibility."""
+        if MULTI_MODEL_SUPPORT:
+            # Handle backward compatibility for legacy configuration
+            if "embedding_config" not in self.config:
+                # Create embedding config from legacy settings
+                legacy_config = {
+                    "embedding_model": self.config.get("embedding_model", "text-embedding-3-small"),
+                    "batch_size": self.config.get("batch_size", 20)
+                }
+                embedding_config = get_embedding_config(legacy_config=legacy_config)
+                self.config["embedding_config"] = embedding_config.get_full_config()
+                print("ℹ️ Converted legacy configuration to multi-model format")
+            
+            # Apply provider override if specified
+            provider_override = self.config.get("embedding_provider")
+            if provider_override:
+                self.config["embedding_config"]["default_provider"] = provider_override.upper()
+                print(f"ℹ️ Override provider set to: {provider_override}")
+    
+    def _needs_openai_key(self) -> bool:
+        """Check if OpenAI API key is needed based on configuration."""
+        if not MULTI_MODEL_SUPPORT:
+            return True  # Legacy mode always needs OpenAI
+        
+        embedding_config = self.config.get("embedding_config", {})
+        default_provider = embedding_config.get("default_provider", "BGE_M3")
+        fallback_order = embedding_config.get("fallback_order", [])
+        
+        return default_provider == "OPENAI" or "OPENAI" in fallback_order
         
     def _validate_api_key(self) -> str:
         """Validate and return OpenAI API key from environment."""
@@ -327,8 +423,9 @@ class iLandBatchEmbeddingPipeline:
         print(f"🔄 Building IndexNodes for recursive retrieval...")
         doc_index_nodes = self._build_index_nodes(doc_summary_index, batch_number)
         
-        # Configure embedding model for extraction
-        embed_model = OpenAIEmbedding(model=self.config["embedding_model"], api_key=self.api_key)
+        # Configure embedding model for extraction (legacy compatibility)
+        # Note: The embedding processor now handles provider selection internally
+        embed_model = None  # Will be handled by the embedding processor
         
         # Extract embeddings (maintain existing functionality)
         print(f"\n🔍 EXTRACTING EMBEDDINGS FOR BATCH {batch_number}:")
@@ -592,20 +689,40 @@ class iLandBatchEmbeddingPipeline:
         
         return indexes
     
-    def _extract_sentence_embeddings(self, sentence_index: VectorStoreIndex, embed_model: OpenAIEmbedding, batch_number: int) -> List[Dict]:
-        """Extract embeddings from sentence window nodes."""
+    def _extract_sentence_embeddings(self, sentence_index: VectorStoreIndex, embed_model, batch_number: int) -> List[Dict]:
+        """Extract embeddings from sentence window nodes with multi-model support."""
         sentence_embeddings = []
         
         # Get all nodes from the sentence index
         nodes = list(sentence_index.docstore.docs.values())
         
-        for i, node in enumerate(nodes):
+        # Collect all sentence texts for batch processing
+        sentence_texts = []
+        for node in nodes:
+            original_text = node.metadata.get('original_text', node.text)
+            sentence_texts.append(original_text)
+        
+        # Batch embed all sentences
+        if MULTI_MODEL_SUPPORT and hasattr(self.embedding_processor, 'embedding_manager'):
+            print(f"🔄 Batch embedding {len(sentence_texts)} sentence windows...")
+            embedding_vectors = self.embedding_processor.embedding_manager.embed_documents_with_fallback(sentence_texts)
+        else:
+            # Fallback to individual processing for legacy mode
+            print(f"🔄 Individual embedding {len(sentence_texts)} sentence windows...")
+            embedding_vectors = []
+            for original_text in sentence_texts:
+                if embed_model:  # Legacy mode
+                    embedding_vector = embed_model.get_text_embedding(original_text)
+                else:
+                    # This shouldn't happen, but fallback gracefully
+                    embedding_vector = [0.0] * 1536  # Default dimension
+                embedding_vectors.append(embedding_vector)
+        
+        # Process each sentence with its embedding
+        for i, (node, embedding_vector) in enumerate(zip(nodes, embedding_vectors)):
             try:
                 # Get the original sentence text
                 original_text = node.metadata.get('original_text', node.text)
-                
-                # Manually embed the sentence
-                embedding_vector = embed_model.get_text_embedding(original_text)
                 
                 embedding_data = {
                     "node_id": node.node_id,
@@ -634,10 +751,10 @@ class iLandBatchEmbeddingPipeline:
     def _extract_section_based_chunks(
         self, 
         doc_summary_index: DocumentSummaryIndex, 
-        embed_model: OpenAIEmbedding, 
+        embed_model,  # Legacy parameter for compatibility, now ignored
         batch_number: int
     ) -> List[Dict]:
-        """Extract embeddings using section-based chunking strategy."""
+        """Extract embeddings using section-based chunking strategy with multi-model support."""
         print(f"\n📄 EXTRACTING SECTION-BASED CHUNK EMBEDDINGS (Batch {batch_number}):")
         print("-" * 60)
         
@@ -687,13 +804,30 @@ class iLandBatchEmbeddingPipeline:
                 
                 print(f"  🔧 Created {len(section_nodes)} section-based chunks")
                 
-                # Embed each section chunk
-                for j, section_node in enumerate(section_nodes):
+                # Collect all section texts for batch processing
+                section_texts = [node.text for node in section_nodes]
+                
+                # Embed all sections at once using the embedding processor
+                if MULTI_MODEL_SUPPORT and hasattr(self.embedding_processor, 'embedding_manager'):
+                    print(f"  🔄 Batch embedding {len(section_texts)} section chunks...")
+                    embedding_vectors = self.embedding_processor.embedding_manager.embed_documents_with_fallback(section_texts)
+                else:
+                    # Fallback to individual processing for legacy mode
+                    print(f"  🔄 Individual embedding {len(section_texts)} section chunks...")
+                    embedding_vectors = []
+                    for section_node in section_nodes:
+                        if embed_model:  # Legacy mode
+                            embedding_vector = embed_model.get_text_embedding(section_node.text)
+                        else:
+                            # This shouldn't happen, but fallback gracefully
+                            embedding_vector = [0.0] * 1536  # Default dimension
+                        embedding_vectors.append(embedding_vector)
+                
+                # Process each section chunk with its embedding
+                for j, (section_node, embedding_vector) in enumerate(zip(section_nodes, embedding_vectors)):
                     try:
-                        print(f"  🔄 Embedding section chunk {j+1}...")
-                        
-                        # Manually embed the section text
-                        embedding_vector = embed_model.get_text_embedding(section_node.text)
+                        print(f"  ✅ Section chunk {j+1}: {len(section_node.text)} chars "
+                              f"(dim: {len(embedding_vector) if embedding_vector else 0})")
                         
                         # Preserve enhanced metadata
                         section_metadata = section_node.metadata.copy()
