@@ -2,8 +2,13 @@ import pandas as pd
 import re
 import logging
 from typing import List, Dict, Any
-from ..common.thai_provinces import THAI_PROVINCES
+
 # Handle both relative and absolute imports
+try:
+    from ..common.thai_provinces import THAI_PROVINCES
+except ImportError:  # When package context is missing
+    from common.thai_provinces import THAI_PROVINCES
+
 try:
     from .models import FieldMapping, DatasetConfig
 except ImportError:
