@@ -53,26 +53,67 @@ class iLandIndexReconstructor:
         except:
             self.metadata_extractor = None
             
-        if self.config.api_key:
-            self._setup_llm_settings()
-        else:
+        # Don't setup LLM settings here - we'll do it when we have embeddings data
+        if not self.config.api_key:
             print("⚠️ Warning: No OpenAI API key found. Index creation will be limited.")
     
-    def _setup_llm_settings(self):
+    def _setup_llm_settings(self, embeddings: List[Dict[str, Any]] = None):
         """Configure LLM settings for Thai land deed processing."""
         if not self.config.api_key:
             raise ValueError("OpenAI API key not found")
         
-        # Configure models
+        # Configure LLM (always use OpenAI for text generation)
         Settings.llm = OpenAI(
             model=self.config.llm_model, 
             temperature=0, 
             api_key=self.config.api_key
         )
-        Settings.embed_model = OpenAIEmbedding(
-            model=self.config.embed_model, 
-            api_key=self.config.api_key
-        )
+        
+        # Detect embedding provider from embeddings data
+        if embeddings and len(embeddings) > 0:
+            sample_embedding = embeddings[0]
+            embedding_provider = sample_embedding.get("embedding_provider", "openai")
+            embedding_model = sample_embedding.get("embedding_model", self.config.embed_model)
+            
+            if embedding_provider == "bge":
+                print(f"🔍 Detected BGE embeddings ({embedding_model}), using HuggingFace embedding model for queries")
+                try:
+                    from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+                    
+                    # Map BGE model names to their full HuggingFace paths
+                    bge_model_mapping = {
+                        "bge-m3": "BAAI/bge-m3",
+                        "bge-large": "BAAI/bge-large-en-v1.5",
+                        "bge-base": "BAAI/bge-base-en-v1.5"
+                    }
+                    
+                    model_name = bge_model_mapping.get(embedding_model, embedding_model)
+                    
+                    Settings.embed_model = HuggingFaceEmbedding(
+                        model_name=model_name,
+                        trust_remote_code=True
+                    )
+                    print(f"✅ Configured BGE embedding model: {model_name}")
+                    
+                except ImportError:
+                    print("⚠️ Warning: HuggingFace embeddings not available, falling back to OpenAI")
+                    Settings.embed_model = OpenAIEmbedding(
+                        model=self.config.embed_model, 
+                        api_key=self.config.api_key
+                    )
+            else:
+                # Use OpenAI embeddings for OpenAI-generated embeddings
+                Settings.embed_model = OpenAIEmbedding(
+                    model=embedding_model if embedding_provider == "openai" else self.config.embed_model, 
+                    api_key=self.config.api_key
+                )
+                print(f"✅ Configured OpenAI embedding model: {Settings.embed_model.model_name}")
+        else:
+            # Default to OpenAI if no embeddings provided
+            Settings.embed_model = OpenAIEmbedding(
+                model=self.config.embed_model, 
+                api_key=self.config.api_key
+            )
     
     def embeddings_to_nodes(
         self, 
@@ -119,6 +160,10 @@ class iLandIndexReconstructor:
         show_progress: bool = True
     ) -> VectorStoreIndex:
         """Create a VectorStoreIndex from iLand embeddings."""
+        # Setup embedding model based on the embeddings data
+        if self.config.api_key:
+            self._setup_llm_settings(embeddings)
+        
         # Convert to nodes
         nodes = self.embeddings_to_nodes(embeddings)
         
