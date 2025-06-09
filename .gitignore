@@ -88,10 +88,15 @@ Thumbs.db
 # Data and assets (customize as needed)
 data/*
 assets/*
-example/*
+# example/*
 
 # Logs
 *.log
 
 # Git rewrite temporary files
 .git-rewrite/
+
+# Model cache directories
+cache/
+*/cache/
+**/cache/
