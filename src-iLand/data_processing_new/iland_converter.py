@@ -29,12 +29,13 @@ logger = logging.getLogger(__name__)
 class iLandCSVConverter:
     """Main converter class that orchestrates CSV to Document conversion for iLand dataset"""
     
-    def __init__(self, input_csv_path: str, output_dir: str, config_path: str = None):
-        self.input_csv_path = input_csv_path
+    def __init__(self, input_file_path: str, output_dir: str, config_path: str = None):
+        self.input_file_path = input_file_path
         self.output_dir = output_dir
         self.config_path = config_path
         self.dataset_config = None
         self.encoding = 'utf-8'
+        self.is_excel = input_file_path.lower().endswith(('.xlsx', '.xls'))
         
         # Initialize components
         self.csv_analyzer = CSVAnalyzer()
@@ -51,8 +52,8 @@ class iLandCSVConverter:
             logger.info(f"Loading existing configuration: {self.config_path}")
             self.dataset_config = self.config_manager.load_config(self.config_path)
         elif auto_generate:
-            logger.info("Auto-generating configuration from iLand CSV analysis")
-            analysis = self.csv_analyzer.analyze_csv_structure(self.input_csv_path)
+            logger.info("Auto-generating configuration from iLand data file analysis")
+            analysis = self.csv_analyzer.analyze_csv_structure(self.input_file_path)
             
             # Update encoding based on analysis
             self.encoding = analysis['encoding_used']
@@ -78,13 +79,30 @@ class iLandCSVConverter:
         
         return self.dataset_config
     
+    def _read_data_in_chunks(self, batch_size: int = 1000):
+        """Read data from file in chunks, supporting both CSV and Excel formats"""
+        if self.is_excel:
+            # For Excel, we read the entire file once, then yield chunks
+            logger.info(f"Reading Excel file: {self.input_file_path}")
+            df = pd.read_excel(self.input_file_path)
+            total_rows = len(df)
+            
+            for i in range(0, total_rows, batch_size):
+                yield df.iloc[i:min(i + batch_size, total_rows)]
+        else:
+            # For CSV, we use the built-in chunking support
+            logger.info(f"Reading CSV file with encoding {self.encoding}: {self.input_file_path}")
+            for chunk in pd.read_csv(self.input_file_path, chunksize=batch_size, encoding=self.encoding):
+                yield chunk
+    
     def process_csv_to_documents(self, batch_size: int = 1000, max_rows: int = None) -> List[SimpleDocument]:
-        """Process entire CSV file and convert to documents"""
+        """Process entire data file and convert to documents"""
         
         if self.dataset_config is None:
             raise ValueError("Configuration not set up. Call setup_configuration() first.")
         
-        logger.info(f"Starting conversion using config: {self.dataset_config.name}")
+        file_type = "Excel" if self.is_excel else "CSV"
+        logger.info(f"Starting conversion of {file_type} data using config: {self.dataset_config.name}")
         logger.info(f"Using encoding: {self.encoding}")
         logger.info(f"Priority fields for embedding: {self.dataset_config.embedding_fields}")
         
@@ -94,7 +112,7 @@ class iLandCSVConverter:
         failed_rows = []
         start_time = datetime.now()
         
-        for chunk in pd.read_csv(self.input_csv_path, chunksize=batch_size, encoding=self.encoding):
+        for chunk in self._read_data_in_chunks(batch_size):
             chunk_num += 1
             chunk_start_time = datetime.now()
             
@@ -187,4 +205,4 @@ class iLandCSVConverter:
     
     def analyze_csv_structure(self):
         """Analyze CSV structure and return analysis results"""
-        return self.csv_analyzer.analyze_csv_structure(self.input_csv_path) 
+        return self.csv_analyzer.analyze_csv_structure(self.input_file_path) 

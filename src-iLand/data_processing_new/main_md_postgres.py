@@ -1,7 +1,7 @@
 """
 Main execution script for iLand dataset processing
 
-This script provides a simple interface to process iLand CSV files into documents
+This script provides a simple interface to process iLand data files into documents
 using the refactored modular components.
 """
 
@@ -31,9 +31,9 @@ def main():
     """Main execution function for iLand dataset processing"""
     
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description='Process iLand CSV data and save to PostgreSQL database')
+    parser = argparse.ArgumentParser(description='Process iLand data and save to PostgreSQL database')
     parser.add_argument('--max-rows', type=int, default=None, 
-                        help='Maximum number of rows to process from CSV (default: all rows)')
+                        help='Maximum number of rows to process (default: all rows)')
     parser.add_argument('--batch-size', type=int, default=500,
                         help='Batch size for processing (default: 500)')
     parser.add_argument('--db-batch-size', type=int, default=100,
@@ -42,8 +42,8 @@ def main():
                         help='Database host (default: 10.4.102.11)')
     parser.add_argument('--db-port', type=int, default=5432,
                         help='Database port (default: 5432)')
-    parser.add_argument('--csv-file', type=str, default=None,
-                        help='Custom CSV filename (default: input_dataset.csv)')
+    parser.add_argument('--input-file', type=str, default=None,
+                        help='Custom input filename (default: input_dataset_iLand.xlsx)')
     args = parser.parse_args()
     
     # Auto-detect correct paths based on script location
@@ -51,32 +51,32 @@ def main():
     project_root = script_dir.parent.parent  # Go up two levels from src-iLand/data_processing/
     input_dir = project_root / "data" / "input_docs"
     
-    # Look for the iLand CSV file
-    csv_filename = args.csv_file if args.csv_file else "input_dataset.csv"
-    input_csv = input_dir / csv_filename
+    # Look for the iLand data file
+    input_filename = args.input_file if args.input_file else "input_dataset_iLand.xlsx"
+    input_file = input_dir / input_filename
     
-    if not input_csv.exists():
+    if not input_file.exists():
         raise FileNotFoundError(
-            f"Could not find iLand CSV file: {input_csv}\n"
-            f"Please ensure {csv_filename} exists in data/input_docs/"
+            f"Could not find iLand data file: {input_file}\n"
+            f"Please ensure {input_filename} exists in data/input_docs/"
         )
     
     # Set output directory
     output_dir = str(project_root / "data" / "output_docs")
     
-    logger.info(f"Using iLand CSV file: {input_csv}")
+    logger.info(f"Using iLand data file: {input_file}")
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Max rows to process: {args.max_rows or 'All'}")
     logger.info(f"Database host: {args.db_host}, port: {args.db_port}")
     
     # Create iLand converter
-    converter = iLandCSVConverter(str(input_csv), output_dir)
+    converter = iLandCSVConverter(str(input_file), output_dir)
     
     # Set database connection parameters
     converter.db_manager.db_host = args.db_host
     converter.db_manager.db_port = args.db_port
     
-    # Setup configuration (auto-generate from CSV analysis)
+    # Setup configuration (auto-generate from data file analysis)
     config = converter.setup_configuration(config_name="iland_deed_records", auto_generate=True)
     
     # Process documents in smaller batches due to large dataset

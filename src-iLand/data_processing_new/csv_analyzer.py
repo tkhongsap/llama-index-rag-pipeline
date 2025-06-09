@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import logging
+import os
 from typing import List, Dict, Any
 
 # Handle both relative and absolute imports
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class CSVAnalyzer:
-    """Handles CSV structure analysis and field mapping suggestions"""
+    """Handles CSV/Excel structure analysis and field mapping suggestions"""
     
     def __init__(self):
         self.thai_provinces = self._load_thai_provinces()
@@ -27,33 +28,47 @@ class CSVAnalyzer:
         """Load list of Thai provinces for validation"""
         return THAI_PROVINCES
     
-    def analyze_csv_structure(self, csv_path: str) -> Dict[str, Any]:
-        """Analyze CSV structure and suggest field mappings for iLand dataset"""
-        logger.info(f"Analyzing iLand CSV structure: {csv_path}")
+    def analyze_csv_structure(self, file_path: str) -> Dict[str, Any]:
+        """Analyze CSV/Excel structure and suggest field mappings for iLand dataset"""
+        logger.info(f"Analyzing iLand data file structure: {file_path}")
         
-        # Smart encoding detection for Thai CSV files
-        logger.info("Detecting optimal encoding for CSV file...")
-        # Try Thai encoding first since this is for iLand (Thai) dataset  
-        encodings_to_try = ['cp874', 'utf-8', 'utf-8-sig', 'latin-1']
-        sample_df = None
-        used_encoding = None
+        # Check if file is Excel or CSV
+        file_extension = os.path.splitext(file_path.lower())[1]
+        is_excel = file_extension in ['.xlsx', '.xls']
         
-        for i, encoding in enumerate(encodings_to_try):
+        if is_excel:
+            # For Excel files
             try:
-                sample_df = pd.read_csv(csv_path, nrows=200, encoding=encoding)
-                used_encoding = encoding
-                logger.info(f"✓ Successfully read CSV with encoding: {encoding}")
-                break
-            except UnicodeDecodeError:
-                # Only show debug info, not warnings, since this is expected behavior
-                logger.debug(f"Encoding {encoding} not compatible, trying next...")
-                continue
+                logger.info(f"Reading Excel file: {file_path}")
+                sample_df = pd.read_excel(file_path, nrows=200)
+                used_encoding = None  # Not applicable for Excel
             except Exception as e:
-                logger.debug(f"Error with encoding {encoding}: {str(e)[:50]}")
-                continue
-        
-        if sample_df is None:
-            raise ValueError(f"Could not read CSV file with any of the tried encodings: {encodings_to_try}")
+                logger.error(f"Error reading Excel file: {e}")
+                raise ValueError(f"Could not read Excel file: {e}")
+        else:
+            # For CSV files - Smart encoding detection for Thai CSV files
+            logger.info("Detecting optimal encoding for CSV file...")
+            # Try Thai encoding first since this is for iLand (Thai) dataset  
+            encodings_to_try = ['cp874', 'utf-8', 'utf-8-sig', 'latin-1']
+            sample_df = None
+            used_encoding = None
+            
+            for i, encoding in enumerate(encodings_to_try):
+                try:
+                    sample_df = pd.read_csv(file_path, nrows=200, encoding=encoding)
+                    used_encoding = encoding
+                    logger.info(f"✓ Successfully read CSV with encoding: {encoding}")
+                    break
+                except UnicodeDecodeError:
+                    # Only show debug info, not warnings, since this is expected behavior
+                    logger.debug(f"Encoding {encoding} not compatible, trying next...")
+                    continue
+                except Exception as e:
+                    logger.debug(f"Error with encoding {encoding}: {str(e)[:50]}")
+                    continue
+            
+            if sample_df is None:
+                raise ValueError(f"Could not read CSV file with any of the tried encodings: {encodings_to_try}")
         
         csv_columns = list(sample_df.columns)
         
@@ -76,6 +91,7 @@ class CSVAnalyzer:
             'data_types': dict(sample_df.dtypes.astype(str)),
             'sample_data': sample_df.head(3).to_dict('records'),
             'encoding_used': used_encoding,
+            'file_type': 'excel' if is_excel else 'csv',
             'statistics': stats
         }
         
