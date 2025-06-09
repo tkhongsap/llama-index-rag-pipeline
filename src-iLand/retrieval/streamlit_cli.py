@@ -1,6 +1,7 @@
 import streamlit as st
 from typing import Dict, Any, Optional
 import time
+import json
 from datetime import datetime
 
 from llama_index.core.schema import QueryBundle
@@ -109,6 +110,20 @@ def display_search_results(results: list):
                         unsafe_allow_html=True,
                     )
 
+def export_chat_history():
+    """Allow the user to download chat history as JSON."""
+    chat_history = st.session_state.get("messages", [])
+    if not chat_history:
+        st.warning("No chat history to export")
+        return
+    json_str = json.dumps(chat_history, indent=2, ensure_ascii=False)
+    st.download_button(
+        label="\U0001F4BE Download Chat History",
+        data=json_str,
+        file_name=f"chat_history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+        mime="application/json",
+    )
+
 def run_query_with_cli(cli: iLandRetrievalCLI, query: str, top_k: int) -> Dict[str, Any]:
     try:
         results = cli.query(query, top_k=top_k)
@@ -118,8 +133,12 @@ def run_query_with_cli(cli: iLandRetrievalCLI, query: str, top_k: int) -> Dict[s
             nodes = cli.router._retrieve(query_bundle)
             response_text = cli.response_synthesizer.synthesize(query, nodes).response
         return {"results": results, "response": response_text, "success": True}
+    except FileNotFoundError:
+        return {"results": [], "response": "Required files not found.", "success": False}
+    except PermissionError:
+        return {"results": [], "response": "Permission denied while accessing necessary files.", "success": False}
     except Exception as e:
-        return {"results": [], "response": f"Sorry, I encountered an error: {e}", "success": False}
+        return {"results": [], "response": f"Sorry, I encountered an unexpected error: {e}", "success": False}
 
 def main():
     st.set_page_config(page_title="iLand Chat", page_icon="\U0001F30F", layout="wide", initial_sidebar_state="collapsed")
@@ -136,7 +155,9 @@ def main():
         st.header("\u2699\ufe0f Settings")
         top_k = st.slider("Number of results", 1, 10, 5)
         show_details = st.checkbox("Show technical details", value=False)
-        if st.button("\U0001F5D1\ufe0f Clear chat"):
+        export_chat_history()
+        confirm_clear = st.checkbox("Confirm clear chat")
+        if st.button("\U0001F5D1\ufe0f Clear chat") and confirm_clear:
             st.session_state.messages = []
             st.rerun()
     chat_container = st.container()
@@ -165,7 +186,8 @@ def main():
     if st.session_state.is_typing and st.session_state.messages:
         last_message = st.session_state.messages[-1]
         if last_message["role"] == "user":
-            output = run_query_with_cli(cli, last_message["content"], top_k)
+            with st.spinner("\u23F3 Searching..."):
+                output = run_query_with_cli(cli, last_message["content"], top_k)
             response_content = output.get("response") or f"I found {len(output['results'])} relevant land deed records for your query."
             st.session_state.messages.append({"role": "assistant", "content": response_content, "time": format_message_time(), "results": output["results"]})
             st.session_state.is_typing = False
