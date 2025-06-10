@@ -2,10 +2,10 @@
 PostgreSQL Embedding Generator for iLand RAG Pipeline
 
 This module loads documents from PostgreSQL database, generates embeddings
-using OpenAI's embedding API, and stores the vectors in PostgreSQL for vector search.
+using the same sophisticated processing as the local version (rich metadata extraction,
+section-based chunking), and stores the vectors in PostgreSQL for vector search.
 
-It extends the iLand RAG pipeline by connecting the data processing module
-with the vector search capabilities.
+Enhanced to match the quality and features of the local embedding pipeline.
 """
 
 import os
@@ -30,12 +30,23 @@ from llama_index.core.schema import TextNode, NodeRelationship, RelatedNodeInfo
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.vector_stores.postgres import PGVectorStore
 
+# Import local components for rich processing
+try:
+    from .metadata_extractor import iLandMetadataExtractor
+    from .standalone_section_parser import StandaloneLandDeedSectionParser
+except ImportError:
+    from metadata_extractor import iLandMetadataExtractor
+    from standalone_section_parser import StandaloneLandDeedSectionParser
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class PostgresEmbeddingGenerator:
-    """Generates embeddings from PostgreSQL documents and stores them in a vector database."""
+    """
+    Enhanced PostgreSQL embedding generator that uses the same sophisticated processing
+    as the local version, including rich metadata extraction and section-based chunking.
+    """
     
     def __init__(
         self,
@@ -59,9 +70,13 @@ class PostgresEmbeddingGenerator:
         embed_model_name: str = os.getenv("EMBED_MODEL", "text-embedding-3-small"),
         chunk_size: int = int(os.getenv("CHUNK_SIZE", "512")),
         chunk_overlap: int = int(os.getenv("CHUNK_OVERLAP", "50")),
-        batch_size: int = int(os.getenv("API_BATCH_SIZE", "20"))
+        batch_size: int = int(os.getenv("API_BATCH_SIZE", "20")),
+        
+        # Enhanced processing settings
+        enable_section_chunking: bool = True,
+        min_section_size: int = 50
     ):
-        """Initialize the PostgreSQL Embedding Generator with connection settings."""
+        """Initialize the Enhanced PostgreSQL Embedding Generator."""
         
         # Source database (markdown documents)
         self.source_db_name = source_db_name
@@ -86,6 +101,10 @@ class PostgresEmbeddingGenerator:
         self.chunk_overlap = chunk_overlap
         self.batch_size = batch_size
         
+        # Enhanced processing settings
+        self.enable_section_chunking = enable_section_chunking
+        self.min_section_size = min_section_size
+        
         # Validate OpenAI API key
         if not os.getenv("OPENAI_API_KEY"):
             raise ValueError("OPENAI_API_KEY environment variable not found. Please set it in the .env file.")
@@ -99,11 +118,21 @@ class PostgresEmbeddingGenerator:
         # Get embedding dimensions based on model
         self.embed_dim = self._get_embed_dim(embed_model_name)
         
-        # Initialize node parser for text chunking
-        self.node_parser = SentenceSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap
-        )
+        # Initialize enhanced processing components
+        self.metadata_extractor = iLandMetadataExtractor()
+        
+        if self.enable_section_chunking:
+            self.section_parser = StandaloneLandDeedSectionParser(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                min_section_size=min_section_size
+            )
+        else:
+            # Fallback to sentence splitting
+            self.node_parser = SentenceSplitter(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap
+            )
         
         # Initialize vector store
         self.vector_store = self._initialize_vector_store()
@@ -113,6 +142,15 @@ class PostgresEmbeddingGenerator:
             vector_store=self.vector_store,
             embed_model=self.embed_model
         )
+        
+        # Statistics tracking
+        self.processing_stats = {
+            "documents_processed": 0,
+            "nodes_created": 0,
+            "section_chunks": 0,
+            "fallback_chunks": 0,
+            "metadata_fields_extracted": 0
+        }
     
     def _get_embed_dim(self, model_name: str) -> int:
         """Get embedding dimensions based on the model name."""
@@ -195,38 +233,87 @@ class PostgresEmbeddingGenerator:
             return []
     
     def process_documents(self, documents: List[Dict[str, Any]]) -> List[TextNode]:
-        """Process documents into TextNodes with embeddings."""
+        """
+        Process documents into TextNodes using enhanced processing with rich metadata
+        extraction and section-based chunking (same as local version).
+        """
         all_nodes = []
         
         for i, doc in enumerate(documents):
             logger.info(f"Processing document {i+1}/{len(documents)} with deed_id: {doc['deed_id']}")
             
-            # Create Document object
-            llama_doc = Document(
-                text=doc['content'],
-                metadata={"deed_id": doc['deed_id']}
-            )
-            
-            # Parse document into nodes
-            nodes = self.node_parser.get_nodes_from_documents([llama_doc])
-            
-            # Add document metadata to each node
-            for node in nodes:
-                # Add deed_id to all nodes' metadata
-                node.metadata["deed_id"] = doc['deed_id']
+            try:
+                # Extract rich metadata from document content
+                extracted_metadata = self.metadata_extractor.extract_from_content(doc['content'])
                 
-                # Add section info if available in the markdown content
-                if "## " in node.text:
-                    section = node.text.split("## ")[1].split("\n")[0].strip()
-                    node.metadata["section"] = section
-            
-            all_nodes.extend(nodes)
-            
-            # Log progress for first few documents
-            if i < 3:
-                logger.info(f"  - Created {len(nodes)} chunks for deed_id: {doc['deed_id']}")
+                # Add derived categories
+                derived_metadata = self.metadata_extractor.derive_categories(extracted_metadata)
+                extracted_metadata.update(derived_metadata)
+                
+                # Add document ID and processing metadata
+                base_metadata = {
+                    "deed_id": doc['deed_id'],
+                    "processing_timestamp": datetime.now().isoformat(),
+                    "source": "postgresql_pipeline",
+                    "doc_type": "thai_land_deed",
+                    **extracted_metadata
+                }
+                
+                # Update statistics
+                self.processing_stats["metadata_fields_extracted"] += len(extracted_metadata)
+                
+                # Process with section-based chunking if enabled
+                if self.enable_section_chunking:
+                    nodes = self.section_parser.parse_document_to_sections(
+                        doc['content'], 
+                        base_metadata
+                    )
+                    
+                    # Update statistics
+                    section_count = sum(1 for node in nodes if node.metadata.get("chunk_type") == "section")
+                    fallback_count = sum(1 for node in nodes if node.metadata.get("fallback_chunk", False))
+                    
+                    self.processing_stats["section_chunks"] += section_count
+                    self.processing_stats["fallback_chunks"] += fallback_count
+                    
+                    if i < 3:  # Log details for first few documents
+                        logger.info(f"  - Created {len(nodes)} section-based chunks ({section_count} sections, {fallback_count} fallback)")
+                else:
+                    # Fallback to sentence splitting
+                    llama_doc = Document(
+                        text=doc['content'],
+                        metadata=base_metadata
+                    )
+                    
+                    nodes = self.node_parser.get_nodes_from_documents([llama_doc])
+                    
+                    # Add enhanced metadata to each node
+                    for node in nodes:
+                        node.metadata.update(base_metadata)
+                        node.metadata["chunk_type"] = "sentence"
+                        node.metadata["chunking_strategy"] = "sentence_splitting"
+                    
+                    self.processing_stats["fallback_chunks"] += len(nodes)
+                    
+                    if i < 3:
+                        logger.info(f"  - Created {len(nodes)} sentence-based chunks")
+                
+                all_nodes.extend(nodes)
+                self.processing_stats["documents_processed"] += 1
+                self.processing_stats["nodes_created"] += len(nodes)
+                
+            except Exception as e:
+                logger.error(f"Error processing document {doc['deed_id']}: {e}")
+                continue
         
-        logger.info(f"Created total of {len(all_nodes)} nodes from {len(documents)} documents")
+        # Log final statistics
+        logger.info(f"Enhanced processing completed:")
+        logger.info(f"  - Total documents: {self.processing_stats['documents_processed']}")
+        logger.info(f"  - Total nodes: {self.processing_stats['nodes_created']}")
+        logger.info(f"  - Section chunks: {self.processing_stats['section_chunks']}")
+        logger.info(f"  - Fallback chunks: {self.processing_stats['fallback_chunks']}")
+        logger.info(f"  - Avg metadata fields per doc: {self.processing_stats['metadata_fields_extracted'] / max(1, self.processing_stats['documents_processed']):.1f}")
+        
         return all_nodes
     
     def insert_nodes_to_vector_store(self, nodes: List[TextNode]) -> int:

@@ -939,57 +939,104 @@ class iLandBatchEmbeddingPipeline:
             except Exception as e:
                 print(f"❌ Error processing query: {str(e)}")
 
-    def run(self) -> None:
-        """Run the production-ready batch embedding pipeline."""
-        print("🚀 iLAND PRODUCTION-READY BATCH EMBEDDING PIPELINE")
+    def run(self, use_postgres_source: bool = True, limit: Optional[int] = None) -> None:
+        """
+        Run the production-ready batch embedding pipeline.
+        
+        Args:
+            use_postgres_source: If True, loads from PostgreSQL; if False, loads from files
+            limit: Optional limit on number of documents to process
+        """
+        print("🚀 iLAND PRODUCTION-READY BATCH EMBEDDING PIPELINE (PostgreSQL Enhanced)")
         print("=" * 80)
         print("Following LlamaIndex best practices for production RAG:")
         print("✅ Document Summary Index for hierarchical retrieval")
         print("✅ Recursive retrieval with IndexNodes")
         print("✅ Structured metadata for filtering")
         print("✅ Modular architecture for maintainability")
+        print("✅ PostgreSQL data source integration")
         
-        # Validate environment
-        if not self.config["data_dir"].exists():
-            raise RuntimeError(f"Data directory {self.config['data_dir']} not found.")
-        
-        # Setup output directory
+        # Setup output directory  
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_dir = self.config["output_dir"] / f"embeddings_iland_{timestamp}"
+        output_dir = self.config["output_dir"] / f"embeddings_iland_postgres_{timestamp}"
         output_dir.mkdir(parents=True, exist_ok=True)
         
         print(f"\n📁 Output directory: {output_dir}")
-        print(f"📦 Batch size: {self.config['batch_size']} files per batch")
+        print(f"📦 Batch size: {self.config['batch_size']} documents per batch")
         print(f"⏱️ Delay between batches: {self.config['delay_between_batches']} seconds")
+        print(f"🗄️ Data source: {'PostgreSQL' if use_postgres_source else 'File system'}")
         
-        # Get file batches
-        file_batches = self.get_markdown_files_in_batches()
-        
-        # Process each batch
-        all_batches_data = []
-        total_start_time = time.time()
-        
-        for batch_num, file_batch in enumerate(file_batches, 1):
-            try:
-                # Process batch
-                embeddings = self.process_file_batch(file_batch, batch_num)
-                
-                # Save batch results
-                self.storage.save_batch_embeddings(
-                    output_dir, batch_num, *embeddings
-                )
-                
-                # Store for combined statistics
-                all_batches_data.append(embeddings)
-                
-                # Delay between batches
-                if batch_num < len(file_batches):
-                    print(f"\n⏱️ Waiting {self.config['delay_between_batches']} seconds...")
-                    time.sleep(self.config['delay_between_batches'])
+        if use_postgres_source:
+            # Use PostgreSQL data source
+            from .postgres_embedding import PostgresEmbeddingGenerator
+            
+            postgres_gen = PostgresEmbeddingGenerator()
+            
+            # Load documents from PostgreSQL
+            print(f"\n📡 Loading documents from PostgreSQL...")
+            documents = postgres_gen.fetch_documents_from_db(limit=limit)
+            
+            if not documents:
+                print("❌ No documents found in PostgreSQL database")
+                return
+            
+            print(f"✅ Loaded {len(documents)} documents from PostgreSQL")
+            
+            # Process documents using enhanced PostgreSQL pipeline
+            all_nodes = postgres_gen.process_documents(documents)
+            
+            # Insert embeddings to vector store
+            inserted_count = postgres_gen.insert_nodes_to_vector_store(all_nodes)
+            
+            print(f"\n✅ POSTGRESQL EMBEDDING PIPELINE COMPLETE!")
+            print(f"📊 Processed {len(documents)} documents")
+            print(f"🔗 Generated {len(all_nodes)} nodes with rich metadata")
+            print(f"💾 Inserted {inserted_count} embeddings to PGVector")
+            
+            # Log enhanced processing statistics
+            stats = postgres_gen.processing_stats
+            print(f"\n📈 ENHANCED PROCESSING STATISTICS:")
+            print(f"   • Documents processed: {stats['documents_processed']}")
+            print(f"   • Nodes created: {stats['nodes_created']}")
+            print(f"   • Section-based chunks: {stats['section_chunks']}")
+            print(f"   • Fallback chunks: {stats['fallback_chunks']}")
+            print(f"   • Avg metadata fields per doc: {stats['metadata_fields_extracted'] / max(1, stats['documents_processed']):.1f}")
+            
+            postgres_gen.close_source_db()
+            
+        else:
+            # Use original file-based processing
+            if not self.config["data_dir"].exists():
+                raise RuntimeError(f"Data directory {self.config['data_dir']} not found.")
+            
+            # Get file batches
+            file_batches = self.get_markdown_files_in_batches()
+            
+            # Process each batch
+            all_batches_data = []
+            total_start_time = time.time()
+            
+            for batch_num, file_batch in enumerate(file_batches, 1):
+                try:
+                    # Process batch
+                    embeddings = self.process_file_batch(file_batch, batch_num)
                     
-            except Exception as e:
-                print(f"❌ Error processing batch {batch_num}: {str(e)}")
-                continue
+                    # Save batch results
+                    self.storage.save_batch_embeddings(
+                        output_dir, batch_num, *embeddings
+                    )
+                    
+                    # Store for combined statistics
+                    all_batches_data.append(embeddings)
+                    
+                    # Delay between batches
+                    if batch_num < len(file_batches):
+                        print(f"\n⏱️ Waiting {self.config['delay_between_batches']} seconds...")
+                        time.sleep(self.config['delay_between_batches'])
+                        
+                except Exception as e:
+                    print(f"❌ Error processing batch {batch_num}: {str(e)}")
+                    continue
         
         # Save combined statistics
         self.storage.save_combined_statistics(output_dir, all_batches_data, self.config)
