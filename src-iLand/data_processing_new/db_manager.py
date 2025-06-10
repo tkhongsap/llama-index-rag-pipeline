@@ -4,6 +4,10 @@ import json
 import psycopg2
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Handle both relative and absolute imports
 try:
@@ -19,11 +23,11 @@ class DatabaseManager:
     """Handles database operations for storing documents in PostgreSQL"""
     
     def __init__(self, 
-                 db_name: str = "iland-vector-dev", 
-                 db_user: str = "vector_user_dev", 
-                 db_password: str = "akqVvIJvVqe7Jr1",
-                 db_host: str = "10.4.102.11",
-                 db_port: int = 5432):
+                 db_name: str = os.getenv("DB_NAME", "iland-vector-dev"), 
+                 db_user: str = os.getenv("DB_USER", "vector_user_dev"), 
+                 db_password: str = os.getenv("DB_PASSWORD", "akqVvIJvVqe7Jr1"),
+                 db_host: str = os.getenv("DB_HOST", "10.4.102.11"),
+                 db_port: int = int(os.getenv("DB_PORT", "5432"))):
         self.db_name = db_name
         self.db_user = db_user
         self.db_password = db_password
@@ -104,8 +108,9 @@ class DatabaseManager:
                     
                     try:
                         # Insert into the iland_md_data table
+                        table_name = os.getenv("SOURCE_TABLE", "iland_md_data")
                         cursor.execute(
-                            "INSERT INTO iland_md_data (deed_id, md_string) VALUES (%s, %s)",
+                            f"INSERT INTO {table_name} (deed_id, md_string) VALUES (%s, %s)",
                             (deed_id, md_string)
                         )
                         successful_inserts += 1
