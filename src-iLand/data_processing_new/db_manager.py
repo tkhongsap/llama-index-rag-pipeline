@@ -47,10 +47,76 @@ class DatabaseManager:
                 port=self.db_port
             )
             logger.info(f"Successfully connected to database: {self.db_name} at {self.db_host}:{self.db_port}")
+            
+            # Setup source table if it doesn't exist
+            self.setup_source_table()
+            
             return True
         except Exception as e:
             logger.error(f"Failed to connect to database: {e}")
             return False
+    
+    def setup_source_table(self):
+        """Create the source table (iland_md_data) if it doesn't exist"""
+        if not self.connection:
+            logger.error("No database connection available")
+            return False
+        
+        try:
+            cursor = self.connection.cursor()
+            table_name = os.getenv("SOURCE_TABLE", "iland_md_data")
+            
+            # Create vector extension if not exists
+            try:
+                cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
+                logger.info("Vector extension enabled or already exists")
+            except Exception as e:
+                logger.warning(f"Could not create vector extension: {e}")
+                logger.warning("Vector search functionality may be limited")
+            
+            # Check if table exists
+            cursor.execute(f"""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                    AND table_name = '{table_name}'
+                );
+            """)
+            
+            table_exists = cursor.fetchone()[0]
+            
+            if not table_exists:
+                logger.info(f"Source table '{table_name}' does not exist. Creating...")
+                
+                # Create the table
+                cursor.execute(f"""
+                    CREATE TABLE {table_name} (
+                        id SERIAL PRIMARY KEY,
+                        deed_id TEXT NOT NULL,
+                        md_string TEXT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                """)
+                
+                # Create index on deed_id for faster lookups
+                cursor.execute(f"""
+                    CREATE INDEX idx_{table_name}_deed_id ON {table_name} (deed_id);
+                """)
+                
+                self.connection.commit()
+                logger.info(f"Successfully created source table '{table_name}'")
+                return True
+            else:
+                logger.info(f"Source table '{table_name}' already exists")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Error setting up source table: {e}")
+            self.connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()
     
     def close(self):
         """Close database connection"""

@@ -79,24 +79,57 @@ class iLandCSVConverter:
         
         return self.dataset_config
     
-    def _read_data_in_chunks(self, batch_size: int = 1000):
-        """Read data from file in chunks, supporting both CSV and Excel formats"""
+    def _read_data_in_chunks(self, batch_size: int = 1000, filter_province: Optional[str] = None):
+        """Read data from file in chunks, supporting both CSV and Excel formats with optional province filtering"""
         if self.is_excel:
             # For Excel, we read the entire file once, then yield chunks
             logger.info(f"Reading Excel file: {self.input_file_path}")
             df = pd.read_excel(self.input_file_path)
+            
+            # Apply province filter if specified
+            if filter_province:
+                logger.info(f"Filtering data for province: {filter_province}")
+                if 'deed_current_province_name_th' in df.columns:
+                    df = df[df['deed_current_province_name_th'] == filter_province]
+                    logger.info(f"After filtering, {len(df)} rows remain for province {filter_province}")
+                else:
+                    logger.warning(f"Column 'deed_current_province_name_th' not found in dataset, cannot filter by province")
+            
             total_rows = len(df)
             
             for i in range(0, total_rows, batch_size):
                 yield df.iloc[i:min(i + batch_size, total_rows)]
         else:
-            # For CSV, we use the built-in chunking support
-            logger.info(f"Reading CSV file with encoding {self.encoding}: {self.input_file_path}")
-            for chunk in pd.read_csv(self.input_file_path, chunksize=batch_size, encoding=self.encoding):
-                yield chunk
+            # For CSV, if we need filtering we read the whole file first
+            if filter_province:
+                logger.info(f"Reading CSV file with encoding {self.encoding}: {self.input_file_path}")
+                df = pd.read_csv(self.input_file_path, encoding=self.encoding)
+                
+                logger.info(f"Filtering data for province: {filter_province}")
+                if 'deed_current_province_name_th' in df.columns:
+                    df = df[df['deed_current_province_name_th'] == filter_province]
+                    logger.info(f"After filtering, {len(df)} rows remain for province {filter_province}")
+                else:
+                    logger.warning(f"Column 'deed_current_province_name_th' not found in dataset, cannot filter by province")
+                
+                total_rows = len(df)
+                for i in range(0, total_rows, batch_size):
+                    yield df.iloc[i:min(i + batch_size, total_rows)]
+            else:
+                # Without filtering, use built-in chunking support
+                logger.info(f"Reading CSV file with encoding {self.encoding}: {self.input_file_path}")
+                for chunk in pd.read_csv(self.input_file_path, chunksize=batch_size, encoding=self.encoding):
+                    yield chunk
     
-    def process_csv_to_documents(self, batch_size: int = 1000, max_rows: int = None) -> List[SimpleDocument]:
-        """Process entire data file and convert to documents"""
+    def process_csv_to_documents(self, batch_size: int = 1000, max_rows: int = None, filter_province: Optional[str] = None) -> List[SimpleDocument]:
+        """
+        Process entire data file and convert to documents
+        
+        Args:
+            batch_size: Number of rows to process in each batch
+            max_rows: Maximum number of rows to process (None = all rows)
+            filter_province: Filter data by province name (e.g., "ชัยนาท")
+        """
         
         if self.dataset_config is None:
             raise ValueError("Configuration not set up. Call setup_configuration() first.")
@@ -106,13 +139,16 @@ class iLandCSVConverter:
         logger.info(f"Using encoding: {self.encoding}")
         logger.info(f"Priority fields for embedding: {self.dataset_config.embedding_fields}")
         
+        if filter_province:
+            logger.info(f"Filtering data for province: {filter_province}")
+        
         documents = []
         chunk_num = 0
         total_rows = 0
         failed_rows = []
         start_time = datetime.now()
         
-        for chunk in self._read_data_in_chunks(batch_size):
+        for chunk in self._read_data_in_chunks(batch_size, filter_province=filter_province):
             chunk_num += 1
             chunk_start_time = datetime.now()
             

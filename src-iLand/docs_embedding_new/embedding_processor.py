@@ -35,7 +35,8 @@ class EmbeddingProcessor:
         
         for i, node in enumerate(doc_index_nodes):
             try:
-                print(f"🔄 Embedding IndexNode {i+1}: {node.metadata.get('doc_title', 'unknown')}...")
+                deed_id = node.metadata.get('deed_id', f'Document {i+1}')
+                print(f"🔄 Embedding IndexNode {i+1}: {deed_id}...")
                 
                 # Manually embed the text content
                 embedding_vector = embed_model.get_text_embedding(node.text)
@@ -43,7 +44,6 @@ class EmbeddingProcessor:
                 embedding_data = {
                     "node_id": node.node_id,
                     "index_id": node.index_id,
-                    "doc_title": node.metadata.get("doc_title", "unknown"),
                     "text": node.text,
                     "text_length": len(node.text),
                     "embedding_vector": embedding_vector,
@@ -54,7 +54,7 @@ class EmbeddingProcessor:
                 }
                 
                 indexnode_embeddings.append(embedding_data)
-                print(f"✅ Extracted IndexNode {i+1}: {node.metadata.get('doc_title', 'unknown')} "
+                print(f"✅ Extracted IndexNode {i+1}: {deed_id} "
                       f"(dim: {len(embedding_vector) if embedding_vector else 0})")
                       
             except Exception as e:
@@ -78,14 +78,14 @@ class EmbeddingProcessor:
         for i, doc_id in enumerate(doc_ids):
             try:
                 doc_info = doc_summary_index.ref_doc_info[doc_id]
-                doc_title = self.metadata_extractor.extract_document_title(doc_info.metadata, i + 1)
+                deed_id = doc_info.metadata.get('deed_id', f'Document {i+1}')
                 
                 # Get chunks for this document
                 doc_chunks = [node for node_id, node in doc_summary_index.docstore.docs.items()
                              if hasattr(node, 'ref_doc_id') and node.ref_doc_id == doc_id and 
                              not getattr(node, 'is_summary', False)]
                 
-                print(f"\n📄 Processing {doc_title} ({len(doc_chunks)} chunks):")
+                print(f"\n📄 Processing {deed_id} ({len(doc_chunks)} chunks):")
                 
                 for j, chunk in enumerate(doc_chunks):
                     try:
@@ -102,7 +102,6 @@ class EmbeddingProcessor:
                         embedding_data = {
                             "node_id": chunk.node_id,
                             "doc_id": doc_id,
-                            "doc_title": doc_title,
                             "doc_engine_id": f"batch_{batch_number}_doc_{i}",
                             "chunk_index": j,
                             "text": chunk.text,
@@ -122,7 +121,8 @@ class EmbeddingProcessor:
                         print(f"  ❌ Error extracting chunk {j+1}: {str(e)}")
                         
             except Exception as e:
-                print(f"❌ Error processing document {doc_title}: {str(e)}")
+                deed_id = doc_info.metadata.get('deed_id', f'Document {i+1}')
+                print(f"❌ Error processing document {deed_id}: {str(e)}")
         
         return chunk_embeddings
     
@@ -142,22 +142,21 @@ class EmbeddingProcessor:
         for i, doc_id in enumerate(doc_ids):
             try:
                 doc_info = doc_summary_index.ref_doc_info[doc_id]
-                doc_title = self.metadata_extractor.extract_document_title(doc_info.metadata, i + 1)
+                deed_id = doc_info.metadata.get('deed_id', f'Document {i+1}')
                 doc_summary = doc_summary_index.get_document_summary(doc_id)
                 
-                print(f"🔄 Embedding summary for {doc_title}...")
+                print(f"🔄 Embedding summary for {deed_id}...")
                 
                 # Manually embed the summary text
                 embedding_vector = embed_model.get_text_embedding(doc_summary)
                 
                 # Preserve original document metadata in summaries
-                summary_metadata = {"doc_id": doc_id, "doc_title": doc_title, "batch_number": batch_number}
+                summary_metadata = {"doc_id": doc_id, "batch_number": batch_number}
                 summary_metadata.update(doc_info.metadata)
                 
                 embedding_data = {
                     "node_id": f"summary_{doc_id}",
                     "doc_id": doc_id,
-                    "doc_title": doc_title,
                     "summary_text": doc_summary,
                     "summary_length": len(doc_summary),
                     "embedding_vector": embedding_vector,
@@ -168,7 +167,7 @@ class EmbeddingProcessor:
                 }
                 
                 summary_embeddings.append(embedding_data)
-                print(f"✅ Extracted summary: {doc_title} "
+                print(f"✅ Extracted summary: {deed_id} "
                       f"(dim: {len(embedding_vector) if embedding_vector else 0})")
                       
             except Exception as e:
