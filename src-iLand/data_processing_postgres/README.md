@@ -1,39 +1,63 @@
-# iLand Data Processing Module
+# iLand Data Processing PostgreSQL Module
 
-**Converts raw CSV datasets into structured documents ready for embedding and RAG retrieval.**
+**Converts raw CSV datasets into structured documents and stores them directly in PostgreSQL for embedding and RAG retrieval.**
 
-This module processes Thai land deed CSV files into well-structured documents with rich metadata, organized sections, and multiple output formats (JSONL, Markdown). It's the first step in the iLand RAG pipeline.
+This module processes Thai land deed CSV files into well-structured documents with rich metadata, organized sections, and stores them in PostgreSQL database. It's the first step in the iLand PostgreSQL RAG pipeline, replacing local file storage with database storage.
 
 ## 🎯 Purpose
 
 **Input**: Raw CSV file with Thai land deed records  
-**Output**: Structured documents with rich metadata and organized sections  
-**Use Case**: Preparing data for embedding and retrieval in RAG applications
+**Output**: Structured documents stored in PostgreSQL with rich metadata  
+**Use Case**: Preparing data for PostgreSQL-based embedding and retrieval in RAG applications
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+- PostgreSQL database with PGVector extension
 - CSV file at `data/input_docs/input_dataset_iLand.csv`
-- Python dependencies: `pandas`, `pathlib`, `json`, `logging`
+- Python dependencies: `pandas`, `psycopg2-binary`, `python-dotenv`, `pathlib`, `json`, `logging`
 
-### Run Data Processing
+### Environment Setup
+```bash
+# Create .env file with your PostgreSQL configuration
+cat > .env << EOF
+# PostgreSQL Database Configuration
+DB_NAME=iland-vector-dev
+DB_USER=vector_user_dev
+DB_PASSWORD=your_password_here
+DB_HOST=your_host_here
+DB_PORT=5432
+
+# Source table for processed documents
+SOURCE_TABLE=iland_md_data
+
+# Optional: CSV file path (if not in default location)
+CSV_FILE_PATH=data/input_docs/input_dataset_iLand.csv
+EOF
+```
+
+### Run PostgreSQL Data Processing
 ```bash
 # From project root (RECOMMENDED)
 cd llama-index-rag-pipeline
-python -m src-iLand.data_processing.main
+python -m src-iLand.data_processing_postgres.run_data_processing_standalone
 
-# From src-iLand directory
-cd src-iLand
-python -m data_processing.main
+# Alternative: Direct execution
+cd src-iLand/data_processing_postgres
+python run_data_processing_standalone.py
+
+# For testing specific number of rows
+python run_data_processing_standalone.py --limit 100
 ```
 
 ### Expected Output
 ```
-✅ Configuration generated and saved
-📄 Documents processed in batches
-💾 JSONL file created: data/output_docs/iland_documents.jsonl
-📝 Markdown files: data/output_docs/iland_markdown_files/
-📊 Processing statistics displayed
+✅ Database connection established
+📊 CSV analysis completed: 1000 rows detected
+🔄 Processing documents in batches...
+💾 Inserted 1000 documents into iland_md_data table
+📈 Processing statistics saved
+✅ PostgreSQL data processing completed
 ```
 
 ## 📁 Module Architecture
@@ -42,14 +66,24 @@ python -m data_processing.main
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| `main.py` | Entry point and orchestration | ~67 |
-| `iland_converter.py` | Main converter class | ~153 |
+| `main.py` | Entry point and orchestration | ~104 |
+| `run_data_processing_standalone.py` | Standalone script with CLI | ~123 |
+| `db_manager.py` | PostgreSQL database operations | ~203 |
+| `iland_converter.py` | Main converter class | ~244 |
 | `document_processor.py` | Document text generation and structuring | ~440 |
-| `csv_analyzer.py` | CSV analysis and field mapping | ~388 |
+| `csv_analyzer.py` | CSV analysis and field mapping | ~409 |
 | `config_manager.py` | Configuration management | ~99 |
-| `file_output.py` | Output file generation (JSONL, Markdown) | ~240 |
+| `file_output.py` | Enhanced markdown generation | ~249 |
 | `statistics_generator.py` | Processing statistics | ~121 |
 | `models.py` | Data classes and models | ~52 |
+
+### PostgreSQL Components
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `db_manager.py` | Database connection and table management | ~203 |
+| `models.py` | Document models for PostgreSQL storage | ~52 |
+| `file_output.py` | Enhanced markdown generation for database storage | ~249 |
 
 ### Supporting Components
 
@@ -61,28 +95,35 @@ python -m data_processing.main
 
 ## 🔧 Core Functionality
 
-### 1. CSV Analysis (`csv_analyzer.py`)
+### 1. PostgreSQL Database Integration (`db_manager.py`)
+- **Connection management**: Handles PostgreSQL connections with retry logic
+- **Table setup**: Automatically creates `iland_md_data` table with proper schema
+- **PGVector support**: Enables vector extension for future embedding storage
+- **Batch insertion**: Efficient bulk document insertion with transaction management
+- **Error handling**: Comprehensive error handling and rollback support
+
+### 2. CSV Analysis (`csv_analyzer.py`)
 - **Smart encoding detection**: Handles various CSV encodings
 - **Field mapping**: Maps CSV columns to Thai land deed fields
 - **Data validation**: Identifies required and optional fields
 - **Statistical analysis**: Provides data quality insights
 
-### 2. Document Processing (`document_processor.py`)
+### 3. Document Processing (`document_processor.py`)
 - **Structured text generation**: Creates well-organized document sections
 - **Thai metadata extraction**: Extracts 30+ Thai-specific fields
 - **Content organization**: Groups related information logically
 - **Quality assurance**: Validates generated documents
 
-### 3. Configuration Management (`config_manager.py`)
+### 4. Configuration Management (`config_manager.py`)
 - **Auto-configuration**: Generates config from CSV analysis
 - **Field mapping**: Manages CSV column to metadata mapping
 - **Reusable configs**: Saves configurations for future use
 
-### 4. File Output (`file_output.py`)
-- **JSONL format**: Machine-readable format for embeddings
-- **Markdown files**: Human-readable individual documents
-- **Batch processing**: Handles large datasets efficiently
-- **Directory organization**: Creates organized output structure
+### 5. Enhanced Markdown Generation (`file_output.py`)
+- **Rich markdown content**: Creates comprehensive documents with all metadata
+- **Database-ready format**: Optimized for PostgreSQL storage
+- **Section organization**: Structured content for embedding pipeline
+- **Metadata preservation**: Maintains all extracted fields in document text
 
 ## 📊 Document Structure
 
@@ -148,6 +189,39 @@ python -m data_processing.main
 }
 ```
 
+## 🗃️ PostgreSQL Database Schema
+
+### Table: `iland_md_data`
+
+```sql
+CREATE TABLE iland_md_data (
+    id SERIAL PRIMARY KEY,
+    deed_id TEXT NOT NULL,
+    md_string TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_iland_md_data_deed_id ON iland_md_data (deed_id);
+```
+
+**Fields**:
+- `id`: Auto-incrementing primary key
+- `deed_id`: Unique identifier from CSV (deed serial number)
+- `md_string`: Complete enhanced markdown document with all metadata
+- `created_at`: Timestamp of document insertion
+
+### Database Configuration
+
+```bash
+# Required environment variables
+DB_NAME=iland-vector-dev          # Database name
+DB_USER=vector_user_dev           # Database user
+DB_PASSWORD=your_password         # Database password
+DB_HOST=your_host                 # Database host
+DB_PORT=5432                      # Database port (default: 5432)
+SOURCE_TABLE=iland_md_data        # Target table name
+```
+
 ## 🔄 Processing Flow
 
 ```mermaid
@@ -156,17 +230,20 @@ graph TD
     B --> C[Field Mapping]
     C --> D[Document Processor] 
     D --> E[Structured Documents]
-    E --> F[JSONL Output]
-    E --> G[Markdown Files]
-    F --> H[Statistics]
-    G --> H
+    E --> F[Enhanced Markdown]
+    F --> G[PostgreSQL Storage]
+    G --> H[Statistics]
+    
+    G --> G1[iland_md_data Table]
+    G1 --> G2[deed_id, md_string, created_at]
 ```
 
 1. **CSV Analysis**: Analyze structure and generate field mappings
 2. **Configuration**: Create or load processing configuration
 3. **Document Generation**: Process each row into structured document
-4. **Output Creation**: Save as JSONL and individual Markdown files
-5. **Statistics**: Generate processing and quality statistics
+4. **Markdown Enhancement**: Create rich markdown with all metadata
+5. **PostgreSQL Storage**: Insert documents into `iland_md_data` table
+6. **Statistics**: Generate processing and quality statistics
 
 ## 🎯 Section-Based Chunking Integration
 
@@ -197,6 +274,46 @@ chunks = parser.parse_simple_document_to_sections(document)
 - Processing time and rate
 - Memory usage
 - Error counts and types
+
+### Database Metrics
+- Total records inserted into `iland_md_data`
+- Average document size
+- Database performance statistics
+- Connection and transaction metrics
+
+## 🧪 Testing and Validation
+
+### Quick Test
+```bash
+# Test with limited records
+python run_data_processing_standalone.py --limit 10
+
+# Check database contents
+psql -h your_host -U your_user -d your_db -c "SELECT COUNT(*) FROM iland_md_data;"
+```
+
+### Full Pipeline Test
+```bash
+# Process entire CSV
+python run_data_processing_standalone.py
+
+# Verify data quality
+psql -h your_host -U your_user -d your_db -c "
+  SELECT 
+    COUNT(*) as total_docs,
+    AVG(LENGTH(md_string)) as avg_doc_length,
+    COUNT(DISTINCT deed_id) as unique_deeds
+  FROM iland_md_data;
+"
+```
+
+## 🔗 Integration
+
+This module prepares data for the **docs_embedding_postgres** pipeline:
+
+1. **Data Processing** (this module): CSV → PostgreSQL (`iland_md_data`)
+2. **Embedding Generation**: PostgreSQL → BGE embeddings → PGVector (`iland_embeddings`)
+3. **RAG Retrieval**: Query embeddings for AI-powered search and QA
 
 ### Data Quality Metrics
 - Field completeness rates

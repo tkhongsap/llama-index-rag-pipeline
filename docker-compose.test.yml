@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with PGVector extension for testing
+  postgres_test:
+    image: pgvector/pgvector:pg15
+    container_name: iland_postgres_test
+    environment:
+      POSTGRES_DB: iland_test_db
+      POSTGRES_USER: iland_test_user
+      POSTGRES_PASSWORD: iland_test_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    ports:
+      - "5433:5432"  # Use port 5433 to avoid conflicts with existing PostgreSQL
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./init_test_db.sql:/docker-entrypoint-initdb.d/init_test_db.sql
+    networks:
+      - iland_test_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iland_test_user -d iland_test_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin for database management (optional)
+  pgadmin_test:
+    image: dpage/pgadmin4:latest
+    container_name: iland_pgadmin_test
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@iland.test
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres_test
+    networks:
+      - iland_test_network
+    restart: unless-stopped
+
+volumes:
+  postgres_test_data:
+
+networks:
+  iland_test_network:
+    driver: bridge 

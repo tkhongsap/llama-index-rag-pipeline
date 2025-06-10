@@ -20,3 +20,15 @@ sentence-transformers==4.1.0
 transformers==4.52.4
 torch==2.7.1
 accelerate==1.7.0
+
+# PostgreSQL and Database Dependencies
+psycopg2-binary==2.9.10
+llama-index-vector-stores-postgres==0.5.3
+asyncpg==0.30.0
+pgvector==0.4.1
+sqlalchemy==2.0.36
+
+# Additional Testing Dependencies
+tqdm==4.66.4
+numpy==1.26.4
+regex==2024.9.11

@@ -1,45 +1,70 @@
-# iLand Document Embedding Pipeline
+# iLand Document Embedding PostgreSQL Pipeline
 
-**Converts structured Thai land deed documents into vector embeddings for RAG (Retrieval-Augmented Generation) applications.**
+**Converts structured Thai land deed documents from PostgreSQL into vector embeddings stored in PGVector for RAG (Retrieval-Augmented Generation) applications.**
 
-This module takes structured documents from the data processing pipeline and creates high-quality embeddings with section-based chunking, comprehensive metadata, and production-ready indexing for optimal retrieval performance.
+This module takes structured documents from the PostgreSQL data processing pipeline and creates high-quality embeddings with BGE (BAAI General Embedding) models, section-based chunking, comprehensive metadata, and production-ready PGVector storage for optimal retrieval performance.
 
 ## 🎯 Purpose
 
-**Input**: Structured Thai land deed documents (Markdown files)  
-**Output**: Vector embeddings with rich metadata for RAG retrieval  
-**Use Case**: Powering AI-driven search and question-answering systems
+**Input**: Structured Thai land deed documents (PostgreSQL `iland_md_data` table)  
+**Output**: BGE vector embeddings stored in PGVector (`iland_embeddings` table)  
+**Use Case**: Powering AI-driven search and question-answering systems with local BGE processing
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Structured documents in `example/` directory (from data processing pipeline)
-- OpenAI API key in `.env` file
-- Python dependencies: `llama-index`, `openai`, `python-dotenv`, `tqdm`, `numpy`
+- PostgreSQL database with structured documents (from `data_processing_postgres` pipeline)
+- PGVector extension enabled
+- Python dependencies: `llama-index`, `psycopg2-binary`, `sentence-transformers`, `python-dotenv`
 
 ### Environment Setup
 ```bash
-# Create .env file with your OpenAI API key
-echo "OPENAI_API_KEY=your_api_key_here" > .env
+# Create .env file with your PostgreSQL configuration
+cat > .env << EOF
+# PostgreSQL Database Configuration
+DB_NAME=iland-vector-dev
+DB_USER=vector_user_dev
+DB_PASSWORD=your_password_here
+DB_HOST=your_host_here
+DB_PORT=5432
+
+# Source and destination tables
+SOURCE_TABLE=iland_md_data
+DEST_TABLE=iland_embeddings
+
+# BGE Model Configuration (local processing, no API calls)
+BGE_MODEL=bge-m3                    # Multilingual model for Thai support
+BGE_CACHE_FOLDER=./cache/bge_models
+
+# Processing Configuration
+CHUNK_SIZE=512
+CHUNK_OVERLAP=50
+BATCH_SIZE=20
+EOF
 ```
 
-### Run Embedding Pipeline
+### Run BGE Embedding Pipeline
 ```bash
-# From src-iLand directory (RECOMMENDED)
-cd src-iLand
-python -m docs_embedding.batch_embedding
+# From project root (RECOMMENDED)
+cd llama-index-rag-pipeline
+python -m src-iLand.docs_embedding_postgres.run_postgres_embedding
 
-# Expected output location
-# data/embedding/embeddings_iland_YYYYMMDD_HHMMSS/
+# Alternative: Direct execution
+cd src-iLand/docs_embedding_postgres
+python run_postgres_embedding.py
+
+# For testing specific number of documents
+python run_postgres_embedding.py --limit 100
 ```
 
 ### Expected Output
 ```
-✅ Documents loaded: 156 Thai land deed files
-🔍 Processing with section-based chunking
-📊 Generated 468 embeddings (6 per document average)
-💾 Saved: JSON metadata, PKL objects, NPY vectors
-📈 Statistics: Processing metrics and field analysis
+✅ Database connection established
+🤗 BGE model loaded: bge-m3 (1024 dimensions)
+📊 Processing 156 documents from iland_md_data
+🔍 Section-based chunking applied
+📈 Generated 468 embeddings stored in PGVector
+✅ BGE PostgreSQL embedding pipeline completed
 ```
 
 ## 📁 Module Architecture
@@ -48,45 +73,63 @@ python -m docs_embedding.batch_embedding
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| `batch_embedding.py` | Main orchestrator and pipeline runner | ~936 |
-| `document_loader.py` | Markdown document loading and preprocessing | ~68 |
+| `postgres_embedding_bge.py` | Main BGE PostgreSQL pipeline (RECOMMENDED) | ~550 |
+| `run_postgres_embedding.py` | CLI runner for PostgreSQL BGE pipeline | ~153 |
+| `bge_embedding_processor.py` | BGE model wrapper and processing | ~477 |
+| `db_utils.py` | PostgreSQL database utilities and PGVector operations | ~500 |
+| `document_loader.py` | PostgreSQL document loading | ~68 |
 | `metadata_extractor.py` | Thai land deed metadata extraction | ~214 |
-| `embedding_processor.py` | DocumentSummaryIndex and embedding generation | ~178 |
-| `file_storage.py` | Multi-format output storage and statistics | ~237 |
-| `standalone_section_parser.py` | Section-aware chunking (NEW) | ~332 |
-| `__init__.py` | Package exports and convenience functions | ~28 |
+| `standalone_section_parser.py` | Section-aware chunking | ~332 |
+| `__init__.py` | Package exports and convenience functions | ~31 |
+
+### Alternative Components (OpenAI-based)
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `postgres_embedding.py` | OpenAI-based PostgreSQL pipeline | ~435 |
+| `batch_embedding.py` | Legacy batch processing (file-based) | ~1117 |
+| `embedding_processor.py` | OpenAI embedding generation | ~177 |
+| `file_storage.py` | File-based storage (not used in PostgreSQL) | ~237 |
 
 ## 🔧 Core Functionality
 
-### 1. Document Loading (`document_loader.py`)
-- **Markdown processing**: Loads structured Thai land deed documents
-- **Recursive discovery**: Finds documents in nested directories
-- **Content preprocessing**: Handles Thai text encoding and formatting
-- **Title generation**: Creates meaningful titles from metadata
+### 1. PostgreSQL Integration (`db_utils.py`)
+- **PGVector operations**: Handles vector storage and retrieval in PostgreSQL
+- **Connection management**: Robust database connection handling with retry logic
+- **Table management**: Creates and manages `iland_embeddings` table schema
+- **Batch operations**: Efficient bulk vector insertion and querying
+- **Error handling**: Comprehensive error handling and transaction management
 
-### 2. Metadata Extraction (`metadata_extractor.py`)
+### 2. BGE Model Processing (`bge_embedding_processor.py`)
+- **Local BGE models**: Supports bge-small, bge-base, bge-large, and bge-m3
+- **Multilingual support**: bge-m3 model optimized for Thai language
+- **No API calls**: Complete local processing without external dependencies
+- **Model caching**: Efficient model loading and caching for repeated use
+- **Batch processing**: Optimized batch embedding generation
+
+### 3. Document Loading (`document_loader.py`)
+- **PostgreSQL source**: Loads documents from `iland_md_data` table
+- **Markdown processing**: Parses enhanced markdown content
+- **Metadata preservation**: Maintains all extracted metadata
+- **Batch loading**: Efficient document loading with configurable limits
+
+### 4. Metadata Extraction (`metadata_extractor.py`)
 - **Thai-specific patterns**: 30+ regex patterns for land deed fields
 - **Enhanced categorization**: Derives area, region, ownership categories
 - **Content classification**: Land use, deed types, geographic regions
 - **Validation**: Ensures metadata quality and completeness
 
-### 3. Section-Based Chunking (`standalone_section_parser.py`) **NEW!**
+### 5. Section-Based Chunking (`standalone_section_parser.py`)
 - **Document structure awareness**: Parses by logical sections
 - **Key info chunks**: Essential data for comprehensive retrieval
 - **Section-specific chunks**: Focused content for precise queries
 - **Fallback chunking**: Sentence-based splitting when sections not found
 
-### 4. Embedding Processing (`embedding_processor.py`)
-- **DocumentSummaryIndex**: LlamaIndex production RAG patterns
-- **Multi-level embeddings**: IndexNodes, chunks, and summaries
-- **Structured retrieval**: Maintains metadata relationships
-- **Statistics tracking**: Comprehensive processing metrics
-
-### 5. File Storage (`file_storage.py`)
-- **Multi-format support**: JSON (metadata), PKL (objects), NPY (vectors)
-- **Organized structure**: Timestamped directories with batch organization
-- **Statistics generation**: Processing metrics and metadata analysis
-- **Batch management**: Efficient handling of large document sets
+### 6. Pipeline Orchestration (`postgres_embedding_bge.py`)
+- **End-to-end processing**: Complete pipeline from PostgreSQL to PGVector
+- **BGE-first approach**: Prioritizes local BGE processing over API calls
+- **Statistics tracking**: Comprehensive processing metrics and timing
+- **Error recovery**: Robust error handling and processing continuation
 
 ## 🎯 Section-Based Chunking (NEW Feature)
 
@@ -135,53 +178,142 @@ Each chunk contains rich metadata for enhanced retrieval:
 }
 ```
 
+## 🗃️ PostgreSQL Database Schema
+
+### Input Table: `iland_md_data`
+
+```sql
+-- Source documents from data processing pipeline
+CREATE TABLE iland_md_data (
+    id SERIAL PRIMARY KEY,
+    deed_id TEXT NOT NULL,
+    md_string TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Output Table: `iland_embeddings` (created by PGVectorStore)
+
+```sql
+-- Vector embeddings with metadata
+CREATE TABLE iland_embeddings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    text TEXT,
+    metadata JSONB,
+    embedding VECTOR(1024),  -- For bge-m3 model (1024 dimensions)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for efficient vector search
+CREATE INDEX ON iland_embeddings USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX ON iland_embeddings USING gin (metadata);
+```
+
+### Database Configuration
+
+```bash
+# Required environment variables
+DB_NAME=iland-vector-dev          # Database name
+DB_USER=vector_user_dev           # Database user  
+DB_PASSWORD=your_password         # Database password
+DB_HOST=your_host                 # Database host
+DB_PORT=5432                      # Database port
+
+# Table names
+SOURCE_TABLE=iland_md_data        # Input documents table
+DEST_TABLE=iland_embeddings       # Output embeddings table
+
+# BGE model configuration
+BGE_MODEL=bge-m3                  # Model: bge-small-en-v1.5, bge-base-en-v1.5, bge-large-en-v1.5, bge-m3
+BGE_CACHE_FOLDER=./cache/bge_models
+```
+
 ## 🏗️ Processing Pipeline
 
 ```mermaid
 graph TD
-    A[Markdown Documents] --> B[Document Loader]
+    A[PostgreSQL iland_md_data] --> B[Document Loader]
     B --> C[Metadata Extractor]
     C --> D[Section Parser]
-    D --> E[Embedding Processor]
-    E --> F[File Storage]
-    F --> G[Multi-Format Output]
+    D --> E[BGE Embedding Processor]
+    E --> F[PGVector Storage]
+    F --> G[PostgreSQL iland_embeddings]
     
     D --> D1[Key Info Chunks]
     D --> D2[Section Chunks]
     D --> D3[Fallback Chunks]
     
-    E --> E1[IndexNode Embeddings]
-    E --> E2[Chunk Embeddings]
-    E --> E3[Summary Embeddings]
+    E --> E1[BGE-m3 Local Model]
+    E --> E2[1024-dim Vectors]
+    E --> E3[No API Calls]
+    
+    F --> F1[Vector Index]
+    F --> F2[Metadata JSONB]
+    F --> F3[Full-text Search]
 ```
 
-1. **Document Loading**: Load and preprocess Markdown files
+1. **Document Loading**: Load documents from PostgreSQL `iland_md_data` table
 2. **Metadata Extraction**: Extract Thai land deed fields and categories
 3. **Section Parsing**: Create section-aware chunks with rich metadata
-4. **Embedding Generation**: Generate vectors using OpenAI embeddings
-5. **Output Storage**: Save in multiple formats with comprehensive statistics
+4. **BGE Embedding**: Generate vectors using local BGE models (no API calls)
+5. **PGVector Storage**: Store embeddings in PostgreSQL with vector indexing
 
-## 📊 Output Structure
+## 📊 PostgreSQL Storage Structure
+
+### PGVector Table (`iland_embeddings`)
+
+```sql
+-- Sample records in iland_embeddings table
+SELECT 
+    id,
+    LEFT(text, 100) as text_preview,
+    metadata->>'deed_id' as deed_id,
+    metadata->>'chunk_type' as chunk_type,
+    metadata->>'section' as section,
+    vector_dims(embedding) as embedding_dims
+FROM iland_embeddings 
+LIMIT 5;
+
+/*
+id                                   | text_preview                           | deed_id | chunk_type | section    | embedding_dims
+-------------------------------------|----------------------------------------|---------|------------|------------|---------------
+550e8400-e29b-41d4-a716-446655440000 | โฉนดที่ดิน เลขที่ 12345 จังหวัด...     | 12345   | key_info   | NULL       | 1024
+550e8400-e29b-41d4-a716-446655440001 | ข้อมูลโฉนด: เลขที่ 12345/2567...       | 12345   | section    | deed_info  | 1024
+550e8400-e29b-41d4-a716-446655440002 | ที่ตั้ง: จังหวัด กรุงเทพมหานคร...      | 12345   | section    | location   | 1024
+*/
+```
+
+### Metadata Structure in JSONB
+
+```json
+{
+  "deed_id": "12345",
+  "deed_type": "โฉนดที่ดิน",
+  "province": "กรุงเทพมหานคร",
+  "district": "คลองเตย",
+  "chunk_type": "section",
+  "section": "location",
+  "chunk_index": 1,
+  "processing_timestamp": "2024-01-15T10:30:00",
+  "embedding_model": "bge-m3",
+  "embedding_dimension": 1024,
+  "chunking_strategy": "section_based",
+  "area_category": "medium",
+  "region_category": "central",
+  "land_use_category": "residential"
+}
+```
+
+### Processing Statistics (Logs)
 
 ```
-data/embedding/embeddings_iland_YYYYMMDD_HHMMSS/
-├── batch_1/
-│   ├── indexnodes/
-│   │   ├── batch_1_indexnodes_embeddings.npy    # Vector embeddings
-│   │   ├── batch_1_indexnodes_metadata.json     # Rich metadata
-│   │   └── batch_1_indexnodes_objects.pkl       # LlamaIndex objects
-│   ├── chunks/
-│   │   ├── batch_1_chunks_embeddings.npy        # Section-based chunks
-│   │   ├── batch_1_chunks_metadata.json         # Chunk metadata
-│   │   ├── batch_1_chunks_metadata_only.json    # Metadata summary
-│   │   └── batch_1_chunks_objects.pkl           # Chunk objects
-│   ├── summaries/
-│   │   ├── batch_1_summaries_embeddings.npy     # Document summaries
-│   │   ├── batch_1_summaries_metadata.json      # Summary metadata
-│   │   └── batch_1_summaries_objects.pkl        # Summary objects
-│   └── batch_1_statistics.json                  # Batch processing stats
-├── combined_statistics.json                     # Overall statistics
-└── processing_log.txt                          # Detailed processing log
+logs/postgres_embedding_YYYYMMDD_HHMMSS.log
+├── Database connection logs
+├── BGE model loading logs  
+├── Document processing progress
+├── Embedding generation statistics
+├── PGVector insertion results
+└── Error handling and recovery logs
 ```
 
 ## 🎯 Thai Land Deed Features
@@ -440,7 +572,95 @@ with open(stats_file) as f:
 - **Processing time**: ~2-5 seconds per document (including API calls)
 
 ### Best Practices
+- **Use BGE models**: Local processing, no API costs, supports Thai
 - **Use section-based chunking**: Better retrieval performance
-- **Monitor API usage**: Track costs and rate limits
-- **Batch processing**: Don't process all documents at once
-- **Save incrementally**: Output is saved batch by batch for safety 
+- **Test with limits**: Start with small datasets for validation
+- **Monitor database performance**: Optimize PGVector indexes
+- **Batch processing**: Process documents in manageable batches
+
+## 🤗 BGE Model Information
+
+### Supported BGE Models
+
+| Model | Dimensions | Description | Best For |
+|-------|------------|-------------|----------|
+| `bge-small-en-v1.5` | 384 | Lightweight, fast processing | Testing, low-resource environments |
+| `bge-base-en-v1.5` | 768 | Balanced performance and accuracy | General use cases |
+| `bge-large-en-v1.5` | 1024 | High accuracy, slower processing | High-quality embeddings |
+| `bge-m3` | 1024 | **Multilingual, supports Thai** | **RECOMMENDED for Thai documents** |
+
+### BGE Model Advantages
+
+- ✅ **Local processing**: No API calls or internet dependency
+- ✅ **Multilingual support**: bge-m3 handles Thai language effectively  
+- ✅ **Cost-effective**: No per-token charges like OpenAI
+- ✅ **Privacy**: Documents never leave your infrastructure
+- ✅ **Consistent performance**: No rate limiting or service downtime
+
+### Model Configuration
+
+```bash
+# Environment variables for BGE
+BGE_MODEL=bge-m3                    # Recommended for Thai
+BGE_CACHE_FOLDER=./cache/bge_models # Local model storage
+CHUNK_SIZE=512                      # Optimal for BGE models
+CHUNK_OVERLAP=50                    # Ensures context preservation
+```
+
+## 🧪 Testing and Validation
+
+### Quick Test
+```bash
+# Test with limited documents
+python run_postgres_embedding.py --limit 5
+
+# Check embeddings in database
+psql -h your_host -U your_user -d your_db -c "
+  SELECT 
+    COUNT(*) as total_embeddings,
+    metadata->>'embedding_model' as model,
+    vector_dims(embedding) as dimensions
+  FROM iland_embeddings 
+  GROUP BY metadata->>'embedding_model', vector_dims(embedding);
+"
+```
+
+### Full Pipeline Test
+```bash
+# Process all documents
+python run_postgres_embedding.py
+
+# Verify embedding quality
+psql -h your_host -U your_user -d your_db -c "
+  SELECT 
+    COUNT(*) as total_embeddings,
+    COUNT(DISTINCT metadata->>'deed_id') as unique_documents,
+    AVG(LENGTH(text)) as avg_chunk_length,
+    metadata->>'chunk_type' as chunk_type
+  FROM iland_embeddings 
+  GROUP BY metadata->>'chunk_type';
+"
+```
+
+### Vector Search Test
+```bash
+# Test vector similarity search
+psql -h your_host -U your_user -d your_db -c "
+  SELECT 
+    metadata->>'deed_id' as deed_id,
+    LEFT(text, 100) as text_preview,
+    1 - (embedding <=> (SELECT embedding FROM iland_embeddings LIMIT 1)) as similarity
+  FROM iland_embeddings 
+  ORDER BY embedding <=> (SELECT embedding FROM iland_embeddings LIMIT 1)
+  LIMIT 5;
+"
+```
+
+## 🔗 Integration Workflow
+
+Complete data pipeline for Thai land deed RAG system:
+
+1. **CSV Processing**: `data_processing_postgres` → `iland_md_data` table
+2. **BGE Embedding**: `docs_embedding_postgres` → `iland_embeddings` table  
+3. **RAG Retrieval**: Query PGVector for similar documents
+4. **AI Response**: Use retrieved context for question answering 
