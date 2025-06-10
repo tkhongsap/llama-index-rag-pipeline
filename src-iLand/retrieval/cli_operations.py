@@ -35,14 +35,14 @@ class iLandCLIOperations:
             top_k: Number of results to return
             
         Returns:
-            List of result dictionaries
+            List of result dictionaries with location data for mapping integration
         """
         if not self.router:
             print_error("Router not initialized. Please create router first.")
             return []
         
         try:
-            print_colored_header(f"Executing query: '{query_text}'")
+            print_colored_header(f"🔍 Executing query: '{query_text}'")
             
             start_time = time.time()
             
@@ -55,6 +55,16 @@ class iLandCLIOperations:
             
             # Format results
             results = self._format_query_results(nodes, top_k)
+            
+            # Add primary location data for mapping integration
+            try:
+                primary_location = self._extract_primary_location_json(nodes)
+                if primary_location:
+                    # Add location data to the first result for easy access
+                    if results:
+                        results[0]['primary_location'] = primary_location
+            except Exception as loc_e:
+                print_warning(f"Primary location extraction failed: {str(loc_e)[:50]}...")
             
             # Generate natural language response first
             self._generate_natural_response(query_text, nodes)
@@ -70,6 +80,8 @@ class iLandCLIOperations:
             
         except Exception as e:
             print_error(f"Error executing query: {e}")
+            import traceback
+            print_warning(f"Full error details: {traceback.format_exc()}")
             return []
     
     def _format_query_results(self, nodes, top_k: int) -> List[Dict[str, Any]]:
@@ -93,13 +105,188 @@ class iLandCLIOperations:
         
         return results
     
+    def _extract_location_info(self, metadata: Dict[str, Any]) -> Dict[str, str]:
+        """Extract location information from metadata for display."""
+        location_info = {}
+        
+        # Extract basic location hierarchy with multiple possible field names
+        province = (metadata.get('province') or 
+                   metadata.get('Province') or 
+                   metadata.get('จังหวัด') or 'N/A')
+        district = (metadata.get('district') or 
+                   metadata.get('District') or 
+                   metadata.get('อำเภอ') or 'N/A')
+        subdistrict = (metadata.get('subdistrict') or 
+                      metadata.get('Subdistrict') or 
+                      metadata.get('ตำบล') or 'N/A')
+        
+        # Clean up "**:" prefixes if present
+        if isinstance(province, str) and province.startswith('**:'):
+            province = province[3:].strip()
+        if isinstance(district, str) and district.startswith('**:'):
+            district = district[3:].strip()
+        if isinstance(subdistrict, str) and subdistrict.startswith('**:'):
+            subdistrict = subdistrict[3:].strip()
+        
+        # Build location display string
+        location_parts = []
+        if province and province != 'N/A':
+            location_parts.append(province)
+        if district and district != 'N/A':
+            location_parts.append(district)
+        if subdistrict and subdistrict != 'N/A':
+            location_parts.append(subdistrict)
+        
+        location_info['location_display'] = ", ".join(location_parts) if location_parts else "N/A"
+        
+        # Extract Google Maps URL or coordinates with multiple possible field names
+        google_maps_url = (metadata.get('google_maps_url') or 
+                          metadata.get('Google Maps URL') or 
+                          metadata.get('maps_url'))
+        
+        # Try multiple coordinate field variations
+        latitude = (metadata.get('latitude') or 
+                   metadata.get('Latitude') or 
+                   metadata.get('lat') or 
+                   metadata.get('LAT'))
+        longitude = (metadata.get('longitude') or 
+                    metadata.get('Longitude') or 
+                    metadata.get('lng') or 
+                    metadata.get('lon') or 
+                    metadata.get('LON'))
+        
+        coordinates_formatted = (metadata.get('coordinates_formatted') or 
+                               metadata.get('Coordinates Formatted') or 
+                               metadata.get('coordinates') or 
+                               metadata.get('coords'))
+        
+        # Convert string coordinates to numeric if needed
+        if latitude and isinstance(latitude, str):
+            try:
+                latitude = float(latitude)
+            except ValueError:
+                latitude = None
+        if longitude and isinstance(longitude, str):
+            try:
+                longitude = float(longitude)
+            except ValueError:
+                longitude = None
+        
+        if google_maps_url:
+            location_info['maps_link'] = google_maps_url
+            location_info['maps_display'] = "🗺️  Google Maps"
+        elif latitude and longitude:
+            # Generate Google Maps URL from coordinates
+            location_info['maps_link'] = f"https://maps.google.com/maps?q={latitude},{longitude}"
+            location_info['maps_display'] = "🗺️  Google Maps"
+        else:
+            location_info['maps_link'] = None
+            location_info['maps_display'] = None
+        
+        # Add coordinate display
+        if coordinates_formatted:
+            location_info['coordinates'] = str(coordinates_formatted)
+        elif latitude and longitude:
+            location_info['coordinates'] = f"{latitude}, {longitude}"
+        else:
+            location_info['coordinates'] = None
+        
+        return location_info
+    
+    def _collect_unique_locations(self, results: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+        """Collect unique locations from results for related locations section."""
+        unique_locations = {}
+        
+        for result in results:
+            metadata = result.get('metadata', {})
+            location_info = self._extract_location_info(metadata)
+            
+            if location_info['location_display'] != "N/A":
+                location_key = location_info['location_display']
+                if location_key not in unique_locations and location_info['maps_link']:
+                    unique_locations[location_key] = {
+                        'display': location_info['location_display'],
+                        'link': location_info['maps_link']
+                    }
+        
+        # Return top 3 unique locations
+        return list(unique_locations.values())[:3]
+    
     def _generate_natural_response(self, query_text: str, nodes):
-        """Generate and print natural language response."""
+        """Generate and print natural language response with location context."""
         if self.response_synthesizer and nodes:
             try:
                 print_colored_header("🤖 Natural Language Response:", Fore.MAGENTA)
                 response = self.response_synthesizer.synthesize(query_text, nodes)
                 print(f"{Fore.MAGENTA}{response.response}{Style.RESET_ALL}")
+                
+                # Extract location from top document for mapping integration
+                if nodes:
+                    try:
+                        top_metadata = getattr(nodes[0].node, 'metadata', {})
+                        location_info = self._extract_location_info(top_metadata)
+                        
+                        # Add primary location from top document with coordinates for mapping integration
+                        if location_info['location_display'] != "N/A":
+                            # Try multiple coordinate field variations (same as in _extract_location_info)
+                            latitude = (top_metadata.get('latitude') or 
+                                       top_metadata.get('Latitude') or 
+                                       top_metadata.get('lat') or 
+                                       top_metadata.get('LAT'))
+                            longitude = (top_metadata.get('longitude') or 
+                                        top_metadata.get('Longitude') or 
+                                        top_metadata.get('lng') or 
+                                        top_metadata.get('lon') or 
+                                        top_metadata.get('LON'))
+                            
+                            # Convert string coordinates to numeric if needed
+                            if latitude and isinstance(latitude, str):
+                                try:
+                                    latitude = float(latitude)
+                                except ValueError:
+                                    latitude = None
+                            if longitude and isinstance(longitude, str):
+                                try:
+                                    longitude = float(longitude)
+                                except ValueError:
+                                    longitude = None
+                            
+                            if latitude and longitude:
+                                # Display location with coordinates for mapping app
+                                print(f"\n{Fore.MAGENTA}📍 Primary Location: {location_info['location_display']} ({latitude}, {longitude}){Style.RESET_ALL}")
+                                if location_info['maps_link']:
+                                    print(f"{Fore.MAGENTA}🗺️ Maps Link: {location_info['maps_link']}{Style.RESET_ALL}")
+                                
+                                # JSON format for mapping backend integration
+                                location_json = {
+                                    "location": {
+                                        "latitude": latitude,
+                                        "longitude": longitude,
+                                        "display": location_info['location_display'],
+                                        "maps_url": location_info['maps_link']
+                                    }
+                                }
+                                print(f"{Fore.MAGENTA}📊 Location Data (JSON): {location_json}{Style.RESET_ALL}")
+                            else:
+                                # Fallback display without coordinates
+                                print(f"\n{Fore.MAGENTA}📍 Primary Location: {location_info['location_display']}{Style.RESET_ALL}")
+                    except Exception as loc_e:
+                        print_warning(f"Location extraction failed: {str(loc_e)[:50]}...")
+                
+                # Add related locations section (limit to top 5 nodes to avoid performance issues)
+                if nodes:
+                    try:
+                        limited_nodes = nodes[:5]  # Limit to top 5 to avoid performance issues
+                        results = self._format_query_results(limited_nodes, len(limited_nodes))
+                        unique_locations = self._collect_unique_locations(results)
+                        
+                        if unique_locations:
+                            print(f"\n{Fore.MAGENTA}📍 Related Locations:{Style.RESET_ALL}")
+                            for location in unique_locations:
+                                print(f"{Fore.MAGENTA}- {location['display']}: {location['link']}{Style.RESET_ALL}")
+                    except Exception as rel_e:
+                        print_warning(f"Related locations extraction failed: {str(rel_e)[:50]}...")
+                
                 print()
             except Exception as e:
                 print_warning(f"Response generation failed: {str(e)[:100]}...")
@@ -112,11 +299,24 @@ class iLandCLIOperations:
         print()
     
     def _print_retrieved_documents(self, results: List[Dict[str, Any]]):
-        """Print retrieved documents summary."""
+        """Print retrieved documents summary with location information."""
         print_colored_header("📄 Retrieved Documents:")
         for result in results:
+            metadata = result.get('metadata', {})
+            location_info = self._extract_location_info(metadata)
+            
             print(f"{Fore.WHITE}[{result['rank']}] Score: {result['score']:.3f}{Style.RESET_ALL}")
             print(f"{Fore.WHITE}Text: {result['text']}{Style.RESET_ALL}")
+            
+            # Add location information
+            if location_info['location_display'] != "N/A":
+                print(f"{Fore.CYAN}📍 Location: {location_info['location_display']}{Style.RESET_ALL}")
+            
+            if location_info['maps_link']:
+                print(f"{Fore.CYAN}{location_info['maps_display']}: {location_info['maps_link']}{Style.RESET_ALL}")
+            elif location_info['coordinates']:
+                print(f"{Fore.CYAN}📍 Coordinates: {location_info['coordinates']}{Style.RESET_ALL}")
+            
             print()
     
     def test_all_strategies(self, test_queries: List[str], top_k: int = 3) -> Dict[str, Any]:
@@ -363,17 +563,95 @@ class iLandCLIOperations:
         print()
     
     def _show_rag_sources(self, nodes):
-        """Show source documents for RAG response."""
+        """Show source documents for RAG response with enhanced location information."""
         print(f"📚 Source Documents:")
         print("-" * 40)
         for i, node in enumerate(nodes[:3], 1):  # Show top 3 sources
             metadata = node.node.metadata
-            province = metadata.get('province', 'N/A')
-            district = metadata.get('district', 'N/A')
+            location_info = self._extract_location_info(metadata)
             ownership = metadata.get('deed_holding_type', 'N/A')
             
             print(f"[{i}] Score: {node.score:.3f}")
-            print(f"    Location: {province}, {district}")
+            
+            # Enhanced location display
+            if location_info['location_display'] != "N/A":
+                print(f"    📍 Location: {location_info['location_display']}")
+            
+            if location_info['maps_link']:
+                print(f"    {location_info['maps_display']}: {location_info['maps_link']}")
+            elif location_info['coordinates']:
+                print(f"    📍 Coordinates: {location_info['coordinates']}")
+            
             print(f"    Ownership: {ownership}")
             print(f"    Text: {node.node.text[:150]}...")
-            print() 
+            print()
+    
+    def _extract_primary_location_json(self, nodes) -> Dict[str, Any]:
+        """Extract primary location data from top document in JSON format for mapping integration."""
+        if not nodes:
+            return {}
+        
+        top_metadata = getattr(nodes[0].node, 'metadata', {})
+        location_info = self._extract_location_info(top_metadata)
+        
+        # Try multiple coordinate field variations (same as in _extract_location_info)
+        latitude = (top_metadata.get('latitude') or 
+                   top_metadata.get('Latitude') or 
+                   top_metadata.get('lat') or 
+                   top_metadata.get('LAT'))
+        longitude = (top_metadata.get('longitude') or 
+                    top_metadata.get('Longitude') or 
+                    top_metadata.get('lng') or 
+                    top_metadata.get('lon') or 
+                    top_metadata.get('LON'))
+        
+        # Convert string coordinates to numeric if needed
+        if latitude and isinstance(latitude, str):
+            try:
+                latitude = float(latitude)
+            except ValueError:
+                latitude = None
+        if longitude and isinstance(longitude, str):
+            try:
+                longitude = float(longitude)
+            except ValueError:
+                longitude = None
+        
+        if latitude and longitude:
+            # Extract location names with multiple field variations
+            province = (top_metadata.get('province') or 
+                       top_metadata.get('Province') or 
+                       top_metadata.get('จังหวัด') or '')
+            district = (top_metadata.get('district') or 
+                       top_metadata.get('District') or 
+                       top_metadata.get('อำเภอ') or '')
+            subdistrict = (top_metadata.get('subdistrict') or 
+                          top_metadata.get('Subdistrict') or 
+                          top_metadata.get('ตำบล') or '')
+            
+            # Clean up "**:" prefixes if present
+            if isinstance(province, str) and province.startswith('**:'):
+                province = province[3:].strip()
+            if isinstance(district, str) and district.startswith('**:'):
+                district = district[3:].strip()
+            if isinstance(subdistrict, str) and subdistrict.startswith('**:'):
+                subdistrict = subdistrict[3:].strip()
+            
+            coordinates_formatted = (top_metadata.get('coordinates_formatted') or 
+                                   top_metadata.get('Coordinates Formatted') or 
+                                   f"{latitude}, {longitude}")
+            
+            return {
+                "location": {
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "display": location_info['location_display'],
+                    "province": province,
+                    "district": district,
+                    "subdistrict": subdistrict,
+                    "maps_url": location_info['maps_link'],
+                    "coordinates_formatted": str(coordinates_formatted)
+                }
+            }
+        
+        return {} 
