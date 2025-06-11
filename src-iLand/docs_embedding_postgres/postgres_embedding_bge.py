@@ -170,20 +170,18 @@ class BGEPostgresEmbeddingGenerator:
                 chunk_overlap=chunk_overlap,
                 min_section_size=min_section_size
             )
-        else:
-            self.node_parser = SentenceSplitter(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap
-            )
         
-        # Initialize vector store
-        self.vector_store = self._initialize_vector_store()
-        
-        # Create vector store index
-        self.index = VectorStoreIndex.from_vector_store(
-            vector_store=self.vector_store,
-            embed_model=self.embed_model
+        # Always create node_parser for fallback
+        self.node_parser = SentenceSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
         )
+        
+        # Initialize multiple vector stores for different data types
+        self.vector_stores = self._initialize_vector_stores()
+        
+        # Create vector store indices for each type
+        self.indices = self._initialize_indices()
         
         # Statistics tracking
         self.processing_stats = {
@@ -246,18 +244,53 @@ class BGEPostgresEmbeddingGenerator:
         
         raise RuntimeError("No embedding model available. Install BGE or enable OpenAI fallback.")
 
-    def _initialize_vector_store(self) -> PGVectorStore:
-        """Initialize the PostgreSQL vector store."""
-        vector_store = PGVectorStore.from_params(
-            database=self.dest_db_name,
-            host=self.dest_db_host,
-            password=self.dest_db_password,
-            port=self.dest_db_port,
-            user=self.dest_db_user,
-            table_name=self.dest_table_name,
-            embed_dim=self.embed_dim
-        )
-        return vector_store
+    def _initialize_vector_stores(self) -> Dict[str, PGVectorStore]:
+        """Initialize multiple PostgreSQL vector stores for different data types."""
+        vector_stores = {}
+        
+        # Define table names for different embedding types
+        table_configs = {
+            "chunks": f"{self.dest_table_name.replace('_embeddings', '')}_chunks",
+            "summaries": f"{self.dest_table_name.replace('_embeddings', '')}_summaries", 
+            "indexnodes": f"{self.dest_table_name.replace('_embeddings', '')}_indexnodes",
+            "combined": f"{self.dest_table_name.replace('_embeddings', '')}_combined"
+        }
+        
+        # Create pgVector store for each table
+        for store_type, table_name in table_configs.items():
+            try:
+                vector_store = PGVectorStore.from_params(
+                    database=self.dest_db_name,
+                    host=self.dest_db_host,
+                    password=self.dest_db_password,
+                    port=self.dest_db_port,
+                    user=self.dest_db_user,
+                    table_name=table_name,
+                    embed_dim=self.embed_dim
+                )
+                vector_stores[store_type] = vector_store
+                logger.info(f"✅ Initialized pgVector store for {store_type}: {table_name}")
+            except Exception as e:
+                logger.error(f"❌ Failed to initialize {store_type} vector store: {e}")
+        
+        return vector_stores
+    
+    def _initialize_indices(self) -> Dict[str, VectorStoreIndex]:
+        """Initialize vector store indices for each data type."""
+        indices = {}
+        
+        for store_type, vector_store in self.vector_stores.items():
+            try:
+                index = VectorStoreIndex.from_vector_store(
+                    vector_store=vector_store,
+                    embed_model=self.embed_model
+                )
+                indices[store_type] = index
+                logger.info(f"✅ Initialized index for {store_type}")
+            except Exception as e:
+                logger.error(f"❌ Failed to initialize {store_type} index: {e}")
+        
+        return indices
 
     def connect_to_source_db(self) -> bool:
         """Establish connection to source PostgreSQL database."""
@@ -317,9 +350,14 @@ class BGEPostgresEmbeddingGenerator:
             logger.error(f"Error fetching documents from database: {e}")
             return []
 
-    def process_documents(self, documents: List[Dict[str, Any]]) -> List[TextNode]:
-        """Process documents using enhanced processing with BGE embeddings."""
-        all_nodes = []
+    def process_documents(self, documents: List[Dict[str, Any]]) -> Dict[str, List[TextNode]]:
+        """Process documents using enhanced processing with BGE embeddings and create multiple node types."""
+        all_node_types = {
+            "chunks": [],
+            "summaries": [],
+            "indexnodes": [],
+            "combined": []
+        }
         
         for i, doc in enumerate(documents):
             logger.info(f"Processing document {i+1}/{len(documents)} with deed_id: {doc['deed_id']}")
@@ -349,94 +387,179 @@ class BGEPostgresEmbeddingGenerator:
                     metadata=enhanced_metadata
                 )
                 
-                # Parse document into nodes using section-based chunking
-                if self.enable_section_chunking:
-                    try:
-                        # Use section-aware parsing for Thai land deeds
-                        chunks = self.section_parser.parse_land_deed_document(doc['content'])
-                        
-                        nodes = []
-                        for j, chunk in enumerate(chunks):
-                            # Create TextNode with rich metadata
-                            node = TextNode(
-                                text=chunk["text"],
-                                metadata={
-                                    **enhanced_metadata,
-                                    "chunk_index": j,
-                                    "chunk_type": chunk["section_type"],
-                                    "section_title": chunk.get("section_title", ""),
-                                    "processing_method": "section_chunking"
-                                }
-                            )
-                            nodes.append(node)
-                        
-                        logger.info(f"   Created {len(nodes)} section-based chunks")
-                        self.processing_stats["section_chunks"] += len(nodes)
-                        
-                    except Exception as e:
-                        logger.warning(f"   Section parsing failed: {e}, using fallback")
-                        # Fallback to sentence splitting
-                        nodes = self.node_parser.get_nodes_from_documents([llama_doc])
-                        
-                        # Add metadata to fallback nodes
-                        for j, node in enumerate(nodes):
-                            node.metadata.update({
-                                **enhanced_metadata,
-                                "chunk_index": j,
-                                "processing_method": "sentence_splitting"
-                            })
-                        
-                        self.processing_stats["fallback_chunks"] += len(nodes)
-                else:
-                    # Use sentence splitting
-                    nodes = self.node_parser.get_nodes_from_documents([llama_doc])
-                    
-                    # Add metadata to nodes
-                    for j, node in enumerate(nodes):
-                        node.metadata.update({
-                            **enhanced_metadata,
-                            "chunk_index": j,
-                            "processing_method": "sentence_splitting"
-                        })
-                    
-                    self.processing_stats["fallback_chunks"] += len(nodes)
+                # 1. Create chunk nodes using section-based chunking
+                chunk_nodes = self._create_chunk_nodes(doc, enhanced_metadata)
+                all_node_types["chunks"].extend(chunk_nodes)
                 
-                all_nodes.extend(nodes)
-                self.processing_stats["nodes_created"] += len(nodes)
+                # 2. Create summary node
+                summary_node = self._create_summary_node(doc, enhanced_metadata)
+                all_node_types["summaries"].append(summary_node)
                 
-                logger.info(f"   ✅ Processed deed_id {doc['deed_id']}: {len(nodes)} nodes")
+                # 3. Create index node 
+                index_node = self._create_index_node(doc, enhanced_metadata, len(chunk_nodes))
+                all_node_types["indexnodes"].append(index_node)
+                
+                # 4. Create combined nodes (all chunks + summary + index)
+                combined_nodes = chunk_nodes + [summary_node, index_node]
+                all_node_types["combined"].extend(combined_nodes)
+                
+                self.processing_stats["nodes_created"] += len(chunk_nodes)
+                
+                logger.info(f"   ✅ Processed deed_id {doc['deed_id']}: {len(chunk_nodes)} chunks, 1 summary, 1 index")
                 
             except Exception as e:
                 logger.error(f"   ❌ Error processing document {doc['deed_id']}: {e}")
                 continue
         
         self.processing_stats["documents_processed"] = len(documents)
-        logger.info(f"📊 Processing complete: {len(all_nodes)} total nodes from {len(documents)} documents")
         
-        return all_nodes
+        # Log statistics
+        for node_type, nodes in all_node_types.items():
+            logger.info(f"📊 {node_type}: {len(nodes)} nodes")
+        
+        return all_node_types
+    
+    def _create_chunk_nodes(self, doc: Dict[str, Any], metadata: Dict[str, Any]) -> List[TextNode]:
+        """Create chunk nodes using section-based chunking."""
+        if self.enable_section_chunking:
+            try:
+                # Use section-aware parsing for Thai land deeds
+                nodes = self.section_parser.parse_document_to_sections(
+                    document_text=doc['content'],
+                    metadata=metadata
+                )
+                
+                # Add chunk-specific metadata
+                for node in nodes:
+                    node.metadata.update({
+                        "node_type": "chunk",
+                        "table_type": "chunks"
+                    })
+                
+                logger.info(f"   Created {len(nodes)} section-based chunks")
+                self.processing_stats["section_chunks"] += len(nodes)
+                return nodes
+                
+            except Exception as e:
+                logger.warning(f"   Section parsing failed: {e}, using fallback")
+                
+        # Fallback to sentence splitting
+        llama_doc = Document(text=doc['content'], metadata=metadata)
+        nodes = self.node_parser.get_nodes_from_documents([llama_doc])
+        
+        # Add metadata to fallback nodes
+        for j, node in enumerate(nodes):
+            node.metadata.update({
+                **metadata,
+                "chunk_index": j,
+                "processing_method": "sentence_splitting",
+                "node_type": "chunk",
+                "table_type": "chunks"
+            })
+        
+        self.processing_stats["fallback_chunks"] += len(nodes)
+        return nodes
+    
+    def _create_summary_node(self, doc: Dict[str, Any], metadata: Dict[str, Any]) -> TextNode:
+        """Create summary node for the document."""
+        # Create simple summary from first 500 chars + key metadata
+        content = doc['content']
+        summary_text = content[:500] + "..." if len(content) > 500 else content
+        
+        summary_metadata = {
+            **metadata,
+            "node_type": "summary",
+            "table_type": "summaries",
+            "summary_length": len(summary_text),
+            "original_length": len(content)
+        }
+        
+        summary_node = TextNode(
+            text=f"# Document Summary - {metadata.get('deed_id', 'Unknown')}\n\n{summary_text}",
+            metadata=summary_metadata
+        )
+        
+        return summary_node
+    
+    def _create_index_node(self, doc: Dict[str, Any], metadata: Dict[str, Any], chunk_count: int) -> TextNode:
+        """Create index node for the document."""
+        # Create index with key information
+        key_info = []
+        if metadata.get('province'):
+            key_info.append(f"Province: {metadata['province']}")
+        if metadata.get('district'):
+            key_info.append(f"District: {metadata['district']}")
+        if metadata.get('deed_type'):
+            key_info.append(f"Deed Type: {metadata['deed_type']}")
+        if metadata.get('area_rai'):
+            key_info.append(f"Area: {metadata['area_rai']} rai")
+        
+        index_text = f"# Document Index - {metadata.get('deed_id', 'Unknown')}\n\n"
+        index_text += f"Document contains {chunk_count} chunks\n"
+        index_text += "Key Information:\n" + "\n".join(f"- {info}" for info in key_info)
+        
+        index_metadata = {
+            **metadata,
+            "node_type": "index",
+            "table_type": "indexnodes",
+            "chunk_count": chunk_count,
+            "index_info_count": len(key_info)
+        }
+        
+        index_node = TextNode(
+            text=index_text,
+            metadata=index_metadata
+        )
+        
+        return index_node
 
-    def insert_nodes_to_vector_store(self, nodes: List[TextNode]) -> int:
-        """Insert processed nodes into the vector store."""
-        try:
-            logger.info(f"Inserting {len(nodes)} nodes into vector store...")
-            
-            # Add nodes to the vector store
-            for node in nodes:
-                self.index.insert_nodes([node])
-            
-            logger.info(f"✅ Successfully inserted {len(nodes)} nodes into vector store")
-            return len(nodes)
-            
-        except Exception as e:
-            logger.error(f"❌ Error inserting nodes into vector store: {e}")
-            return 0
+    def insert_nodes_to_vector_stores(self, all_node_types: Dict[str, List[TextNode]]) -> Dict[str, int]:
+        """Insert processed nodes into multiple vector stores."""
+        insertion_counts = {}
+        
+        for node_type, nodes in all_node_types.items():
+            if not nodes:
+                insertion_counts[node_type] = 0
+                continue
+                
+            try:
+                logger.info(f"Inserting {len(nodes)} {node_type} nodes...")
+                
+                # Get the appropriate index for this node type
+                if node_type in self.indices:
+                    index = self.indices[node_type]
+                    
+                    # Insert nodes in batches
+                    batch_size = min(10, len(nodes))
+                    inserted_count = 0
+                    
+                    for i in range(0, len(nodes), batch_size):
+                        batch = nodes[i:i + batch_size]
+                        try:
+                            index.insert_nodes(batch)
+                            inserted_count += len(batch)
+                        except Exception as e:
+                            logger.error(f"❌ Error inserting batch for {node_type}: {e}")
+                    
+                    insertion_counts[node_type] = inserted_count
+                    logger.info(f"✅ Successfully inserted {inserted_count}/{len(nodes)} {node_type} nodes")
+                else:
+                    logger.warning(f"⚠️ No index found for {node_type}")
+                    insertion_counts[node_type] = 0
+                    
+            except Exception as e:
+                logger.error(f"❌ Error inserting {node_type} nodes: {e}")
+                insertion_counts[node_type] = 0
+        
+        return insertion_counts
 
     def run_pipeline(self, limit: Optional[int] = None) -> int:
-        """Run the complete BGE embedding pipeline."""
+        """Run the complete BGE embedding pipeline with multi-table structure."""
         start_time = time.time()
-        logger.info("🚀 Starting BGE PostgreSQL Embedding Pipeline")
+        logger.info("🚀 Starting BGE PostgreSQL Multi-Table Embedding Pipeline")
         logger.info(f"   Model: {self.bge_model_key}")
         logger.info(f"   Limit: {limit or 'all documents'}")
+        logger.info(f"   Tables: chunks, summaries, indexnodes, combined")
         
         try:
             # Fetch documents from database
@@ -445,28 +568,34 @@ class BGEPostgresEmbeddingGenerator:
                 logger.error("No documents found in database")
                 return 0
             
-            # Process documents into nodes
-            nodes = self.process_documents(documents)
-            if not nodes:
+            # Process documents into multiple node types
+            all_node_types = self.process_documents(documents)
+            if not any(all_node_types.values()):
                 logger.error("No nodes created from documents")
                 return 0
             
-            # Insert nodes into vector store
-            inserted_count = self.insert_nodes_to_vector_store(nodes)
+            # Insert nodes into multiple vector stores
+            insertion_counts = self.insert_nodes_to_vector_stores(all_node_types)
+            
+            # Calculate total insertions
+            total_inserted = sum(insertion_counts.values())
             
             # Print final statistics
             duration = time.time() - start_time
-            logger.info(f"\n✅ BGE PostgreSQL Pipeline Complete!")
+            logger.info(f"\n✅ BGE PostgreSQL Multi-Table Pipeline Complete!")
             logger.info(f"   ⏱️ Duration: {duration:.2f} seconds")
             logger.info(f"   📄 Documents processed: {self.processing_stats['documents_processed']}")
-            logger.info(f"   🔗 Nodes created: {self.processing_stats['nodes_created']}")
+            logger.info(f"   🔗 Chunk nodes created: {self.processing_stats['nodes_created']}")
             logger.info(f"   📊 Section chunks: {self.processing_stats['section_chunks']}")
             logger.info(f"   📊 Fallback chunks: {self.processing_stats['fallback_chunks']}")
-            logger.info(f"   💾 Nodes inserted: {inserted_count}")
             logger.info(f"   📈 Metadata fields: {self.processing_stats['metadata_fields_extracted']}")
             logger.info(f"   🤗 Model: {self.bge_model_key} ({self.embed_dim}d)")
+            logger.info(f"\n🗄️ DATABASE INSERTIONS:")
+            for table_type, count in insertion_counts.items():
+                logger.info(f"   • {table_type}: {count} nodes")
+            logger.info(f"   • Total: {total_inserted} nodes across all tables")
             
-            return inserted_count
+            return total_inserted
             
         except Exception as e:
             logger.error(f"❌ Pipeline error: {e}")
@@ -476,13 +605,13 @@ class BGEPostgresEmbeddingGenerator:
 
 
 def main():
-    """CLI entry point for BGE PostgreSQL embedding pipeline."""
+    """CLI entry point for BGE PostgreSQL Multi-Table embedding pipeline."""
     parser = argparse.ArgumentParser(
-        description='BGE-based PostgreSQL Embedding Pipeline for iLand Thai Land Deeds',
+        description='BGE-based PostgreSQL Multi-Table Embedding Pipeline for iLand Thai Land Deeds',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Process all documents with default BGE multilingual model
+  # Process all documents with multi-table structure (default)
   python postgres_embedding_bge.py
   
   # Process 100 documents with specific BGE model
@@ -490,6 +619,12 @@ Examples:
   
   # Use custom cache folder
   python postgres_embedding_bge.py --cache-folder /path/to/cache
+
+Multi-Table Structure (pgVector):
+  - chunks: Section-based document chunks (~6-10 per document)
+  - summaries: Document summaries
+  - indexnodes: Document index metadata
+  - combined: All node types combined
 
 Available BGE models:
   - bge-small-en-v1.5: Fast, 384 dimensions
@@ -520,20 +655,37 @@ Available BGE models:
         action='store_true',
         help='Enable OpenAI fallback if BGE fails'
     )
+    parser.add_argument(
+        '--disable-section-chunking',
+        action='store_true',
+        help='Disable section-based chunking (use sentence splitting)'
+    )
     
     args = parser.parse_args()
+    
+    print("=" * 60)
+    print("BGE POSTGRESQL MULTI-TABLE EMBEDDING PIPELINE - PRD v2.0")
+    print("=" * 60)
+    print(f"Model: {args.model}")
+    print(f"Section chunking: {not args.disable_section_chunking}")
+    print(f"Limit: {args.limit or 'all documents'}")
+    print(f"Tables: chunks, summaries, indexnodes, combined (pgVector)")
+    print("=" * 60)
     
     try:
         generator = BGEPostgresEmbeddingGenerator(
             bge_model_key=args.model,
             cache_folder=args.cache_folder,
-            fallback_to_openai=args.enable_openai_fallback
+            fallback_to_openai=args.enable_openai_fallback,
+            enable_section_chunking=not args.disable_section_chunking
         )
         
         result = generator.run_pipeline(limit=args.limit)
         
         if result > 0:
-            print(f"\n🎉 Success! Processed {result} embeddings using BGE model: {args.model}")
+            print(f"\n🎉 SUCCESS! Processed {result} embeddings across multi-table structure")
+            print("🗄️ Created 4 pgVector tables: chunks, summaries, indexnodes, combined")  
+            print(f"📊 Expected: ~6-10 chunks per document (vs ~169 traditional chunks)")
         else:
             print(f"\n❌ Pipeline failed or no embeddings created")
             sys.exit(1)

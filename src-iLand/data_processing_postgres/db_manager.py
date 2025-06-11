@@ -161,6 +161,7 @@ class DatabaseManager:
     
     def _update_table_schema(self, cursor, table_name: str):
         """Update existing table schema with new columns if they don't exist"""
+        # First, update table columns
         try:
             # Get existing columns
             cursor.execute(f"""
@@ -186,44 +187,76 @@ class DatabaseManager:
             }
             
             # Add missing columns
+            columns_added = False
             for column_name, column_type in required_columns.items():
                 if column_name not in existing_columns:
                     cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
                     logger.info(f"Added column {column_name} to {table_name}")
+                    columns_added = True
             
-            # Add missing indexes
-            self._ensure_indexes_exist(cursor, table_name)
+            # Check and add UNIQUE constraint on deed_id if it doesn't exist
+            cursor.execute(f"""
+                SELECT COUNT(*) FROM information_schema.table_constraints 
+                WHERE table_name = '{table_name}' 
+                AND constraint_type = 'UNIQUE' 
+                AND constraint_name LIKE '%deed_id%'
+            """)
+            unique_constraint_exists = cursor.fetchone()[0] > 0
             
-            self.connection.commit()
+            if not unique_constraint_exists:
+                try:
+                    # First check if deed_id column exists
+                    if 'deed_id' in existing_columns or columns_added:
+                        cursor.execute(f"ALTER TABLE {table_name} ADD CONSTRAINT uq_{table_name}_deed_id UNIQUE (deed_id)")
+                        logger.info(f"Added UNIQUE constraint on deed_id for {table_name}")
+                        columns_added = True
+                except Exception as e:
+                    logger.warning(f"Could not add UNIQUE constraint on deed_id: {e}")
+            
+            # Commit column changes first
+            if columns_added:
+                self.connection.commit()
+                logger.info(f"Successfully added missing columns to {table_name}")
             
         except Exception as e:
-            logger.warning(f"Could not update table schema: {e}")
+            logger.warning(f"Could not update table columns: {e}")
+            self.connection.rollback()
+        
+        # Then, create indexes separately
+        try:
+            self._ensure_indexes_exist(cursor, table_name)
+            self.connection.commit()
+            logger.info(f"Index creation completed for {table_name}")
+            
+        except Exception as e:
+            logger.warning(f"Could not create indexes: {e}")
             self.connection.rollback()
     
     def _ensure_indexes_exist(self, cursor, table_name: str):
         """Ensure all required indexes exist"""
-        indexes = [
-            f"idx_{table_name}_province",
-            f"idx_{table_name}_district", 
-            f"idx_{table_name}_land_use",
-            f"idx_{table_name}_deed_type",
-            f"idx_{table_name}_area",
-            f"idx_{table_name}_processing_status",
-            f"idx_{table_name}_embedding_status",
-            f"idx_{table_name}_raw_metadata",
-            f"idx_{table_name}_extracted_metadata"
+        indexes_config = [
+            (f"idx_{table_name}_province", "province"),
+            (f"idx_{table_name}_district", "district"), 
+            (f"idx_{table_name}_land_use_category", "land_use_category"),
+            (f"idx_{table_name}_deed_type_category", "deed_type_category"),
+            (f"idx_{table_name}_area_category", "area_category"),
+            (f"idx_{table_name}_processing_status", "processing_status"),
+            (f"idx_{table_name}_embedding_status", "embedding_status"),
+            (f"idx_{table_name}_raw_metadata", "raw_metadata"),
+            (f"idx_{table_name}_extracted_metadata", "extracted_metadata")
         ]
         
-        for index_name in indexes:
+        for index_name, column_name in indexes_config:
             try:
-                if 'metadata' in index_name:
-                    column = index_name.split('_')[-1]
-                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING GIN ({column})")
+                # Use separate transactions for each index to prevent cascade failures
+                if 'metadata' in column_name:
+                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING GIN ({column_name})")
                 else:
-                    column = index_name.replace(f"idx_{table_name}_", "")
-                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({column})")
+                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({column_name})")
+                # Don't commit here - let the caller handle it
             except Exception as e:
                 logger.warning(f"Could not create index {index_name}: {e}")
+                # Continue with other indexes even if one fails
     
     def close(self):
         """Close database connection"""
@@ -305,34 +338,51 @@ class DatabaseManager:
                     area_category = extracted_metadata.get('area_category')
                     
                     try:
-                        # Insert into the enhanced iland_md_data table
-                        cursor.execute(
-                            f"""
-                            INSERT INTO {table_name} 
-                            (deed_id, md_string, raw_metadata, extracted_metadata, 
-                             province, district, land_use_category, deed_type_category, area_category,
-                             processing_status, processing_timestamp)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            ON CONFLICT (deed_id) DO UPDATE SET
-                                md_string = EXCLUDED.md_string,
-                                raw_metadata = EXCLUDED.raw_metadata,
-                                extracted_metadata = EXCLUDED.extracted_metadata,
-                                province = EXCLUDED.province,
-                                district = EXCLUDED.district,
-                                land_use_category = EXCLUDED.land_use_category,
-                                deed_type_category = EXCLUDED.deed_type_category,
-                                area_category = EXCLUDED.area_category,
-                                processing_status = EXCLUDED.processing_status,
-                                processing_timestamp = EXCLUDED.processing_timestamp
-                            """,
-                            (deed_id, md_string, raw_metadata, extracted_metadata_json,
-                             province, district, land_use_category, deed_type_category, area_category,
-                             'processed', datetime.now())
-                        )
+                        # First check if the deed_id already exists
+                        cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE deed_id = %s", (deed_id,))
+                        exists = cursor.fetchone()[0] > 0
+                        
+                        if exists:
+                            # Update existing record
+                            cursor.execute(
+                                f"""
+                                UPDATE {table_name} SET
+                                    md_string = %s,
+                                    raw_metadata = %s,
+                                    extracted_metadata = %s,
+                                    province = %s,
+                                    district = %s,
+                                    land_use_category = %s,
+                                    deed_type_category = %s,
+                                    area_category = %s,
+                                    processing_status = %s,
+                                    processing_timestamp = %s
+                                WHERE deed_id = %s
+                                """,
+                                (md_string, raw_metadata, extracted_metadata_json,
+                                 province, district, land_use_category, deed_type_category, area_category,
+                                 'processed', datetime.now(), deed_id)
+                            )
+                        else:
+                            # Insert new record
+                            cursor.execute(
+                                f"""
+                                INSERT INTO {table_name} 
+                                (deed_id, md_string, raw_metadata, extracted_metadata, 
+                                 province, district, land_use_category, deed_type_category, area_category,
+                                 processing_status, processing_timestamp)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                """,
+                                (deed_id, md_string, raw_metadata, extracted_metadata_json,
+                                 province, district, land_use_category, deed_type_category, area_category,
+                                 'processed', datetime.now())
+                            )
+                        
                         successful_inserts += 1
                         
                         if successful_inserts <= 3:  # Log details for first few documents
-                            logger.info(f"Inserted document deed_id: {deed_id}, province: {province}, "
+                            action = "Updated" if exists else "Inserted"
+                            logger.info(f"{action} document deed_id: {deed_id}, province: {province}, "
                                       f"land_use: {land_use_category}, text length: {len(md_string)} chars")
                             
                     except Exception as e:

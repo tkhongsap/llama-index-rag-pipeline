@@ -7,7 +7,7 @@ Follows LlamaIndex best practices for production RAG applications.
 
 from .metadata_extractor import iLandMetadataExtractor
 from .document_loader import iLandDocumentLoader
-from .embedding_processor import EmbeddingProcessor
+from .embedding_processor import BGEEmbeddingProcessor
 from .file_storage import EmbeddingStorage
 from .batch_embedding import (
     iLandBatchEmbeddingPipeline,
@@ -21,7 +21,7 @@ from .postgres_embedding import PostgresEmbeddingGenerator
 __all__ = [
     'iLandMetadataExtractor',
     'iLandDocumentLoader',
-    'EmbeddingProcessor',
+    'BGEEmbeddingProcessor',
     'EmbeddingStorage',
     'iLandBatchEmbeddingPipeline',
     'iLandHierarchicalRetriever',

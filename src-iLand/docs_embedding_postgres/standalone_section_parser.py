@@ -39,7 +39,7 @@ class StandaloneLandDeedSectionParser:
             chunk_overlap=chunk_overlap
         )
         
-        # Section patterns for Thai land deed documents
+        # Section patterns for Thai land deed documents (updated to match actual text format)
         self.section_patterns = {
             "deed_info": r"## ข้อมูลโฉนด \(Deed Information\)(.*?)(?=##|\Z)",
             "location": r"## ที่ตั้ง \(Location\)(.*?)(?=##|\Z)",
@@ -49,8 +49,12 @@ class StandaloneLandDeedSectionParser:
             "classification": r"## การจำแนกประเภท \(Classification\)(.*?)(?=##|\Z)",
             "dates": r"## วันที่สำคัญ \(Important Dates\)(.*?)(?=##|\Z)",
             "financial": r"## ข้อมูลการเงิน \(Financial Information\)(.*?)(?=##|\Z)",
-            "additional": r"## ข้อมูลเพิ่มเติม \(Additional Information\)(.*?)(?=##|\Z)"
+            "additional": r"## ข้อมูลเพิ่มเติม \(Additional Information\)(.*?)(?=##|\Z)",
+            "metadata": r"## ข้อมูลเมตา \(Document Metadata\)(.*?)(?=##|\Z)"
         }
+        
+        # Enable generic section parsing as well
+        self.enable_generic_section_parsing = True
     
     def parse_document_to_sections(
         self, 
@@ -96,34 +100,53 @@ class StandaloneLandDeedSectionParser:
         key_elements = []
         
         # Document ID and type
-        if 'deed_serial_no' in metadata and metadata['deed_serial_no']:
-            key_elements.append(f"โฉนดเลขที่: {metadata['deed_serial_no']}")
+        if 'deed_id' in metadata and metadata['deed_id']:
+            key_elements.append(f"โฉนดเลขที่: {metadata['deed_id']}")
         
+        if 'deed_serial_no' in metadata and metadata['deed_serial_no']:
+            key_elements.append(f"เลขที่อนุกรม: {metadata['deed_serial_no']}")
+            
         if 'deed_type' in metadata and metadata['deed_type']:
             key_elements.append(f"ประเภท: {metadata['deed_type']}")
         
-        # Location hierarchy
+        # Location information
         if 'location_hierarchy' in metadata and metadata['location_hierarchy']:
             key_elements.append(f"ที่ตั้ง: {metadata['location_hierarchy']}")
         elif 'province' in metadata and metadata['province']:
-            location_parts = [metadata['province']]
+            location_parts = [str(metadata['province'])]
             if 'district' in metadata and metadata['district']:
-                location_parts.append(metadata['district'])
+                location_parts.append(str(metadata['district']))
             if 'subdistrict' in metadata and metadata['subdistrict']:
-                location_parts.append(metadata['subdistrict'])
+                location_parts.append(str(metadata['subdistrict']))
             key_elements.append(f"ที่ตั้ง: {' > '.join(location_parts)}")
         
         # Coordinates
         if 'coordinates_formatted' in metadata and metadata['coordinates_formatted']:
             key_elements.append(f"พิกัด: {metadata['coordinates_formatted']}")
+        elif 'longitude' in metadata and 'latitude' in metadata and metadata['longitude'] and metadata['latitude']:
+            key_elements.append(f"พิกัด: {metadata['latitude']}, {metadata['longitude']}")
         
-        # Area
+        # Area information
         if 'area_formatted' in metadata and metadata['area_formatted']:
             key_elements.append(f"เนื้อที่: {metadata['area_formatted']}")
+        elif 'deed_rai' in metadata or 'deed_ngan' in metadata or 'deed_wa' in metadata:
+            area_parts = []
+            if metadata.get('deed_rai'):
+                area_parts.append(f"{metadata['deed_rai']} ไร่")
+            if metadata.get('deed_ngan'):
+                area_parts.append(f"{metadata['deed_ngan']} งาน")
+            if metadata.get('deed_wa'):
+                area_parts.append(f"{metadata['deed_wa']} ตารางวา")
+            if area_parts:
+                key_elements.append(f"เนื้อที่: {' '.join(area_parts)}")
         
         # Land category
         if 'land_main_category' in metadata and metadata['land_main_category']:
-            key_elements.append(f"หมวดหมู่: {metadata['land_main_category']}")
+            key_elements.append(f"หมวดหมู่ที่ดิน: {metadata['land_main_category']}")
+            
+        # Deed group type
+        if 'deed_group_type' in metadata and metadata['deed_group_type']:
+            key_elements.append(f"ประเภทกลุ่ม: {metadata['deed_group_type']}")
         
         # Create key info text
         key_info_text = "\n".join(key_elements) if key_elements else "ข้อมูลสำคัญไม่พร้อมใช้งาน"
@@ -151,14 +174,21 @@ class StandaloneLandDeedSectionParser:
         section_nodes = []
         chunk_index = 1  # Start after key info chunk
         
+        logger.info(f"🔍 Looking for sections in document {base_metadata.get('deed_id', 'unknown')}")
+        
+        # Try specific patterns first
+        found_sections = set()
         for section_name, pattern in self.section_patterns.items():
             match = re.search(pattern, document_text, re.DOTALL | re.IGNORECASE)
             
             if match:
                 section_content = match.group(1).strip()
+                logger.info(f"✅ Found section '{section_name}': {len(section_content)} chars")
+                found_sections.add(section_name)
                 
                 # Skip nearly empty sections
                 if len(section_content) < self.min_section_size:
+                    logger.info(f"⚠️ Skipping section '{section_name}': too small ({len(section_content)} < {self.min_section_size})")
                     continue
                 
                 # If section is too large, split it further
@@ -188,8 +218,97 @@ class StandaloneLandDeedSectionParser:
                     )
                     section_nodes.append(section_node)
                     chunk_index += 1
+            else:
+                logger.info(f"❌ Section '{section_name}' not found")
+        
+        # If generic parsing is enabled and we have few sections, try to catch all ## headers
+        if self.enable_generic_section_parsing and len(section_nodes) < 3:
+            logger.info("🔄 Enabling generic section parsing to catch all ## headers")
+            generic_sections = self._extract_generic_sections(document_text, base_metadata, found_sections, chunk_index)
+            section_nodes.extend(generic_sections)
         
         return section_nodes
+    
+    def _extract_generic_sections(
+        self, 
+        document_text: str, 
+        base_metadata: Dict[str, Any], 
+        found_sections: set, 
+        start_chunk_index: int
+    ) -> List[TextNode]:
+        """Extract any sections that start with ## that weren't caught by specific patterns."""
+        generic_sections = []
+        chunk_index = start_chunk_index
+        
+        # Find all ## headers in the document
+        header_pattern = r"## ([^\n]+)\n(.*?)(?=##|\Z)"
+        matches = re.finditer(header_pattern, document_text, re.DOTALL | re.IGNORECASE)
+        
+        for match in matches:
+            header_text = match.group(1).strip()
+            content = match.group(2).strip()
+            
+            # Skip if content is too small
+            if len(content) < self.min_section_size:
+                logger.info(f"⚠️ Skipping generic section '{header_text}': too small ({len(content)} < {self.min_section_size})")
+                continue
+            
+            # Create a section name from the header
+            section_name = self._create_section_name_from_header(header_text)
+            
+            # Skip if this section was already found by specific patterns
+            if section_name in found_sections:
+                continue
+            
+            logger.info(f"✅ Found generic section '{section_name}' ('{header_text}'): {len(content)} chars")
+            
+            # If section is too large, split it further
+            if len(content) > self.chunk_size * 2:
+                sub_chunks = self._split_large_section(
+                    content, 
+                    section_name, 
+                    base_metadata, 
+                    chunk_index
+                )
+                generic_sections.extend(sub_chunks)
+                chunk_index += len(sub_chunks)
+            else:
+                # Create single section chunk
+                section_metadata = {
+                    **base_metadata,
+                    "chunk_type": "section",
+                    "section": section_name,
+                    "chunk_index": chunk_index,
+                    "section_size": len(content),
+                    "original_header": header_text,
+                    "parsing_method": "generic"
+                }
+                
+                section_node = TextNode(
+                    text=f"## {header_text}\n{content}",
+                    metadata=section_metadata
+                )
+                generic_sections.append(section_node)
+                chunk_index += 1
+        
+        logger.info(f"📊 Generic parsing found {len(generic_sections)} additional sections")
+        return generic_sections
+    
+    def _create_section_name_from_header(self, header_text: str) -> str:
+        """Create a section name from header text."""
+        # Extract the Thai part before parentheses
+        thai_part = re.split(r'\s*\(', header_text)[0].strip()
+        
+        # Convert to lowercase and replace spaces/special chars with underscores
+        section_name = re.sub(r'[^\w\u0E00-\u0E7F]+', '_', thai_part.lower())
+        section_name = re.sub(r'_+', '_', section_name).strip('_')
+        
+        # If empty or too short, use full header
+        if len(section_name) < 3:
+            section_name = re.sub(r'[^\w\u0E00-\u0E7F]+', '_', header_text.lower())
+            section_name = re.sub(r'_+', '_', section_name).strip('_')
+        
+        return section_name if section_name else "unknown_section"
     
     def _split_large_section(
         self, 

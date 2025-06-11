@@ -37,23 +37,102 @@ from llama_index.core.schema import TextNode, IndexNode
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 
-# Import local components
+# Import local components with multiple fallback paths
 try:
     from .metadata_extractor import iLandMetadataExtractor
     from .standalone_section_parser import StandaloneLandDeedSectionParser
     from .db_utils import PostgresManager
     from .multi_model_embedding_processor import MultiModelEmbeddingProcessor
     from .embedding_config import get_embedding_config, get_config_from_environment
+    MULTI_MODEL_SUPPORT = True
 except ImportError:
-    from metadata_extractor import iLandMetadataExtractor
-    from standalone_section_parser import StandaloneLandDeedSectionParser
-    from db_utils import PostgresManager
     try:
+        # Try direct import
+        from metadata_extractor import iLandMetadataExtractor
+        from standalone_section_parser import StandaloneLandDeedSectionParser
+        from db_utils import PostgresManager
         from multi_model_embedding_processor import MultiModelEmbeddingProcessor
         from embedding_config import get_embedding_config, get_config_from_environment
         MULTI_MODEL_SUPPORT = True
     except ImportError:
-        MULTI_MODEL_SUPPORT = False
+        try:
+            # Try importing from the current module directory
+            import sys
+            import os
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            sys.path.insert(0, current_dir)
+            
+            from metadata_extractor import iLandMetadataExtractor
+            from standalone_section_parser import StandaloneLandDeedSectionParser
+            from db_utils import PostgresManager
+            from multi_model_embedding_processor import MultiModelEmbeddingProcessor
+            from embedding_config import get_embedding_config, get_config_from_environment
+            MULTI_MODEL_SUPPORT = True
+        except ImportError:
+            # Fallback: Create minimal components to avoid complete failure
+            import logging
+            logging.warning("Could not import required modules. Using minimal fallback implementations.")
+            
+            class iLandMetadataExtractor:
+                def extract_from_content(self, content):
+                    return {}
+            
+            class StandaloneLandDeedSectionParser:
+                def __init__(self, *args, **kwargs):
+                    self.chunk_size = kwargs.get('chunk_size', 1024)  # Increased from 512 to 1024
+                    self.chunk_overlap = kwargs.get('chunk_overlap', 50)
+                    from llama_index.core.node_parser import SentenceSplitter
+                    self.sentence_splitter = SentenceSplitter(
+                        chunk_size=self.chunk_size,
+                        chunk_overlap=self.chunk_overlap
+                    )
+                    
+                def parse_sections(self, content):
+                    return [{"content": content, "section_type": "unknown"}]
+                    
+                def parse_document_to_sections(self, document_text: str, metadata: dict):
+                    """Fallback method that splits document into sentence-based chunks."""
+                    from llama_index.core import Document
+                    from llama_index.core.schema import TextNode
+                    
+                    # Create minimal metadata for document splitting to avoid size issues
+                    minimal_metadata = {
+                        "doc_id": metadata.get("doc_id", ""),
+                        "deed_id": metadata.get("deed_id", ""),
+                        "province": metadata.get("province", ""),
+                        "district": metadata.get("district", "")
+                    }
+                    
+                    # Create document and split into sentences
+                    llama_doc = Document(text=document_text, metadata=minimal_metadata)
+                    nodes = self.sentence_splitter.get_nodes_from_documents([llama_doc])
+                    
+                    # Convert to TextNodes with proper metadata
+                    text_nodes = []
+                    for i, node in enumerate(nodes):
+                        enhanced_metadata = metadata.copy()
+                        enhanced_metadata.update({
+                            "chunk_type": "sentence",
+                            "chunk_index": i,
+                            "chunking_strategy": "sentence_splitting_fallback",
+                            "section": "fallback_section"
+                        })
+                        
+                        text_node = TextNode(
+                            text=node.text,
+                            metadata=enhanced_metadata
+                        )
+                        text_nodes.append(text_node)
+                    
+                    return text_nodes
+            
+            from db_utils import PostgresManager  # This should still work
+            MULTI_MODEL_SUPPORT = False
+            
+            def get_embedding_config():
+                return {}
+            def get_config_from_environment():
+                return {}
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -75,7 +154,7 @@ class EnhancedPostgresEmbeddingPipeline:
         db_port: int = int(os.getenv("DB_PORT", "5432")),
         
         # Processing configuration
-        chunk_size: int = int(os.getenv("CHUNK_SIZE", "512")),
+        chunk_size: int = int(os.getenv("CHUNK_SIZE", "1024")),
         chunk_overlap: int = int(os.getenv("CHUNK_OVERLAP", "50")),
         batch_size: int = int(os.getenv("API_BATCH_SIZE", "20")),
         
@@ -301,11 +380,22 @@ class EnhancedPostgresEmbeddingPipeline:
             for row in rows:
                 deed_id, md_string, raw_metadata, extracted_metadata, province, district, land_use_cat, deed_type_cat, area_cat = row
                 
-                # Parse metadata
+                # Parse metadata - handle both string and dict types
                 try:
-                    raw_meta = json.loads(raw_metadata) if raw_metadata else {}
-                    extracted_meta = json.loads(extracted_metadata) if extracted_metadata else {}
-                except json.JSONDecodeError:
+                    if isinstance(raw_metadata, str):
+                        raw_meta = json.loads(raw_metadata) if raw_metadata else {}
+                    elif isinstance(raw_metadata, dict):
+                        raw_meta = raw_metadata
+                    else:
+                        raw_meta = {}
+                    
+                    if isinstance(extracted_metadata, str):
+                        extracted_meta = json.loads(extracted_metadata) if extracted_metadata else {}
+                    elif isinstance(extracted_metadata, dict):
+                        extracted_meta = extracted_metadata
+                    else:
+                        extracted_meta = {}
+                except (json.JSONDecodeError, TypeError):
                     raw_meta = {}
                     extracted_meta = {}
                 
