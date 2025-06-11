@@ -20,7 +20,7 @@ from .retrievers import (
     RecursivePostgresRetriever,
     MetadataFilterPostgresRetriever
 )
-from .query_engine import PostgresQueryEngine
+from .query_engines import PostgresQueryEngine
 
 
 def test_connection(args) -> None:

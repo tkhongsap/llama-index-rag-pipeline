@@ -4,7 +4,7 @@ PostgreSQL Retrieval Package for iLand Thai Land Deed Data
 This package implements PostgreSQL-based retrieval strategies that query directly
 from the database instead of loading embeddings from files. It provides:
 
-- Seven PostgreSQL-based retrieval strategies
+- Four implemented PostgreSQL-based retrieval strategies
 - Router retriever with intelligent strategy selection
 - Direct pgVector similarity search
 - CLI interface for testing and usage
@@ -13,7 +13,7 @@ from the database instead of loading embeddings from files. It provides:
 Main Components:
 - BasePostgresRetriever: Base class for all PostgreSQL retrievers
 - PostgresRouterRetriever: Main router with strategy selection
-- Seven retrieval strategies: basic, window, recursive, auto_merge, metadata, ensemble, agentic
+- Four retrieval strategies: basic, sentence_window, recursive, metadata_filter
 - PostgresQueryEngine: Query engine wrapper
 - CLI: Command-line interface
 
@@ -22,6 +22,11 @@ Database Tables Used:
 - iland_summaries: Document summaries with embeddings  
 - iland_indexnodes: Index nodes with embeddings
 - iland_combined: All embeddings combined
+
+TODO: Implement remaining strategies:
+- AutoMergePostgresRetriever: Automatic chunk merging
+- EnsemblePostgresRetriever: Multiple strategy combination  
+- AgenticPostgresRetriever: LLM-guided retrieval
 """
 
 from .config import PostgresConfig
@@ -32,10 +37,7 @@ from .retrievers import (
     BasicPostgresRetriever,
     SentenceWindowPostgresRetriever,
     RecursivePostgresRetriever,
-    AutoMergePostgresRetriever,
-    MetadataFilterPostgresRetriever,
-    EnsemblePostgresRetriever,
-    AgenticPostgresRetriever
+    MetadataFilterPostgresRetriever
 )
 
 # Version information
@@ -52,12 +54,9 @@ __all__ = [
     "PostgresRouterRetriever", 
     "PostgresQueryEngine",
     
-    # Retrieval strategies
+    # Implemented retrieval strategies
     "BasicPostgresRetriever",
     "SentenceWindowPostgresRetriever",
-    "RecursivePostgresRetriever", 
-    "AutoMergePostgresRetriever",
-    "MetadataFilterPostgresRetriever",
-    "EnsemblePostgresRetriever",
-    "AgenticPostgresRetriever"
+    "RecursivePostgresRetriever",
+    "MetadataFilterPostgresRetriever"
 ] 
