@@ -17,11 +17,11 @@ load_dotenv()
 class PostgresConfig:
     """Configuration for PostgreSQL retrieval operations."""
     
-    # Database connection
-    db_name: str = "iland-vector-dev"
-    db_user: str = "vector_user_dev"
-    db_password: str = "akqVvIJvVqe7Jr1"
-    db_host: str = "10.4.102.11"
+    # Database connection - NO DEFAULT VALUES for security
+    db_name: str = ""
+    db_user: str = ""
+    db_password: str = ""
+    db_host: str = ""
     db_port: int = 5432
     
     # Connection pool settings
@@ -57,11 +57,11 @@ class PostgresConfig:
     def from_env(cls) -> "PostgresConfig":
         """Create configuration from environment variables."""
         return cls(
-            # Database connection
-            db_name=os.getenv("DB_NAME", "iland-vector-dev"),
-            db_user=os.getenv("DB_USER", "vector_user_dev"),
-            db_password=os.getenv("DB_PASSWORD", "akqVvIJvVqe7Jr1"),
-            db_host=os.getenv("DB_HOST", "10.4.102.11"),
+            # Database connection - require environment variables
+            db_name=os.getenv("DB_NAME", ""),
+            db_user=os.getenv("DB_USER", ""),
+            db_password=os.getenv("DB_PASSWORD", ""),
+            db_host=os.getenv("DB_HOST", ""),
             db_port=int(os.getenv("DB_PORT", "5432")),
             
             # Connection pool

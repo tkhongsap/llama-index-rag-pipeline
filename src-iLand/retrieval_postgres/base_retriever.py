@@ -11,7 +11,9 @@ from typing import List, Dict, Any, Optional
 from llama_index.core.schema import NodeWithScore, TextNode
 
 from .config import PostgresConfig
-from .utils import ConnectionManager, VectorOperations, MetadataUtils
+from .utils.db_connection import PostgresConnectionManager
+from .utils.vector_ops import generate_embedding, cosine_similarity
+from .utils.metadata_utils import MetadataUtils
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +37,7 @@ class BasePostgresRetriever(ABC):
         self.strategy_name = strategy_name
         
         # Initialize components
-        self.connection_manager = ConnectionManager(config)
-        self.vector_ops = VectorOperations(
-            embedding_model=config.embedding_model,
-            openai_api_key=config.openai_api_key
-        )
+        self.connection_manager = PostgresConnectionManager(config)
         self.metadata_utils = MetadataUtils()
         
         # Validate configuration
@@ -70,7 +68,7 @@ class BasePostgresRetriever(ABC):
     def _get_query_embedding(self, query: str) -> List[float]:
         """Generate embedding for the query."""
         try:
-            return self.vector_ops.get_embedding(query)
+            return generate_embedding(query, self.config.embedding_model)
         except Exception as e:
             logger.error(f"Failed to generate query embedding: {e}")
             raise

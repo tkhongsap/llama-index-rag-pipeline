@@ -269,4 +269,27 @@ class VectorOperations:
                 return self._embedding_model.get_sentence_embedding_dimension()
         except Exception as e:
             logger.error(f"Failed to get embedding dimension: {e}")
-            return 1024  # Default BGE dimension 
+            return 1024  # Default BGE dimension
+
+
+# Standalone functions for easier importing
+_default_vector_ops = None
+
+def get_default_vector_ops(embedding_model: str = "BAAI/bge-large-en-v1.5") -> VectorOperations:
+    """Get or create default VectorOperations instance."""
+    global _default_vector_ops
+    if _default_vector_ops is None:
+        _default_vector_ops = VectorOperations(embedding_model=embedding_model)
+    return _default_vector_ops
+
+
+def generate_embedding(text: str, model: str = "BAAI/bge-large-en-v1.5") -> List[float]:
+    """Generate embedding for text using specified model."""
+    vector_ops = get_default_vector_ops(model)
+    return vector_ops.get_embedding(text)
+
+
+def cosine_similarity(embedding1: List[float], embedding2: List[float]) -> float:
+    """Calculate cosine similarity between two embeddings."""
+    vector_ops = get_default_vector_ops()
+    return vector_ops.cosine_similarity(embedding1, embedding2) 

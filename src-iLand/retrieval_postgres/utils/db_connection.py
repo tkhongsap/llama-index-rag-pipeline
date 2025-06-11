@@ -14,7 +14,7 @@ from ..config import PostgresConfig
 logger = logging.getLogger(__name__)
 
 
-class ConnectionManager:
+class PostgresConnectionManager:
     """Manages PostgreSQL connections with pooling for retrieval operations."""
     
     def __init__(self, config: PostgresConfig):
