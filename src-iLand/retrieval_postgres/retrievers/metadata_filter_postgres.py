@@ -195,21 +195,18 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
         top_k: int
     ) -> List[Dict[str, Any]]:
         """
-        Perform vector search with metadata pre-filtering.
-        
+        Perform vector search with metadata pre-filtering using config-based table names.
         Args:
             query_embedding: Query embedding vector
             filters: Metadata filters to apply
             top_k: Number of results to retrieve
-            
         Returns:
             Filtered search results
         """
-        # Search multiple tables if no specific table preference
+        # Determine table preference using config
         table_preference = self._determine_table_preference(filters)
-        
         if table_preference:
-            # Search specific table
+            # Use config-based table name
             results = self._vector_similarity_search(
                 query_embedding=query_embedding,
                 table_name=table_preference,
@@ -218,13 +215,12 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
                 metadata_filters=filters
             )
         else:
-            # Search combined table or multiple tables
+            # Use config-based multi-table search
             results = self._search_multiple_tables(
                 query_embedding=query_embedding,
                 filters=filters,
                 top_k=top_k
             )
-        
         return results
     
     def _vector_then_filter(
@@ -234,31 +230,23 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
         top_k: int
     ) -> List[Dict[str, Any]]:
         """
-        Perform vector search first, then apply metadata filtering.
-        
+        Perform vector search first, then apply metadata filtering using config-based table names.
         Args:
             query_embedding: Query embedding vector
             filters: Metadata filters to apply
             top_k: Number of results to retrieve
-            
         Returns:
             Search results with post-filtering
         """
-        # Get more results initially for filtering
         initial_top_k = min(top_k * 3, self.config.max_top_k)
-        
-        # Search without metadata filters
+        # Use config.combined_table for initial search
         initial_results = self._vector_similarity_search(
             query_embedding=query_embedding,
             table_name=self.config.combined_table,
             top_k=initial_top_k,
             similarity_threshold=self.config.similarity_threshold
         )
-        
-        # Apply metadata filtering
         filtered_results = self._apply_metadata_filters(initial_results, filters)
-        
-        # Return top results after filtering
         return filtered_results[:top_k]
     
     def _apply_metadata_filters(
@@ -344,22 +332,16 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
     
     def _determine_table_preference(self, filters: Dict[str, Any]) -> Optional[str]:
         """
-        Determine the best table to search based on filters.
-        
+        Determine the best table to search based on filters, using config-based table names.
         Args:
             filters: Metadata filters
-            
         Returns:
             Preferred table name or None for multiple tables
         """
-        # If looking for summaries specifically
         if "result_type" in filters and filters["result_type"] == "summary":
             return self.config.summaries_table
-        
-        # If looking for specific chunk information
         if "chunk_index" in filters:
             return self.config.chunks_table
-        
         # Default to combined table for most filters
         return self.config.combined_table
     
@@ -370,25 +352,20 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
         top_k: int
     ) -> List[Dict[str, Any]]:
         """
-        Search multiple tables and combine results.
-        
+        Search multiple tables (from config) and combine results.
         Args:
             query_embedding: Query embedding vector
             filters: Metadata filters
             top_k: Number of results to retrieve
-            
         Returns:
             Combined search results
         """
         all_results = []
-        
-        # Define tables to search
+        # Use config-based table names
         tables_to_search = [
             self.config.chunks_table,
             self.config.summaries_table
         ]
-        
-        # Search each table
         for table in tables_to_search:
             try:
                 table_results = self._vector_similarity_search(
@@ -398,18 +375,12 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
                     similarity_threshold=self.config.similarity_threshold,
                     metadata_filters=filters
                 )
-                
-                # Add table source
                 for result in table_results:
                     result["source_table"] = table
-                
                 all_results.extend(table_results)
-                
             except Exception as e:
                 logger.warning(f"Failed to search table {table}: {e}")
                 continue
-        
-        # Sort by similarity and return top results
         all_results.sort(key=lambda x: x.get("similarity_score", 0.0), reverse=True)
         return all_results[:top_k]
     
@@ -419,19 +390,15 @@ class MetadataFilterPostgresRetriever(BasePostgresRetriever):
         filters: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """
-        Apply additional post-processing to results.
-        
+        Apply additional post-processing to results and add filter info to metadata.
         Args:
             results: Search results
             filters: Applied filters
-            
         Returns:
             Post-processed results
         """
-        # Add filter information to metadata
         for result in results:
             if isinstance(result.get("metadata"), dict):
                 result["metadata"]["applied_filters"] = filters
                 result["metadata"]["filter_method"] = "metadata_filter_postgres"
-        
         return results 

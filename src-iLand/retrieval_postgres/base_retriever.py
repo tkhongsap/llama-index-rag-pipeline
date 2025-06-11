@@ -68,6 +68,7 @@ class BasePostgresRetriever(ABC):
     def _get_query_embedding(self, query: str) -> List[float]:
         """Generate embedding for the query."""
         try:
+            print(f"[DEBUG] Using embedding model: {self.config.embedding_model}")
             return generate_embedding(query, self.config.embedding_model)
         except Exception as e:
             logger.error(f"Failed to generate query embedding: {e}")

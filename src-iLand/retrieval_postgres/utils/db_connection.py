@@ -117,7 +117,10 @@ class PostgresConnectionManager:
         """
         # Default fields to select
         if select_fields is None:
-            select_fields = ["id", "deed_id", "text", "metadata"]
+            select_fields = ["id", "text", "metadata", "node_id"]
+        
+        # แปลง query_embedding เป็น list ของ float ธรรมดา
+        query_embedding = [float(x) for x in query_embedding]
         
         # Build base query
         fields_sql = ", ".join(select_fields)
@@ -177,33 +180,28 @@ class PostgresConnectionManager:
     ) -> List[Dict[str, Any]]:
         """Get chunks for a specific document."""
         table_name = table_name or self.config.chunks_table
-        
+        # ไม่มี deed_id ใน schema จริง
         sql = f"""
-        SELECT id, deed_id, chunk_index, text, metadata
+        SELECT id, text, metadata, node_id, chunk_index
         FROM {table_name}
-        WHERE deed_id = %s
+        WHERE node_id = %s
         """
         params = [deed_id]
-        
         if chunk_indices:
             placeholders = ", ".join(["%s"] * len(chunk_indices))
             sql += f" AND chunk_index IN ({placeholders})"
             params.extend(chunk_indices)
-        
         sql += " ORDER BY chunk_index"
-        
         results = self.execute_query(sql, tuple(params))
-        
         formatted_results = []
         for row in results:
             formatted_results.append({
                 "id": row[0],
-                "deed_id": row[1], 
-                "chunk_index": row[2],
-                "text": row[3],
-                "metadata": row[4]
+                "text": row[1],
+                "metadata": row[2],
+                "node_id": row[3],
+                "chunk_index": row[4]
             })
-        
         return formatted_results
     
     def get_context_window(
@@ -215,30 +213,25 @@ class PostgresConnectionManager:
     ) -> List[Dict[str, Any]]:
         """Get chunks around a center chunk for context window."""
         table_name = table_name or self.config.chunks_table
-        
         start_index = max(0, center_chunk_index - window_size)
         end_index = center_chunk_index + window_size
-        
         sql = f"""
-        SELECT id, deed_id, chunk_index, text, metadata
+        SELECT id, text, metadata, node_id, chunk_index
         FROM {table_name}
-        WHERE deed_id = %s 
+        WHERE node_id = %s 
         AND chunk_index BETWEEN %s AND %s
         ORDER BY chunk_index
         """
-        
         results = self.execute_query(sql, (deed_id, start_index, end_index))
-        
         formatted_results = []
         for row in results:
             formatted_results.append({
                 "id": row[0],
-                "deed_id": row[1],
-                "chunk_index": row[2], 
-                "text": row[3],
-                "metadata": row[4]
+                "text": row[1],
+                "metadata": row[2],
+                "node_id": row[3],
+                "chunk_index": row[4]
             })
-        
         return formatted_results
     
     def get_document_summary(
@@ -248,25 +241,22 @@ class PostgresConnectionManager:
     ) -> Optional[Dict[str, Any]]:
         """Get summary for a specific document."""
         table_name = table_name or self.config.summaries_table
-        
         sql = f"""
-        SELECT id, deed_id, summary_text, metadata
+        SELECT id, text, metadata, node_id, summary_text
         FROM {table_name}
-        WHERE deed_id = %s
+        WHERE node_id = %s
         LIMIT 1
         """
-        
         results = self.execute_query(sql, (deed_id,))
-        
         if results:
             row = results[0]
             return {
                 "id": row[0],
-                "deed_id": row[1],
-                "summary_text": row[2],
-                "metadata": row[3]
+                "text": row[1],
+                "metadata": row[2],
+                "node_id": row[3],
+                "summary_text": row[4]
             }
-        
         return None
     
     def close(self) -> None:

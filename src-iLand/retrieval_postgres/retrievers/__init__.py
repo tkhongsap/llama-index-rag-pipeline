@@ -19,11 +19,17 @@ TODO: Implement remaining strategies:
 from .basic_postgres import BasicPostgresRetriever
 from .sentence_window_postgres import SentenceWindowPostgresRetriever
 from .recursive_postgres import RecursivePostgresRetriever
+from .auto_merge_postgres import AutoMergePostgresRetriever
 from .metadata_filter_postgres import MetadataFilterPostgresRetriever
+from .ensemble_postgres import EnsemblePostgresRetriever
+from .agentic_postgres import AgenticPostgresRetriever
 
 __all__ = [
     "BasicPostgresRetriever",
     "SentenceWindowPostgresRetriever", 
     "RecursivePostgresRetriever",
-    "MetadataFilterPostgresRetriever"
+    "AutoMergePostgresRetriever",
+    "MetadataFilterPostgresRetriever",
+    "EnsemblePostgresRetriever",
+    "AgenticPostgresRetriever"
 ] 

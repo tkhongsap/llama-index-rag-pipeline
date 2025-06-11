@@ -45,9 +45,8 @@ class SentenceWindowPostgresRetriever(BasePostgresRetriever):
             config: PostgreSQL configuration
             window_size: Number of chunks to include before/after each result
         """
-        super().__init__(config)
+        super().__init__(config, "sentence_window_postgres")
         self.window_size = window_size
-        self.strategy_name = "sentence_window"
         
         logger.info(f"Initialized SentenceWindowPostgresRetriever with window_size={window_size}")
     

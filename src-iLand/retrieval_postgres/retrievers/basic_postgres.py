@@ -28,18 +28,13 @@ class BasicPostgresRetriever(BasePostgresRetriever):
     def __init__(
         self,
         config: PostgresConfig,
-        default_table: str = "iland_chunks"
+        default_table: str = None
     ):
         """
         Initialize basic PostgreSQL retriever.
-        
-        Args:
-            config: PostgreSQL configuration
-            default_table: Default table for search (chunks, summaries, combined)
         """
         super().__init__(config, "basic_postgres")
-        self.default_table = default_table
-        
+        self.default_table = default_table or config.chunks_table
         # Validate table name
         valid_tables = [
             config.chunks_table,
@@ -47,9 +42,8 @@ class BasicPostgresRetriever(BasePostgresRetriever):
             config.indexnodes_table,
             config.combined_table
         ]
-        
-        if default_table not in valid_tables:
-            logger.warning(f"Table {default_table} not in valid tables: {valid_tables}")
+        if self.default_table not in valid_tables:
+            logger.warning(f"Table {self.default_table} not in valid tables: {valid_tables}")
             self.default_table = config.chunks_table
     
     def retrieve(

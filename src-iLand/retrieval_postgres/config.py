@@ -30,10 +30,10 @@ class PostgresConfig:
     connection_timeout: int = 30
     
     # Table names
-    chunks_table: str = "iland_chunks"
-    summaries_table: str = "iland_summaries"
-    indexnodes_table: str = "iland_indexnodes"
-    combined_table: str = "iland_combined"
+    chunks_table: str = "data_iland_chunks"
+    summaries_table: str = "data_iland_summaries"
+    indexnodes_table: str = "data_iland_indexnodes"
+    combined_table: str = "data_iland_combined"
     source_table: str = "iland_md_data"
     
     # Embedding configuration
@@ -70,10 +70,10 @@ class PostgresConfig:
             connection_timeout=int(os.getenv("CONNECTION_TIMEOUT", "30")),
             
             # Table names
-            chunks_table=os.getenv("CHUNKS_TABLE", "iland_chunks"),
-            summaries_table=os.getenv("SUMMARIES_TABLE", "iland_summaries"),
-            indexnodes_table=os.getenv("INDEXNODES_TABLE", "iland_indexnodes"),
-            combined_table=os.getenv("COMBINED_TABLE", "iland_combined"),
+            chunks_table=os.getenv("CHUNKS_TABLE", "data_iland_chunks"),
+            summaries_table=os.getenv("SUMMARIES_TABLE", "data_iland_summaries"),
+            indexnodes_table=os.getenv("INDEXNODES_TABLE", "data_iland_indexnodes"),
+            combined_table=os.getenv("COMBINED_TABLE", "data_iland_combined"),
             source_table=os.getenv("SOURCE_TABLE", "iland_md_data"),
             
             # Embedding configuration

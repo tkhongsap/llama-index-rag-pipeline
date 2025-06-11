@@ -19,7 +19,10 @@ from .retrievers import (
     BasicPostgresRetriever,
     SentenceWindowPostgresRetriever,
     RecursivePostgresRetriever,
-    MetadataFilterPostgresRetriever
+    AutoMergePostgresRetriever,
+    MetadataFilterPostgresRetriever,
+    EnsemblePostgresRetriever,
+    AgenticPostgresRetriever
 )
 
 logger = logging.getLogger(__name__)
@@ -79,6 +82,15 @@ class PostgresRouterRetriever:
             
             # Metadata-aware filtering
             retrievers["metadata"] = MetadataFilterPostgresRetriever(self.config)
+            
+            # Auto merge
+            retrievers["auto_merge"] = AutoMergePostgresRetriever(self.config)
+            
+            # Ensemble
+            retrievers["ensemble"] = EnsemblePostgresRetriever(self.config)
+            
+            # Agentic
+            retrievers["agentic"] = AgenticPostgresRetriever(self.config)
             
             logger.info(f"Successfully initialized {len(retrievers)} retrieval strategies")
             

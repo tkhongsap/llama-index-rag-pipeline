@@ -178,23 +178,22 @@ class RecursivePostgresRetriever(BasePostgresRetriever):
         """
         all_chunk_results = []
         
-        # Extract deed IDs from relevant documents
-        relevant_deed_ids = [doc.get("deed_id") for doc in relevant_documents]
-        relevant_deed_ids = [deed_id for deed_id in relevant_deed_ids if deed_id]
-        
-        if not relevant_deed_ids:
+        # Extract node_ids from relevant documents
+        relevant_node_ids = [doc.get("node_id") for doc in relevant_documents]
+        relevant_node_ids = [node_id for node_id in relevant_node_ids if node_id]
+        if not relevant_node_ids:
             return []
         
         try:
             # Create metadata filter for relevant documents
             document_filters = filters.copy() if filters else {}
-            document_filters["deed_id"] = relevant_deed_ids
+            document_filters["node_id"] = relevant_node_ids
             
             # Search chunks in relevant documents
             chunk_results = self._vector_similarity_search(
                 query_embedding=query_embedding,
                 table_name=self.config.chunks_table,
-                top_k=len(relevant_deed_ids) * self.chunks_per_document,
+                top_k=len(relevant_node_ids) * self.chunks_per_document,
                 similarity_threshold=self.config.similarity_threshold,
                 metadata_filters=document_filters
             )
@@ -202,12 +201,12 @@ class RecursivePostgresRetriever(BasePostgresRetriever):
             # Group chunks by document and limit per document
             chunks_by_doc = defaultdict(list)
             for chunk in chunk_results:
-                deed_id = chunk.get("deed_id")
-                if deed_id:
-                    chunks_by_doc[deed_id].append(chunk)
+                node_id = chunk.get("node_id")
+                if node_id:
+                    chunks_by_doc[node_id].append(chunk)
             
             # Limit chunks per document and maintain diversity
-            for deed_id, chunks in chunks_by_doc.items():
+            for node_id, chunks in chunks_by_doc.items():
                 # Sort by similarity score
                 chunks.sort(key=lambda x: x.get("similarity_score", 0.0), reverse=True)
                 
