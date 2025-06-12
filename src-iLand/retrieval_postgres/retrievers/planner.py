@@ -20,6 +20,7 @@ from llama_index.llms.openai import OpenAI
 
 from ..config import PostgresRetrievalConfig
 from ...docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
+from ...common.thai_provinces import THAI_PROVINCES
 
 logger = logging.getLogger(__name__)
 
@@ -69,11 +70,8 @@ class PostgresPlannerRetriever(BaseRetriever):
             api_key=os.getenv("OPENAI_API_KEY")
         )
         
-        # Thai location keywords for query decomposition
-        self.thai_provinces = [
-            "กรุงเทพ", "สมุทรปราการ", "นนทบุรี", "ปทุมธานี", "ชัยนาท",
-            "เชียงใหม่", "เชียงราย", "ภูเก็ต", "ขอนแก่น", "นครราชสีมา"
-        ]
+        # Thai location keywords for query decomposition (all 77 provinces)
+        self.thai_provinces = THAI_PROVINCES
         
         self.land_deed_types = ["โฉนด", "นส.3", "นส.4", "ส.ค.1", "น.ส.3ก"]
     
