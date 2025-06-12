@@ -24,7 +24,7 @@ class VectorOperations:
     ):
         """Initialize vector operations."""
         self.embedding_model_name = embedding_model
-        self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
+        self.openai_api_key = openai_api_key or os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
         
         # Initialize embedding model
         self._embedding_model = None

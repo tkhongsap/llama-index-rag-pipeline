@@ -4,6 +4,12 @@
 
 This PRD outlines the implementation of PostgreSQL-based counterparts for the existing local load-embedding and retrieval modules in the src-iLand pipeline. Following the successful pattern established by `data_processing_postgres` and `docs_embedding_postgres`, we will create `retrieval_postgres` module that directly interfaces with PostgreSQL/pgVector for production-ready RAG retrieval.
 
+When a user_query is received, the query will first be classified and routed to the appropriate retrieval adapter. This adapter will then perform a vector search in the pgvector table.
+
+Specifically, the user_query will be embedded using the bge-m3 model, which is loaded and cached locally. The resulting embedding vector will be used by the selected adapter to search for relevant vectors in the pgvector database. The top_k results from this search will then be sent to the Azure OpenAI API (gpt-4.1) to generate a response for the user.
+
+For implementation, please refer to from llama_index.vector_stores.postgres import PGVectorStore for connecting to pgvector, from llama_index.core.retrievers import QueryFusionRetriever for retrieval operations, and from llama_index.storage.chat_store.postgres import PostgresChatStore for storing chat history in PostgreSQL.
+
 ## Background
 
 The current src-iLand pipeline has successfully implemented:

@@ -16,7 +16,7 @@ from llama_index.core.schema import NodeWithScore, TextNode, QueryBundle
 from llama_index.core.base.base_retriever import BaseRetriever
 
 from ..config import PostgresRetrievalConfig
-from ...docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
+from src_iLand.docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,11 @@ class PostgresSummaryRetriever(BaseRetriever):
         
         # Initialize embedding processor
         if self.use_bge_embeddings:
-            self.embedding_processor = BGEEmbeddingProcessor()
+            self.embedding_processor = BGEEmbeddingProcessor({
+                "provider": "bge",
+                "model_name": self.config.embedding_model,
+                "cache_folder": "./cache/bge_models"
+            })
         else:
             raise NotImplementedError("Only BGE embeddings are supported for PostgreSQL retrieval")
         
@@ -93,10 +97,10 @@ class PostgresSummaryRetriever(BaseRetriever):
                     s.summary_text,
                     s.summary_embedding <=> %s::vector as distance,
                     1 - (s.summary_embedding <=> %s::vector) as similarity,
-                    s.metadata,
+                    s.metadata_,
                     d.title as document_title,
                     d.file_path as document_path,
-                    d.metadata as document_metadata
+                    d.metadata_ as document_metadata
                 FROM {self.summaries_table} s
                 LEFT JOIN {self.documents_table} d ON s.document_id = d.id
                 WHERE 1 - (s.summary_embedding <=> %s::vector) >= %s
@@ -150,7 +154,7 @@ class PostgresSummaryRetriever(BaseRetriever):
                         SELECT 
                             id,
                             content,
-                            metadata,
+                            metadata_,
                             document_id,
                             chunk_index,
                             embedding <=> %s::vector as distance,
@@ -165,7 +169,7 @@ class PostgresSummaryRetriever(BaseRetriever):
                         SELECT 
                             id,
                             content,
-                            metadata,
+                            metadata_,
                             document_id,
                             chunk_index,
                             embedding <=> %s::vector as distance,
@@ -211,7 +215,7 @@ class PostgresSummaryRetriever(BaseRetriever):
                 text=summary['summary_text'],
                 id_=f"postgres_summary_{summary['id']}",
                 metadata={
-                    **summary.get('metadata', {}),
+                    **summary.get('metadata_', {}),
                     'node_type': 'summary',
                     'summary_id': summary['id'],
                     'document_id': summary['document_id'],
@@ -236,7 +240,7 @@ class PostgresSummaryRetriever(BaseRetriever):
                         text=chunk['content'],
                         id_=f"postgres_summary_chunk_{chunk['id']}",
                         metadata={
-                            **chunk.get('metadata', {}),
+                            **chunk.get('metadata_', {}),
                             'node_type': 'chunk',
                             'chunk_id': chunk['id'],
                             'document_id': chunk['document_id'],
@@ -361,7 +365,7 @@ class PostgresSummaryRetriever(BaseRetriever):
                     text=summary['summary_text'],
                     id_=f"postgres_summary_{summary['id']}",
                     metadata={
-                        **summary.get('metadata', {}),
+                        **summary.get('metadata_', {}),
                         'node_type': 'summary',
                         'summary_id': summary['id'],
                         'document_id': summary['document_id'],
@@ -415,7 +419,7 @@ class PostgresSummaryRetriever(BaseRetriever):
         for node in nodes:
             match = True
             for key, value in metadata_filters.items():
-                if key not in node.node.metadata or node.node.metadata[key] != value:
+                if key not in node.node.metadata_ or node.node.metadata_[key] != value:
                     match = False
                     break
             if match:

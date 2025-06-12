@@ -117,7 +117,7 @@ class PostgresConnectionManager:
         """
         # Default fields to select
         if select_fields is None:
-            select_fields = ["id", "text", "metadata", "node_id"]
+            select_fields = ["id", "text", "metadata_", "node_id"]
         
         # แปลง query_embedding เป็น list ของ float ธรรมดา
         query_embedding = [float(x) for x in query_embedding]
@@ -145,11 +145,11 @@ class PostgresConnectionManager:
                 if isinstance(value, (list, tuple)):
                     # Handle IN queries
                     placeholders = ", ".join(["%s"] * len(value))
-                    sql += f" AND metadata->>'{key}' IN ({placeholders})"
+                    sql += f" AND metadata_->>'{key}' IN ({placeholders})"
                     params.extend(value)
                 else:
                     # Handle exact match
-                    sql += f" AND metadata->>'{key}' = %s"
+                    sql += f" AND metadata_->>'{key}' = %s"
                     params.append(str(value))
         
         # Add ordering and limit
@@ -182,7 +182,7 @@ class PostgresConnectionManager:
         table_name = table_name or self.config.chunks_table
         # ไม่มี deed_id ใน schema จริง
         sql = f"""
-        SELECT id, text, metadata, node_id, chunk_index
+        SELECT id, text, metadata_, node_id, chunk_index
         FROM {table_name}
         WHERE node_id = %s
         """
@@ -198,7 +198,7 @@ class PostgresConnectionManager:
             formatted_results.append({
                 "id": row[0],
                 "text": row[1],
-                "metadata": row[2],
+                "metadata_": row[2],
                 "node_id": row[3],
                 "chunk_index": row[4]
             })
@@ -216,7 +216,7 @@ class PostgresConnectionManager:
         start_index = max(0, center_chunk_index - window_size)
         end_index = center_chunk_index + window_size
         sql = f"""
-        SELECT id, text, metadata, node_id, chunk_index
+        SELECT id, text, metadata_, node_id, chunk_index
         FROM {table_name}
         WHERE node_id = %s 
         AND chunk_index BETWEEN %s AND %s
@@ -228,7 +228,7 @@ class PostgresConnectionManager:
             formatted_results.append({
                 "id": row[0],
                 "text": row[1],
-                "metadata": row[2],
+                "metadata_": row[2],
                 "node_id": row[3],
                 "chunk_index": row[4]
             })
@@ -242,7 +242,7 @@ class PostgresConnectionManager:
         """Get summary for a specific document."""
         table_name = table_name or self.config.summaries_table
         sql = f"""
-        SELECT id, text, metadata, node_id, summary_text
+        SELECT id, text, metadata_, node_id, summary_text
         FROM {table_name}
         WHERE node_id = %s
         LIMIT 1
@@ -253,7 +253,7 @@ class PostgresConnectionManager:
             return {
                 "id": row[0],
                 "text": row[1],
-                "metadata": row[2],
+                "metadata_": row[2],
                 "node_id": row[3],
                 "summary_text": row[4]
             }

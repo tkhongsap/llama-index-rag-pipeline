@@ -19,8 +19,8 @@ from llama_index.core.base.base_retriever import BaseRetriever
 from llama_index.llms.openai import OpenAI
 
 from ..config import PostgresRetrievalConfig
-from ...docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
-from ...common.thai_provinces import THAI_PROVINCES
+from src_iLand.docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
+from src_iLand.common.thai_provinces import THAI_PROVINCES
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,11 @@ class PostgresPlannerRetriever(BaseRetriever):
         
         # Initialize embedding processor
         if self.use_bge_embeddings:
-            self.embedding_processor = BGEEmbeddingProcessor()
+            self.embedding_processor = BGEEmbeddingProcessor({
+                "provider": "bge",
+                "model_name": self.config.embedding_model,
+                "cache_folder": "./cache/bge_models"
+            })
         else:
             raise NotImplementedError("Only BGE embeddings are supported for PostgreSQL retrieval")
         
@@ -67,7 +71,7 @@ class PostgresPlannerRetriever(BaseRetriever):
         self.llm = OpenAI(
             model="gpt-4o-mini",
             temperature=0,
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
         )
         
         # Thai location keywords for query decomposition (all 77 provinces)
@@ -221,7 +225,7 @@ Ensure each sub-query targets a different aspect of the original query.
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.embedding <=> %s::vector as distance,
@@ -363,7 +367,7 @@ Ensure each sub-query targets a different aspect of the original query.
                 text=result['content'],
                 id_=f"postgres_planner_chunk_{result['id']}",
                 metadata={
-                    **result.get('metadata', {}),
+                    **result.get('metadata_', {}),
                     'chunk_id': result['id'],
                     'document_id': result['document_id'],
                     'chunk_index': result['chunk_index'],

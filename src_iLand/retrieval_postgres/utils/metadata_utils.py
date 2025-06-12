@@ -59,31 +59,31 @@ class MetadataUtils:
             if isinstance(value, (list, tuple)):
                 # Handle IN queries for multiple values
                 placeholders = ", ".join(["%s"] * len(value))
-                where_clauses.append(f"metadata->>'{key}' IN ({placeholders})")
+                where_clauses.append(f"metadata_->>'{key}' IN ({placeholders})")
                 params.extend([str(v) for v in value])
             elif isinstance(value, dict):
                 # Handle nested JSON queries
                 if "gte" in value:
-                    where_clauses.append(f"(metadata->>'{key}')::numeric >= %s")
+                    where_clauses.append(f"(metadata_->>'{key}')::numeric >= %s")
                     params.append(value["gte"])
                 if "lte" in value:
-                    where_clauses.append(f"(metadata->>'{key}')::numeric <= %s")
+                    where_clauses.append(f"(metadata_->>'{key}')::numeric <= %s")
                     params.append(value["lte"])
                 if "gt" in value:
-                    where_clauses.append(f"(metadata->>'{key}')::numeric > %s")
+                    where_clauses.append(f"(metadata_->>'{key}')::numeric > %s")
                     params.append(value["gt"])
                 if "lt" in value:
-                    where_clauses.append(f"(metadata->>'{key}')::numeric < %s")
+                    where_clauses.append(f"(metadata_->>'{key}')::numeric < %s")
                     params.append(value["lt"])
                 if "contains" in value:
-                    where_clauses.append(f"metadata->>'{key}' ILIKE %s")
+                    where_clauses.append(f"metadata_->>'{key}' ILIKE %s")
                     params.append(f"%{value['contains']}%")
             elif value is None:
                 # Handle NULL checks
-                where_clauses.append(f"metadata->>'{key}' IS NULL")
+                where_clauses.append(f"metadata_->>'{key}' IS NULL")
             else:
                 # Handle exact match
-                where_clauses.append(f"metadata->>'{key}' = %s")
+                where_clauses.append(f"metadata_->>'{key}' = %s")
                 params.append(str(value))
         
         where_sql = " AND ".join(where_clauses) if where_clauses else ""

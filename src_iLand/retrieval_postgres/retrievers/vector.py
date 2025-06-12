@@ -19,7 +19,7 @@ from llama_index.core.base.base_retriever import BaseRetriever
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 from ..config import PostgresRetrievalConfig
-from ...docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
+from src_iLand.docs_embedding_postgres.bge_embedding_processor import BGEEmbeddingProcessor
 
 
 class PostgresVectorRetriever(BaseRetriever):
@@ -48,11 +48,15 @@ class PostgresVectorRetriever(BaseRetriever):
         
         # Initialize embedding processor
         if self.use_bge_embeddings:
-            self.embedding_processor = BGEEmbeddingProcessor()
+            self.embedding_processor = BGEEmbeddingProcessor({
+                "provider": "bge",
+                "model_name": self.config.embedding_model,
+                "cache_folder": "./cache/bge_models"
+            })
         else:
             self.embedding_processor = OpenAIEmbedding(
                 model="text-embedding-3-small",
-                api_key=os.getenv("OPENAI_API_KEY")
+                api_key=os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
             )
         
         # Register pgVector extension
@@ -81,7 +85,7 @@ class PostgresVectorRetriever(BaseRetriever):
                 SELECT column_name, data_type 
                 FROM information_schema.columns 
                 WHERE table_name = %s
-                AND column_name IN ('id', 'content', 'embedding', 'metadata', 'document_id')
+                AND column_name IN ('id', 'content', 'embedding', 'metadata_', 'document_id')
             """, (self.config.chunks_table,))
             
             columns = {row[0]: row[1] for row in cursor.fetchall()}
@@ -138,7 +142,7 @@ class PostgresVectorRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.embedding <=> %s::vector as distance,
@@ -165,7 +169,7 @@ class PostgresVectorRetriever(BaseRetriever):
                     text=row['content'],
                     id_=f"postgres_chunk_{row['id']}",
                     metadata={
-                        **row['metadata'],
+                        **row['metadata_'],
                         'chunk_id': row['id'],
                         'document_id': row['document_id'],
                         'chunk_index': row['chunk_index'],
@@ -220,24 +224,26 @@ class PostgresVectorRetriever(BaseRetriever):
             
             # Build metadata filter conditions
             filter_conditions = []
-            params = [query_embedding, query_embedding, query_embedding, self.similarity_threshold]
+            filter_params = [query_embedding, query_embedding, query_embedding, self.similarity_threshold]
             
-            for key, value in metadata_filters.items():
-                filter_conditions.append(f"c.metadata->>{%s} = %s")
-                params.extend([key, str(value)])
+            # Add metadata filters if provided
+            if metadata_filters:
+                for key, value in metadata_filters.items():
+                    filter_conditions.append("c.metadata_->>%s = %s")
+                    filter_params.extend([key, value])
             
             where_clause = " AND ".join([
                 f"1 - (c.embedding <=> %s::vector) >= %s"
             ] + filter_conditions)
             
-            params.append(k)
+            filter_params.append(k)
             
             # Execute query with filters
             cursor.execute(f"""
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.embedding <=> %s::vector as distance,
@@ -249,7 +255,7 @@ class PostgresVectorRetriever(BaseRetriever):
                 WHERE {where_clause}
                 ORDER BY distance
                 LIMIT %s
-            """, params)
+            """, filter_params)
             
             nodes = []
             for row in cursor.fetchall():
@@ -258,7 +264,7 @@ class PostgresVectorRetriever(BaseRetriever):
                     text=row['content'],
                     id_=f"postgres_chunk_{row['id']}",
                     metadata={
-                        **row['metadata'],
+                        **row['metadata_'],
                         'chunk_id': row['id'],
                         'document_id': row['document_id'],
                         'chunk_index': row['chunk_index'],
@@ -324,7 +330,7 @@ class PostgresVectorRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.embedding <=> %s::vector as distance,
                     1 - (c.embedding <=> %s::vector) as similarity,
@@ -341,7 +347,7 @@ class PostgresVectorRetriever(BaseRetriever):
                 similar_chunks.append({
                     'id': row['id'],
                     'content': row['content'],
-                    'metadata': row['metadata'],
+                    'metadata_': row['metadata_'],
                     'document_id': row['document_id'],
                     'document_title': row['document_title'],
                     'similarity': float(row['similarity']),

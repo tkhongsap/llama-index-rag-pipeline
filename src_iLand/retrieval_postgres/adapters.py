@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from llama_index.core.schema import NodeWithScore, QueryBundle
 from llama_index.core.base.base_retriever import BaseRetriever
 
-from ..retrieval.retrievers.base import BaseRetrieverAdapter
+from src_iLand.retrieval.retrievers.base import BaseRetrieverAdapter
 from .config import PostgresRetrievalConfig
 
 

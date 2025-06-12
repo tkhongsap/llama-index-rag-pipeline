@@ -3,34 +3,37 @@
 import os
 from typing import Optional, Dict, Any
 from dataclasses import dataclass, field
+from dotenv import load_dotenv
 
+load_dotenv()
 
 @dataclass
 class PostgresRetrievalConfig:
     """Configuration for PostgreSQL retrieval operations."""
     
     # Database connection
-    db_host: str = field(default_factory=lambda: os.getenv("POSTGRES_HOST", "localhost"))
-    db_port: int = field(default_factory=lambda: int(os.getenv("POSTGRES_PORT", "5432")))
-    db_name: str = field(default_factory=lambda: os.getenv("POSTGRES_DB", "iland_embeddings"))
-    db_user: str = field(default_factory=lambda: os.getenv("POSTGRES_USER", "postgres"))
-    db_password: str = field(default_factory=lambda: os.getenv("POSTGRES_PASSWORD", ""))
+    db_host: str = field(default_factory=lambda: os.getenv("DB_HOST", "localhost"))
+    db_port: int = field(default_factory=lambda: int(os.getenv("DB_PORT", "5432")))
+    db_name: str = field(default_factory=lambda: os.getenv("DB_NAME", "iland_embeddings"))
+    db_user: str = field(default_factory=lambda: os.getenv("DB_USER", "postgres"))
+    db_password: str = field(default_factory=lambda: os.getenv("DB_PASSWORD", ""))
     
     # Table configuration
-    chunks_table: str = "iland_chunks"
-    documents_table: str = "iland_documents"
+    chunks_table: str = field(default_factory=lambda: os.getenv("CHUNKS_TABLE", "data_iland_chunks_bk"))
+    documents_table: str = field(default_factory=lambda: os.getenv("DOCUMENTS_TABLE", "data_iland_combined_bk"))
+    summaries_table: str = field(default_factory=lambda: os.getenv("SUMMARIES_TABLE", "data_iland_summaries_bk"))
     
     # Embedding configuration
-    embedding_dimension: int = 1024  # BGE-M3 dimension
-    embedding_model: str = "BGE-M3"
+    embedding_dimension: int = field(default_factory=lambda: int(os.getenv("EMBEDDING_DIM", "384")))
+    embedding_model: str = field(default_factory=lambda: os.getenv("EMBEDDING_MODEL", "bge-m3"))
     
     # Cache configuration
-    cache_ttl: int = 3600  # 1 hour
-    enable_cache: bool = True
+    cache_ttl: int = field(default_factory=lambda: int(os.getenv("CACHE_TTL", "3600")))
+    enable_cache: bool = field(default_factory=lambda: os.getenv("ENABLE_CACHE", "true").lower() == "true")
     
     # Retrieval settings
     default_top_k: int = 10
-    similarity_threshold: float = 0.7
+    similarity_threshold: float = field(default_factory=lambda: float(os.getenv("SIMILARITY_THRESHOLD", "0.5")))
     hybrid_alpha: float = 0.5  # Balance between vector and keyword search
     
     # Query settings
@@ -53,7 +56,7 @@ class PostgresRetrievalConfig:
     @property
     def connection_string(self) -> str:
         """Get PostgreSQL connection string."""
-        return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        return f"dbname='{self.db_name}' user='{self.db_user}' password='{self.db_password}' host='{self.db_host}' port='{self.db_port}'"
     
     @property
     def async_connection_string(self) -> str:
@@ -68,6 +71,7 @@ class PostgresRetrievalConfig:
             "db_name": self.db_name,
             "chunks_table": self.chunks_table,
             "documents_table": self.documents_table,
+            "summaries_table": self.summaries_table,
             "embedding_dimension": self.embedding_dimension,
             "embedding_model": self.embedding_model,
             "default_top_k": self.default_top_k,

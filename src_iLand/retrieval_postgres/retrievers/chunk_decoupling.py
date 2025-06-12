@@ -102,7 +102,7 @@ class PostgresChunkDecouplingRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.embedding <=> %s::vector as distance,
@@ -127,7 +127,7 @@ class PostgresChunkDecouplingRetriever(BaseRetriever):
                 chunks.append({
                     'id': row['id'],
                     'content': row['content'],
-                    'metadata': row['metadata'],
+                    'metadata_': row['metadata_'],
                     'document_id': row['document_id'],
                     'chunk_index': row['chunk_index'],
                     'similarity': float(row['similarity']),
@@ -178,7 +178,7 @@ class PostgresChunkDecouplingRetriever(BaseRetriever):
                     SELECT 
                         c.id,
                         c.content,
-                        c.metadata,
+                        c.metadata_,
                         c.chunk_index,
                         c.id = %s as is_target
                     FROM {self.config.chunks_table} c
@@ -209,7 +209,7 @@ class PostgresChunkDecouplingRetriever(BaseRetriever):
                     text=full_content,
                     id_=f"postgres_chunk_decoupled_{chunk_id}",
                     metadata={
-                        **chunk['metadata'],
+                        **chunk['metadata_'],
                         'chunk_id': chunk_id,
                         'document_id': chunk['document_id'],
                         'document_title': chunk['document_title'],
@@ -363,7 +363,7 @@ class PostgresChunkDecouplingRetriever(BaseRetriever):
                 text=chunk['content'],
                 id_=f"postgres_chunk_{chunk['id']}",
                 metadata={
-                    **chunk['metadata'],
+                    **chunk['metadata_'],
                     'chunk_id': chunk['id'],
                     'document_id': chunk['document_id'],
                     'document_title': chunk['document_title'],

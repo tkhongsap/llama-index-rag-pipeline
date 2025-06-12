@@ -14,7 +14,10 @@ from datetime import datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from ..retrieval.index_classifier import iLandIndexClassifier, DEFAULT_ILAND_INDICES
+from llama_index.core.schema import QueryBundle
+from llama_index.core.llms import LLM
+
+from src_iLand.retrieval.index_classifier import iLandIndexClassifier, DEFAULT_ILAND_INDICES
 from .config import PostgresRetrievalConfig
 
 
@@ -107,7 +110,7 @@ class PostgresIndexClassifier(iLandIndexClassifier):
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     is_active BOOLEAN DEFAULT true,
-                    metadata JSONB DEFAULT '{}'::jsonb
+                    metadata_ JSONB DEFAULT '{}'::jsonb
                 )
             """)
             
@@ -256,13 +259,13 @@ class PostgresIndexClassifier(iLandIndexClassifier):
                     method VARCHAR(50),
                     reasoning TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    metadata JSONB DEFAULT '{}'::jsonb
+                    metadata_ JSONB DEFAULT '{}'::jsonb
                 )
             """)
             
             cursor.execute("""
                 INSERT INTO iland_classification_log 
-                (query, selected_index, confidence, method, reasoning, metadata)
+                (query, selected_index, confidence, method, reasoning, metadata_)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 query,

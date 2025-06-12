@@ -379,11 +379,11 @@ class iLandPostgresRetrievalCLI:
             print(f"\n--- Document {i} (Score: {result.score:.3f}) ---")
             print(result.node.text[:300] + "...")
             
-            metadata = result.node.metadata
-            if metadata.get('selected_strategy'):
-                print(f"Strategy: {metadata['selected_strategy']}")
-            if metadata.get('document_title'):
-                print(f"Source: {metadata['document_title']}")
+            metadata_ = result.node.metadata
+            if metadata_.get('selected_strategy'):
+                print(f"Strategy: {metadata_['selected_strategy']}")
+            if metadata_.get('document_title'):
+                print(f"Source: {metadata_['document_title']}")
     
     def test_queries(self, 
                     queries: List[str], 
@@ -414,9 +414,9 @@ class iLandPostgresRetrievalCLI:
                 
                 if results and self.verbose:
                     best_result = results[0]
-                    metadata = best_result.node.metadata
-                    if metadata.get('selected_strategy'):
-                        print(f"Selected strategy: {metadata['selected_strategy']}")
+                    metadata_ = best_result.node.metadata
+                    if metadata_.get('selected_strategy'):
+                        print(f"Selected strategy: {metadata_['selected_strategy']}")
                 
             except Exception as e:
                 print(f"❌ Query failed: {e}")
@@ -687,9 +687,9 @@ class iLandPostgresRetrievalCLI:
         print("-" * 100)
         
         for i, result in enumerate(results, 1):
-            metadata = result.node.metadata
-            strategy = metadata.get('selected_strategy', metadata.get('retrieval_strategy', 'unknown'))
-            source = metadata.get('document_title', 'Unknown')[:18]
+            metadata_ = result.node.metadata
+            strategy = metadata_.get('selected_strategy', metadata_.get('retrieval_strategy', 'unknown'))
+            source = metadata_.get('document_title', 'Unknown')[:18]
             content = result.node.text.replace('\n', ' ')[:48]
             
             print(f"{i:<3} {result.score:<8.3f} {strategy:<12} {content:<50} {source:<20}")
@@ -700,13 +700,13 @@ class iLandPostgresRetrievalCLI:
             print(f"\n--- Result {i} ---")
             print(f"Score: {result.score:.4f}")
             
-            metadata = result.node.metadata
-            if metadata.get('selected_strategy'):
-                print(f"Strategy: {metadata['selected_strategy']}")
-            if metadata.get('document_title'):
-                print(f"Document: {metadata['document_title']}")
-            if metadata.get('similarity_score'):
-                print(f"Similarity: {metadata['similarity_score']:.3f}")
+            metadata_ = result.node.metadata
+            if metadata_.get('selected_strategy'):
+                print(f"Strategy: {metadata_['selected_strategy']}")
+            if metadata_.get('document_title'):
+                print(f"Document: {metadata_['document_title']}")
+            if metadata_.get('similarity_score'):
+                print(f"Similarity: {metadata_['similarity_score']:.3f}")
             
             print(f"\nContent:")
             print(result.node.text[:500] + ("..." if len(result.node.text) > 500 else ""))
@@ -718,7 +718,7 @@ class iLandPostgresRetrievalCLI:
             json_results.append({
                 'score': float(result.score),
                 'content': result.node.text,
-                'metadata': result.node.metadata
+                'metadata_': result.node.metadata
             })
         
         print(json.dumps(json_results, indent=2, ensure_ascii=False))
@@ -733,7 +733,7 @@ class iLandPostgresRetrievalCLI:
                     {
                         'score': float(result.score),
                         'content': result.node.text,
-                        'metadata': result.node.metadata
+                        'metadata_': result.node.metadata
                     }
                     for result in results
                 ]

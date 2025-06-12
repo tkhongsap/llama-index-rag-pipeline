@@ -16,9 +16,9 @@ from psycopg2.extras import RealDictCursor
 
 from llama_index.core.schema import QueryBundle, NodeWithScore
 
-from ..retrieval.router import iLandRouterRetriever
-from ..retrieval.retrievers.base import BaseRetrieverAdapter
-from ..retrieval.cache import iLandCacheManager
+from src_iLand.retrieval.router import iLandRouterRetriever
+from src_iLand.retrieval.retrievers.base import BaseRetrieverAdapter
+from src_iLand.retrieval.cache import iLandCacheManager
 from .index_classifier import PostgresIndexClassifier, create_postgres_classifier
 from .config import PostgresRetrievalConfig
 

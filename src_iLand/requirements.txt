@@ -1,0 +1,13 @@
+pandas>=1.3.0
+numpy>=1.20.0
+openpyxl>=3.0.0  # For Excel file support
+psycopg2-binary>=2.9.0
+tqdm>=4.62.0
+python-dateutil>=2.8.2
+langdetect>=1.0.9
+chardet>=4.0.0
+pgvector>=0.2.0  # For PostgreSQL vector similarity search
+llama-index-core>=0.9.0
+llama-index-vector-stores-postgres>=0.1.0  # For PostgreSQL vector store support
+llama-index-embeddings-openai>=0.1.0  # For OpenAI embeddings
+python-dotenv>=0.21.0  # For loading .env files 

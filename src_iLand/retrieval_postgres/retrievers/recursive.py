@@ -175,7 +175,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.parent_chunk_id,
@@ -194,7 +194,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                     text=row['content'],
                     id_=f"postgres_chunk_{row['id']}",
                     metadata={
-                        **row['metadata'],
+                        **row['metadata_'],
                         'chunk_id': row['id'],
                         'document_id': row['document_id'],
                         'chunk_index': row['chunk_index'],
@@ -263,7 +263,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.chunk_level,
@@ -283,7 +283,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                         text=row['content'],
                         id_=f"postgres_chunk_{row['id']}",
                         metadata={
-                            **row['metadata'],
+                            **row['metadata_'],
                             'chunk_id': row['id'],
                             'document_id': row['document_id'],
                             'chunk_index': row['chunk_index'],
@@ -342,7 +342,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     c.chunk_level,
@@ -371,7 +371,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                     text=row['content'],
                     id_=f"postgres_chunk_{row['id']}",
                     metadata={
-                        **row['metadata'],
+                        **row['metadata_'],
                         'chunk_id': row['id'],
                         'document_id': row['document_id'],
                         'chunk_index': row['chunk_index'],
@@ -455,7 +455,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                     chunk_level,
                     parent_chunk_id,
                     content,
-                    metadata
+                    metadata_
                 FROM {self.config.chunks_table}
                 WHERE document_id = %s
                 ORDER BY chunk_level, chunk_index
@@ -477,7 +477,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                         'level': chunk['chunk_level'],
                         'index': chunk['chunk_index'],
                         'content': chunk['content'][:100] + '...',
-                        'metadata': chunk['metadata'],
+                        'metadata_': chunk['metadata_'],
                         'children': []
                     }
             
@@ -491,7 +491,7 @@ class PostgresRecursiveRetriever(BaseRetriever):
                             'level': chunk['chunk_level'],
                             'index': chunk['chunk_index'],
                             'content': chunk['content'][:100] + '...',
-                            'metadata': chunk['metadata']
+                            'metadata_': chunk['metadata_']
                         })
             
             return hierarchy

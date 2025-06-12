@@ -134,23 +134,23 @@ class PostgresMetadataRetriever(BaseRetriever):
             cursor.execute(f"""
                 CREATE INDEX IF NOT EXISTS idx_{self.config.chunks_table}_metadata_gin 
                 ON {self.config.chunks_table} 
-                USING GIN (metadata)
+                USING GIN (metadata_)
             """)
             
             # Create specific indexes for common filters
             cursor.execute(f"""
                 CREATE INDEX IF NOT EXISTS idx_{self.config.chunks_table}_province 
-                ON {self.config.chunks_table} ((metadata->>'province'))
+                ON {self.config.chunks_table} ((metadata_->>'province'))
             """)
             
             cursor.execute(f"""
                 CREATE INDEX IF NOT EXISTS idx_{self.config.chunks_table}_district 
-                ON {self.config.chunks_table} ((metadata->>'district'))
+                ON {self.config.chunks_table} ((metadata_->>'district'))
             """)
             
             cursor.execute(f"""
                 CREATE INDEX IF NOT EXISTS idx_{self.config.chunks_table}_deed_type 
-                ON {self.config.chunks_table} ((metadata->>'deed_type_category'))
+                ON {self.config.chunks_table} ((metadata_->>'deed_type_category'))
             """)
             
             conn.commit()
@@ -205,36 +205,36 @@ class PostgresMetadataRetriever(BaseRetriever):
             
             # Province filter
             if 'province' in filters:
-                where_conditions.append("c.metadata->>'province' = %s")
+                where_conditions.append("c.metadata_->>'province' = %s")
                 params.append(filters['province'])
             
             # District filter
             if 'district' in filters:
-                where_conditions.append("c.metadata->>'district' = %s")
+                where_conditions.append("c.metadata_->>'district' = %s")
                 params.append(filters['district'])
             
             # Deed type filter
             if 'deed_type' in filters:
-                where_conditions.append("c.metadata->>'deed_type_category' = %s")
+                where_conditions.append("c.metadata_->>'deed_type_category' = %s")
                 params.append(filters['deed_type'])
             
             # Land type filter
             if 'land_type' in filters:
-                where_conditions.append("c.metadata->>'land_type' = %s")
+                where_conditions.append("c.metadata_->>'land_type' = %s")
                 params.append(filters['land_type'])
             
             # Year filter
             if 'year' in filters:
-                where_conditions.append("c.metadata->>'year' = %s")
+                where_conditions.append("c.metadata_->>'year' = %s")
                 params.append(str(filters['year']))
             
             # Area range filter
             if 'min_area' in filters or 'max_area' in filters:
                 if 'min_area' in filters:
-                    where_conditions.append("(c.metadata->>'area_rai')::float >= %s")
+                    where_conditions.append("(c.metadata_->>'area_rai')::float >= %s")
                     params.append(filters['min_area'])
                 if 'max_area' in filters:
-                    where_conditions.append("(c.metadata->>'area_rai')::float <= %s")
+                    where_conditions.append("(c.metadata_->>'area_rai')::float <= %s")
                     params.append(filters['max_area'])
             
             # Build final query
@@ -245,7 +245,7 @@ class PostgresMetadataRetriever(BaseRetriever):
                 SELECT 
                     c.id,
                     c.content,
-                    c.metadata,
+                    c.metadata_,
                     c.document_id,
                     c.chunk_index,
                     d.title as document_title,
@@ -269,7 +269,7 @@ class PostgresMetadataRetriever(BaseRetriever):
                     text=row['content'],
                     id_=f"postgres_chunk_{row['id']}",
                     metadata={
-                        **row['metadata'],
+                        **row['metadata_'],
                         'chunk_id': row['id'],
                         'document_id': row['document_id'],
                         'chunk_index': row['chunk_index'],
@@ -283,7 +283,7 @@ class PostgresMetadataRetriever(BaseRetriever):
                 )
                 
                 # Score based on filter match quality
-                score = self._calculate_filter_score(row['metadata'], filters)
+                score = self._calculate_filter_score(row['metadata_'], filters)
                 
                 node_with_score = NodeWithScore(
                     node=node,
@@ -411,27 +411,27 @@ class PostgresMetadataRetriever(BaseRetriever):
             
             # Get unique provinces
             cursor.execute(f"""
-                SELECT DISTINCT metadata->>'province' as value
+                SELECT DISTINCT metadata_->>'province' as value
                 FROM {self.config.chunks_table}
-                WHERE metadata->>'province' IS NOT NULL
+                WHERE metadata_->>'province' IS NOT NULL
                 ORDER BY value
             """)
             filters['provinces'] = [row[0] for row in cursor.fetchall()]
             
             # Get unique districts
             cursor.execute(f"""
-                SELECT DISTINCT metadata->>'district' as value
+                SELECT DISTINCT metadata_->>'district' as value
                 FROM {self.config.chunks_table}
-                WHERE metadata->>'district' IS NOT NULL
+                WHERE metadata_->>'district' IS NOT NULL
                 ORDER BY value
             """)
             filters['districts'] = [row[0] for row in cursor.fetchall()]
             
             # Get unique deed types
             cursor.execute(f"""
-                SELECT DISTINCT metadata->>'deed_type_category' as value
+                SELECT DISTINCT metadata_->>'deed_type_category' as value
                 FROM {self.config.chunks_table}
-                WHERE metadata->>'deed_type_category' IS NOT NULL
+                WHERE metadata_->>'deed_type_category' IS NOT NULL
                 ORDER BY value
             """)
             filters['deed_types'] = [row[0] for row in cursor.fetchall()]
@@ -439,10 +439,10 @@ class PostgresMetadataRetriever(BaseRetriever):
             # Get year range
             cursor.execute(f"""
                 SELECT 
-                    MIN((metadata->>'year')::int) as min_year,
-                    MAX((metadata->>'year')::int) as max_year
+                    MIN((metadata_->>'year')::int) as min_year,
+                    MAX((metadata_->>'year')::int) as max_year
                 FROM {self.config.chunks_table}
-                WHERE metadata->>'year' IS NOT NULL
+                WHERE metadata_->>'year' IS NOT NULL
             """)
             row = cursor.fetchone()
             if row and row[0]:
@@ -474,12 +474,12 @@ class PostgresMetadataRetriever(BaseRetriever):
             # Get document count by province
             cursor.execute(f"""
                 SELECT 
-                    metadata->>'province' as province,
+                    metadata_->>'province' as province,
                     COUNT(DISTINCT document_id) as document_count,
                     COUNT(*) as chunk_count
                 FROM {self.config.chunks_table}
-                WHERE metadata->>'province' IS NOT NULL
-                GROUP BY metadata->>'province'
+                WHERE metadata_->>'province' IS NOT NULL
+                GROUP BY metadata_->>'province'
                 ORDER BY document_count DESC
                 LIMIT 10
             """)
@@ -489,12 +489,12 @@ class PostgresMetadataRetriever(BaseRetriever):
             # Get document count by deed type
             cursor.execute(f"""
                 SELECT 
-                    metadata->>'deed_type_category' as deed_type,
+                    metadata_->>'deed_type_category' as deed_type,
                     COUNT(DISTINCT document_id) as document_count,
                     COUNT(*) as chunk_count
                 FROM {self.config.chunks_table}
-                WHERE metadata->>'deed_type_category' IS NOT NULL
-                GROUP BY metadata->>'deed_type_category'
+                WHERE metadata_->>'deed_type_category' IS NOT NULL
+                GROUP BY metadata_->>'deed_type_category'
                 ORDER BY document_count DESC
             """)
             
