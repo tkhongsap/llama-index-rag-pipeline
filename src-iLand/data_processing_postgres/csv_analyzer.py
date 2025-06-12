@@ -4,11 +4,19 @@ import logging
 import os
 from typing import List, Dict, Any
 
-# Handle both relative and absolute imports
+# Import Thai provinces
 try:
-    from ..common.thai_provinces import THAI_PROVINCES
-except ImportError:  # When package context is missing
+    # Try absolute import first
+    import sys
+    from pathlib import Path
+    current_dir = Path(__file__).parent.parent
+    sys.path.insert(0, str(current_dir))
     from common.thai_provinces import THAI_PROVINCES
+except ImportError:
+    try:
+        from thai_provinces import THAI_PROVINCES
+    except ImportError:
+        THAI_PROVINCES = []
 
 try:
     from .models import FieldMapping, DatasetConfig

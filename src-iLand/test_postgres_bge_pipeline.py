@@ -32,7 +32,7 @@ def test_pipeline():
     try:
         # Run pipeline with just 2 documents
         results = run_complete_pipeline(
-            input_file="input_dataset_iLand_sample.csv",
+            input_file="test_data.xlsx",
             max_rows=2,
             batch_size=10,
             db_batch_size=10,

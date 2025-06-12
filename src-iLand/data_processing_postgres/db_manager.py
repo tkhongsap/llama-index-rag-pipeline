@@ -110,19 +110,19 @@ class DatabaseManager:
                     );
                 """)
                 
-                # Create indexes for faster lookups and filtering
-                cursor.execute(f"CREATE INDEX idx_{table_name}_deed_id ON {table_name} (deed_id)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_province ON {table_name} (province)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_district ON {table_name} (district)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_land_use ON {table_name} (land_use_category)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_deed_type ON {table_name} (deed_type_category)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_area ON {table_name} (area_category)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_processing_status ON {table_name} (processing_status)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_embedding_status ON {table_name} (embedding_status)")
+                # Create indexes for faster lookups and filtering (use IF NOT EXISTS)
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_deed_id ON {table_name} (deed_id)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_province ON {table_name} (province)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_district ON {table_name} (district)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_land_use ON {table_name} (land_use_category)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_deed_type ON {table_name} (deed_type_category)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_area ON {table_name} (area_category)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_processing_status ON {table_name} (processing_status)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_embedding_status ON {table_name} (embedding_status)")
                 
                 # Create GIN index for JSONB metadata searching
-                cursor.execute(f"CREATE INDEX idx_{table_name}_raw_metadata ON {table_name} USING GIN (raw_metadata)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_extracted_metadata ON {table_name} USING GIN (extracted_metadata)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_raw_metadata ON {table_name} USING GIN (raw_metadata)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_extracted_metadata ON {table_name} USING GIN (extracted_metadata)")
                 
                 # Create trigger for updating timestamp
                 cursor.execute(f"""
@@ -280,13 +280,18 @@ class DatabaseManager:
                 return 0
         
         # Import metadata extractor for enhanced processing
+        ThaiProvinceMapper = None
         try:
-            from ..common.thai_provinces import ThaiProvinceMapper
+            # Try absolute import first
+            import sys
+            from pathlib import Path
+            current_dir = Path(__file__).parent.parent
+            sys.path.insert(0, str(current_dir))
+            from common.thai_provinces import ThaiProvinceMapper
         except ImportError:
             try:
                 from thai_provinces import ThaiProvinceMapper
             except ImportError:
-                ThaiProvinceMapper = None
                 logger.warning("ThaiProvinceMapper not available - province mapping disabled")
         
         successful_inserts = 0
@@ -412,7 +417,12 @@ class DatabaseManager:
         if province_raw:
             # Try to normalize province name
             try:
-                from ..common.thai_provinces import ThaiProvinceMapper
+                # Try absolute import first
+                import sys
+                from pathlib import Path
+                current_dir = Path(__file__).parent.parent
+                sys.path.insert(0, str(current_dir))
+                from common.thai_provinces import ThaiProvinceMapper
                 mapper = ThaiProvinceMapper()
                 province_normalized = mapper.normalize_province_name(province_raw)
                 extracted['province'] = province_normalized

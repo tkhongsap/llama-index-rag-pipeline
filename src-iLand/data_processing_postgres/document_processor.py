@@ -10,14 +10,21 @@ try:
 except ImportError:
     from models import SimpleDocument, DatasetConfig
 
-# Import section parser for chunking
-try:
-    from ..docs_embedding_postgres.standalone_section_parser import StandaloneLandDeedSectionParser
-except ImportError:
-    logger.warning("Could not import StandaloneLandDeedSectionParser, section chunking will be disabled")
-    StandaloneLandDeedSectionParser = None
-
 logger = logging.getLogger(__name__)
+
+# Import section parser for chunking
+StandaloneLandDeedSectionParser = None
+try:
+    # Try absolute import first
+    import sys
+    from pathlib import Path
+    current_dir = Path(__file__).parent.parent
+    sys.path.insert(0, str(current_dir))
+    from docs_embedding_postgres.standalone_section_parser import StandaloneLandDeedSectionParser
+    logger.info("Successfully imported StandaloneLandDeedSectionParser")
+except ImportError as e:
+    logger.warning(f"Could not import StandaloneLandDeedSectionParser: {e}. Section chunking will be disabled")
+    StandaloneLandDeedSectionParser = None
 
 
 class DocumentProcessor:

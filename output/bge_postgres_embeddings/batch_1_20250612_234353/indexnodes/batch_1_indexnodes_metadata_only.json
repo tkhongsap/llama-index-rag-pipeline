@@ -1,0 +1,28 @@
+[
+  {
+    "node_id": "9d0560f2-653d-41f3-9726-29490d44cbf9",
+    "type": "indexnodes",
+    "text_length": 672,
+    "embedding_dim": 0,
+    "batch_number": 1,
+    "deed_id": "969e2813-06b5-477e-a975-94c8465e5a5b",
+    "province": "Chai Nat",
+    "deed_type": "โฉนด",
+    "area_rai": "unknown",
+    "embedding_provider": "bge",
+    "embedding_model": "BAAI/bge-m3"
+  },
+  {
+    "node_id": "9dddf4ce-aed5-4fc1-a7b8-5d61704596f1",
+    "type": "indexnodes",
+    "text_length": 719,
+    "embedding_dim": 0,
+    "batch_number": 1,
+    "deed_id": "97d0ac80-0057-4436-91dc-53f2d3a3ab49",
+    "province": "Chai Nat",
+    "deed_type": "โฉนด",
+    "area_rai": "unknown",
+    "embedding_provider": "bge",
+    "embedding_model": "BAAI/bge-m3"
+  }
+]
