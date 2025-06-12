@@ -1,406 +1,446 @@
 """
 PostgreSQL Router Retriever for iLand Data
 
-Intelligent router that selects the optimal PostgreSQL retrieval strategy
-based on query analysis and available strategies.
+Extends the local router to work with PostgreSQL-stored data.
+Maintains complete parity with local implementation while adding PostgreSQL-specific features.
 """
 
 import os
 import time
-import logging
+import json
 from typing import Dict, List, Optional, Any
+from datetime import datetime
 
-from llama_index.core import Settings
-from llama_index.core.schema import NodeWithScore
-from llama_index.llms.openai import OpenAI
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
-from .config import PostgresConfig
-from .retrievers import (
-    BasicPostgresRetriever,
-    SentenceWindowPostgresRetriever,
-    RecursivePostgresRetriever,
-    AutoMergePostgresRetriever,
-    MetadataFilterPostgresRetriever,
-    EnsemblePostgresRetriever,
-    AgenticPostgresRetriever
-)
+from llama_index.core.schema import QueryBundle, NodeWithScore
 
-logger = logging.getLogger(__name__)
+from ..retrieval.router import iLandRouterRetriever
+from ..retrieval.retrievers.base import BaseRetrieverAdapter
+from ..retrieval.cache import iLandCacheManager
+from .index_classifier import PostgresIndexClassifier, create_postgres_classifier
+from .config import PostgresRetrievalConfig
 
 
-class PostgresRouterRetriever:
-    """
-    Intelligent router for PostgreSQL-based retrieval strategies.
+class PostgresRouterRetriever(iLandRouterRetriever):
+    """PostgreSQL-based router retriever maintaining parity with local implementation."""
     
-    Analyzes queries and automatically selects the best retrieval strategy
-    for Thai land deed data stored in PostgreSQL.
-    """
-    
-    def __init__(
-        self,
-        config: PostgresConfig,
-        strategy_selector: str = "llm",
-        llm_strategy_mode: str = "enhanced"
-    ):
+    def __init__(self,
+                 config: Optional[PostgresRetrievalConfig] = None,
+                 retrievers: Optional[Dict[str, Dict[str, BaseRetrieverAdapter]]] = None,
+                 index_classifier: Optional[PostgresIndexClassifier] = None,
+                 strategy_selector: Optional[str] = "llm",
+                 llm_strategy_mode: Optional[str] = "enhanced",
+                 api_key: Optional[str] = None,
+                 cache_manager: Optional[iLandCacheManager] = None,
+                 enable_caching: bool = True,
+                 enable_query_logging: bool = True):
         """
         Initialize PostgreSQL router retriever.
         
         Args:
             config: PostgreSQL configuration
+            retrievers: Dict mapping index_name -> {strategy_name -> adapter}
+            index_classifier: Index classifier (creates PostgreSQL version if None)
             strategy_selector: Strategy selection method ("llm", "heuristic", "round_robin")
             llm_strategy_mode: LLM strategy mode ("enhanced", "simple")
+            api_key: OpenAI API key
+            cache_manager: Cache manager instance
+            enable_caching: Whether to enable caching
+            enable_query_logging: Whether to log queries to PostgreSQL
         """
-        self.config = config
-        self.strategy_selector = strategy_selector
-        self.llm_strategy_mode = llm_strategy_mode
+        # Initialize configuration
+        self.config = config or PostgresRetrievalConfig()
+        self.enable_query_logging = enable_query_logging
         
-        # Initialize retrievers
-        self.retrievers = self._initialize_retrievers()
+        # Create PostgreSQL index classifier if not provided
+        if index_classifier is None:
+            index_classifier = create_postgres_classifier(
+                config=self.config,
+                api_key=api_key
+            )
         
-        # Setup LLM for strategy selection
-        if strategy_selector == "llm":
-            self._setup_llm()
+        # Initialize parent class
+        super().__init__(
+            retrievers=retrievers or {},
+            index_classifier=index_classifier,
+            strategy_selector=strategy_selector,
+            llm_strategy_mode=llm_strategy_mode,
+            api_key=api_key,
+            cache_manager=cache_manager,
+            enable_caching=enable_caching
+        )
         
-        # Round-robin state
-        self._round_robin_state = 0
-        
-        logger.info(f"Initialized PostgreSQL router with {len(self.retrievers)} strategies")
+        # Create query logging table if enabled
+        if self.enable_query_logging:
+            self._create_query_log_table()
     
-    def _initialize_retrievers(self) -> Dict[str, Any]:
-        """Initialize all available retrieval strategies."""
-        retrievers = {}
-        
+    def _create_query_log_table(self):
+        """Create query log table in PostgreSQL."""
         try:
-            # Basic vector similarity
-            retrievers["basic"] = BasicPostgresRetriever(self.config)
+            conn = psycopg2.connect(self.config.connection_string)
+            cursor = conn.cursor()
             
-            # Sentence window with context
-            retrievers["window"] = SentenceWindowPostgresRetriever(self.config)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS iland_query_log (
+                    id SERIAL PRIMARY KEY,
+                    query TEXT,
+                    selected_index VARCHAR(255),
+                    selected_strategy VARCHAR(255),
+                    index_confidence FLOAT,
+                    strategy_confidence FLOAT,
+                    index_method VARCHAR(50),
+                    strategy_method VARCHAR(50),
+                    result_count INTEGER,
+                    latency_ms FLOAT,
+                    cache_hit BOOLEAN DEFAULT false,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    metadata JSONB DEFAULT '{}'::jsonb
+                )
+            """)
             
-            # Recursive hierarchical search
-            retrievers["recursive"] = RecursivePostgresRetriever(self.config)
+            # Create indexes for better query performance
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_query_log_created_at 
+                ON iland_query_log(created_at DESC)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_query_log_index_strategy 
+                ON iland_query_log(selected_index, selected_strategy)
+            """)
             
-            # Metadata-aware filtering
-            retrievers["metadata"] = MetadataFilterPostgresRetriever(self.config)
-            
-            # Auto merge
-            retrievers["auto_merge"] = AutoMergePostgresRetriever(self.config)
-            
-            # Ensemble
-            retrievers["ensemble"] = EnsemblePostgresRetriever(self.config)
-            
-            # Agentic
-            retrievers["agentic"] = AgenticPostgresRetriever(self.config)
-            
-            logger.info(f"Successfully initialized {len(retrievers)} retrieval strategies")
+            conn.commit()
+            cursor.close()
+            conn.close()
             
         except Exception as e:
-            logger.error(f"Failed to initialize some retrievers: {e}")
-        
-        return retrievers
+            print(f"Warning: Could not create query log table: {e}")
     
-    def _setup_llm(self):
-        """Setup LLM for strategy selection."""
-        if not self.config.openai_api_key:
-            raise ValueError("OpenAI API key required for LLM-based strategy selection")
-        
-        Settings.llm = OpenAI(
-            model="gpt-4o-mini",
-            temperature=0,
-            api_key=self.config.openai_api_key
-        )
-    
-    def retrieve(
-        self,
-        query: str,
-        top_k: Optional[int] = None,
-        filters: Optional[Dict[str, Any]] = None,
-        strategy: Optional[str] = None
-    ) -> List[NodeWithScore]:
+    def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
         """
-        Retrieve nodes using intelligent strategy selection.
+        Main retrieval method with PostgreSQL logging and enhanced caching.
         
         Args:
-            query: The search query (may contain Thai text)
-            top_k: Number of nodes to retrieve
-            filters: Metadata filters
-            strategy: Force specific strategy (overrides auto-selection)
+            query_bundle: Query bundle containing the query
             
         Returns:
-            List of NodeWithScore objects from selected strategy
+            List of retrieved nodes with routing metadata
         """
+        query = query_bundle.query_str
         start_time = time.time()
         
-        top_k = top_k or self.config.default_top_k
+        # Use parent's retrieval logic
+        nodes = super()._retrieve(query_bundle)
         
-        try:
-            # Select strategy
-            if strategy and strategy in self.retrievers:
-                selected_strategy = strategy
-                selection_method = "manual"
-                confidence = 1.0
-            else:
-                strategy_result = self._select_strategy(query, filters)
-                selected_strategy = strategy_result["strategy"]
-                selection_method = strategy_result["method"]
-                confidence = strategy_result["confidence"]
+        # Calculate final latency
+        latency_ms = (time.time() - start_time) * 1000
+        
+        # Log to PostgreSQL if enabled
+        if self.enable_query_logging and nodes:
+            # Extract metadata from first node
+            first_node = nodes[0]
+            metadata = first_node.node.metadata if hasattr(first_node.node, 'metadata') else {}
             
-            # Get retriever
-            retriever = self.retrievers.get(selected_strategy)
-            if not retriever:
-                logger.warning(f"Strategy {selected_strategy} not available, falling back to basic")
-                retriever = self.retrievers["basic"]
-                selected_strategy = "basic"
-            
-            # Execute retrieval
-            nodes = retriever.retrieve(query, top_k, filters)
-            
-            # Add routing metadata to nodes
-            for node in nodes:
-                if hasattr(node.node, 'metadata'):
-                    node.node.metadata.update({
-                        "selected_strategy": selected_strategy,
-                        "selection_method": selection_method,
-                        "selection_confidence": confidence,
-                        "router_type": "postgres_router"
-                    })
-            
-            # Log routing decision
-            execution_time = time.time() - start_time
-            logger.info(
-                f"PostgreSQL Router: {query[:50]}... -> {selected_strategy} "
-                f"({len(nodes)} results, {execution_time:.3f}s, confidence={confidence:.2f})"
+            self._log_query(
+                query=query,
+                selected_index=metadata.get("selected_index", "unknown"),
+                selected_strategy=metadata.get("selected_strategy", "unknown"),
+                index_confidence=metadata.get("index_confidence", 0),
+                strategy_confidence=metadata.get("strategy_confidence", 0),
+                index_method=metadata.get("index_method", "unknown"),
+                strategy_method=metadata.get("strategy_method", "unknown"),
+                result_count=len(nodes),
+                latency_ms=latency_ms,
+                cache_hit=metadata.get("cache_hit", False)
             )
-            
-            return nodes
-            
-        except Exception as e:
-            logger.error(f"PostgreSQL router retrieval failed: {e}")
-            raise
+        
+        return nodes
     
-    def _select_strategy(
-        self,
-        query: str,
-        filters: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Select the best retrieval strategy for the query.
-        
-        Args:
-            query: The search query
-            filters: Metadata filters
-            
-        Returns:
-            Dictionary with strategy selection results
-        """
-        if self.strategy_selector == "llm":
-            return self._select_strategy_llm(query, filters)
-        elif self.strategy_selector == "round_robin":
-            return self._select_strategy_round_robin()
-        else:  # heuristic
-            return self._select_strategy_heuristic(query, filters)
-    
-    def _select_strategy_llm(
-        self,
-        query: str,
-        filters: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Select strategy using LLM analysis.
-        
-        Args:
-            query: The search query
-            filters: Metadata filters
-            
-        Returns:
-            Strategy selection results
-        """
-        available_strategies = list(self.retrievers.keys())
-        
-        # Strategy descriptions for Thai land deed data
-        strategy_descriptions = {
-            "basic": "Direct semantic similarity search. Best for: simple queries about Thai land deeds, fast retrieval, general property information searches.",
-            "window": "Semantic search with surrounding context. Best for: queries needing broader context understanding, detailed Thai legal document analysis.",
-            "recursive": "Hierarchical search from summaries to details. Best for: complex multi-level queries, exploring document structure, comprehensive property analysis.",
-            "metadata": "Metadata-aware filtering with geographic/legal attributes. Best for: queries about specific provinces (จังหวัด), deed types (โฉนด, นส.3), structured property searches."
-        }
-        
-        # Build prompt
-        available_descriptions = []
-        for strategy in available_strategies:
-            if strategy in strategy_descriptions:
-                available_descriptions.append(f"- {strategy}: {strategy_descriptions[strategy]}")
-        
-        filter_info = ""
-        if filters:
-            filter_info = f"\nMetadata filters provided: {list(filters.keys())}"
-        
-        prompt = f"""You are an expert retrieval system for Thai land deed data that selects the best PostgreSQL-based strategy.
-
-Query: "{query}"{filter_info}
-
-Available retrieval strategies:
-{chr(10).join(available_descriptions)}
-
-Analyze the query and provide your response in this exact format:
-STRATEGY: [strategy_name]
-CONFIDENCE: [0.1-1.0]
-REASONING: [brief explanation for Thai land deed context]
-
-Consider:
-1. Query complexity and Thai language content
-2. Need for context vs precision
-3. Geographic/legal filtering requirements
-4. Document structure navigation needs
-5. Metadata filter usage"""
-
+    def _log_query(self, **kwargs):
+        """Log query details to PostgreSQL."""
         try:
-            response = Settings.llm.complete(prompt)
-            response_text = response.text.strip()
+            conn = psycopg2.connect(self.config.connection_string)
+            cursor = conn.cursor()
             
-            # Parse response
-            strategy = None
-            confidence = 0.5
-            reasoning = "LLM selection for Thai land deed data"
+            # Extract metadata fields
+            metadata = {
+                "llm_strategy_mode": self.llm_strategy_mode,
+                "strategy_selector": self.strategy_selector,
+                "caching_enabled": self.enable_caching
+            }
             
-            for line in response_text.split('\n'):
-                line = line.strip()
-                if line.startswith('STRATEGY:'):
-                    strategy = line.split(':', 1)[1].strip().lower()
-                elif line.startswith('CONFIDENCE:'):
-                    try:
-                        confidence = float(line.split(':', 1)[1].strip())
-                        confidence = max(0.1, min(1.0, confidence))
-                    except ValueError:
-                        confidence = 0.5
-                elif line.startswith('REASONING:'):
-                    reasoning = line.split(':', 1)[1].strip()
+            cursor.execute("""
+                INSERT INTO iland_query_log 
+                (query, selected_index, selected_strategy, index_confidence, 
+                 strategy_confidence, index_method, strategy_method, result_count,
+                 latency_ms, cache_hit, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                kwargs.get("query"),
+                kwargs.get("selected_index"),
+                kwargs.get("selected_strategy"),
+                kwargs.get("index_confidence"),
+                kwargs.get("strategy_confidence"),
+                kwargs.get("index_method"),
+                kwargs.get("strategy_method"),
+                kwargs.get("result_count"),
+                kwargs.get("latency_ms"),
+                kwargs.get("cache_hit"),
+                json.dumps(metadata)
+            ))
             
-            # Validate strategy
-            if strategy and strategy in available_strategies:
-                return {
-                    "strategy": strategy,
-                    "confidence": confidence,
-                    "method": "llm_enhanced",
-                    "reasoning": reasoning
-                }
-            
-            # Fallback to heuristic
-            fallback = self._select_strategy_heuristic(query, filters)
-            fallback["method"] = "llm_fallback"
-            return fallback
+            conn.commit()
+            cursor.close()
+            conn.close()
             
         except Exception as e:
-            logger.warning(f"LLM strategy selection failed: {e}")
-            fallback = self._select_strategy_heuristic(query, filters)
-            fallback["method"] = "llm_error_fallback"
-            return fallback
+            print(f"Query logging error: {e}")
     
-    def _select_strategy_heuristic(
-        self,
-        query: str,
-        filters: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def get_query_stats(self, 
+                       hours: int = 24,
+                       index_name: Optional[str] = None) -> Dict[str, Any]:
         """
-        Select strategy using heuristic rules for Thai land deed data.
+        Get query statistics from PostgreSQL.
         
         Args:
-            query: The search query
-            filters: Metadata filters
+            hours: Number of hours to look back
+            index_name: Optional filter by index name
             
         Returns:
-            Strategy selection results
+            Dictionary with query statistics
         """
-        query_lower = query.lower()
-        
-        # If metadata filters provided, prefer metadata strategy
-        if filters and len(filters) > 0:
+        try:
+            conn = psycopg2.connect(self.config.connection_string)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Base WHERE clause
+            where_clauses = ["created_at > NOW() - INTERVAL '%s hours'"]
+            params = [hours]
+            
+            if index_name:
+                where_clauses.append("selected_index = %s")
+                params.append(index_name)
+            
+            where_clause = " AND ".join(where_clauses)
+            
+            # Get overall stats
+            cursor.execute(f"""
+                SELECT 
+                    COUNT(*) as total_queries,
+                    COUNT(DISTINCT query) as unique_queries,
+                    AVG(latency_ms) as avg_latency_ms,
+                    MIN(latency_ms) as min_latency_ms,
+                    MAX(latency_ms) as max_latency_ms,
+                    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY latency_ms) as p50_latency_ms,
+                    PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency_ms) as p95_latency_ms,
+                    PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY latency_ms) as p99_latency_ms,
+                    AVG(result_count) as avg_results,
+                    SUM(CASE WHEN cache_hit THEN 1 ELSE 0 END) as cache_hits,
+                    AVG(index_confidence) as avg_index_confidence,
+                    AVG(strategy_confidence) as avg_strategy_confidence
+                FROM iland_query_log
+                WHERE {where_clause}
+            """, params)
+            
+            overall_stats = dict(cursor.fetchone())
+            
+            # Calculate cache hit rate
+            if overall_stats['total_queries'] > 0:
+                overall_stats['cache_hit_rate'] = (
+                    overall_stats['cache_hits'] / overall_stats['total_queries']
+                )
+            else:
+                overall_stats['cache_hit_rate'] = 0
+            
+            # Get strategy distribution
+            cursor.execute(f"""
+                SELECT 
+                    selected_strategy,
+                    COUNT(*) as count,
+                    AVG(latency_ms) as avg_latency_ms,
+                    AVG(result_count) as avg_results
+                FROM iland_query_log
+                WHERE {where_clause}
+                GROUP BY selected_strategy
+                ORDER BY count DESC
+            """, params)
+            
+            strategy_stats = [dict(row) for row in cursor.fetchall()]
+            
+            # Get index distribution
+            cursor.execute(f"""
+                SELECT 
+                    selected_index,
+                    COUNT(*) as count,
+                    AVG(latency_ms) as avg_latency_ms,
+                    AVG(result_count) as avg_results
+                FROM iland_query_log
+                WHERE {where_clause}
+                GROUP BY selected_index
+                ORDER BY count DESC
+            """, params)
+            
+            index_stats = [dict(row) for row in cursor.fetchall()]
+            
+            # Get method distribution
+            cursor.execute(f"""
+                SELECT 
+                    strategy_method,
+                    COUNT(*) as count
+                FROM iland_query_log
+                WHERE {where_clause}
+                GROUP BY strategy_method
+                ORDER BY count DESC
+            """, params)
+            
+            method_stats = [dict(row) for row in cursor.fetchall()]
+            
+            # Get hourly distribution
+            cursor.execute(f"""
+                SELECT 
+                    DATE_TRUNC('hour', created_at) as hour,
+                    COUNT(*) as query_count,
+                    AVG(latency_ms) as avg_latency_ms
+                FROM iland_query_log
+                WHERE {where_clause}
+                GROUP BY hour
+                ORDER BY hour DESC
+                LIMIT 24
+            """, params)
+            
+            hourly_stats = [
+                {
+                    "hour": row['hour'].isoformat(),
+                    "query_count": row['query_count'],
+                    "avg_latency_ms": float(row['avg_latency_ms'])
+                }
+                for row in cursor.fetchall()
+            ]
+            
+            cursor.close()
+            conn.close()
+            
             return {
-                "strategy": "metadata",
-                "confidence": 0.8,
-                "method": "heuristic_metadata",
-                "reasoning": "Metadata filters provided"
+                "overall": overall_stats,
+                "by_strategy": strategy_stats,
+                "by_index": index_stats,
+                "by_method": method_stats,
+                "hourly": hourly_stats,
+                "period_hours": hours,
+                "filtered_by_index": index_name
             }
-        
-        # Check for Thai geographic terms
-        thai_geo_terms = ["จังหวัด", "อำเภอ", "ตำบล", "กรุงเทพ", "สมุทรปราการ"]
-        if any(term in query for term in thai_geo_terms):
-            return {
-                "strategy": "metadata",
-                "confidence": 0.7,
-                "method": "heuristic_geographic",
-                "reasoning": "Geographic Thai terms detected"
-            }
-        
-        # Check for deed type terms
-        deed_terms = ["โฉนด", "นส.3", "นส.4", "ส.ค.1"]
-        if any(term in query for term in deed_terms):
-            return {
-                "strategy": "metadata",
-                "confidence": 0.7,
-                "method": "heuristic_deed_type",
-                "reasoning": "Thai deed type terms detected"
-            }
-        
-        # Check for context-requiring terms
-        context_terms = ["explain", "context", "surrounding", "detail", "อธิบาย", "รายละเอียด"]
-        if any(term in query_lower for term in context_terms):
-            return {
-                "strategy": "window",
-                "confidence": 0.6,
-                "method": "heuristic_context",
-                "reasoning": "Context-requiring query detected"
-            }
-        
-        # Check for hierarchical terms
-        hierarchical_terms = ["overview", "summary", "breakdown", "structure", "สรุป", "โครงสร้าง"]
-        if any(term in query_lower for term in hierarchical_terms):
-            return {
-                "strategy": "recursive",
-                "confidence": 0.6,
-                "method": "heuristic_hierarchical",
-                "reasoning": "Hierarchical query detected"
-            }
-        
-        # Default to basic for simple queries
-        return {
-            "strategy": "basic",
-            "confidence": 0.5,
-            "method": "heuristic_default",
-            "reasoning": "Simple semantic query, using basic strategy"
-        }
+            
+        except Exception as e:
+            print(f"Error getting query stats: {e}")
+            return {}
     
-    def _select_strategy_round_robin(self) -> Dict[str, Any]:
-        """Select strategy using round-robin for testing."""
-        available_strategies = list(self.retrievers.keys())
-        selected_strategy = available_strategies[self._round_robin_state % len(available_strategies)]
-        self._round_robin_state += 1
+    def get_popular_queries(self, 
+                          limit: int = 10,
+                          hours: int = 24) -> List[Dict[str, Any]]:
+        """
+        Get most popular queries from PostgreSQL.
         
-        return {
-            "strategy": selected_strategy,
-            "confidence": 0.5,
-            "method": "round_robin",
-            "reasoning": f"Round-robin selection: {selected_strategy}"
-        }
+        Args:
+            limit: Number of queries to return
+            hours: Number of hours to look back
+            
+        Returns:
+            List of popular queries with counts
+        """
+        try:
+            conn = psycopg2.connect(self.config.connection_string)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            cursor.execute("""
+                SELECT 
+                    query,
+                    COUNT(*) as count,
+                    MAX(created_at) as last_seen,
+                    AVG(latency_ms) as avg_latency_ms,
+                    AVG(result_count) as avg_results,
+                    array_agg(DISTINCT selected_strategy) as strategies_used
+                FROM iland_query_log
+                WHERE created_at > NOW() - INTERVAL '%s hours'
+                GROUP BY query
+                ORDER BY count DESC
+                LIMIT %s
+            """, (hours, limit))
+            
+            popular_queries = []
+            for row in cursor.fetchall():
+                popular_queries.append({
+                    "query": row['query'],
+                    "count": row['count'],
+                    "last_seen": row['last_seen'].isoformat(),
+                    "avg_latency_ms": float(row['avg_latency_ms']),
+                    "avg_results": float(row['avg_results']),
+                    "strategies_used": row['strategies_used']
+                })
+            
+            cursor.close()
+            conn.close()
+            
+            return popular_queries
+            
+        except Exception as e:
+            print(f"Error getting popular queries: {e}")
+            return []
     
-    def get_available_strategies(self) -> List[str]:
-        """Get list of available retrieval strategies."""
-        return list(self.retrievers.keys())
+    def cleanup_old_logs(self, days: int = 30):
+        """
+        Clean up old query logs from PostgreSQL.
+        
+        Args:
+            days: Number of days to keep
+        """
+        try:
+            conn = psycopg2.connect(self.config.connection_string)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                DELETE FROM iland_query_log
+                WHERE created_at < NOW() - INTERVAL '%s days'
+            """, (days,))
+            
+            deleted_count = cursor.rowcount
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            print(f"Cleaned up {deleted_count} old query log entries")
+            
+        except Exception as e:
+            print(f"Error cleaning up logs: {e}")
     
-    def get_strategy_info(self) -> Dict[str, Dict[str, Any]]:
-        """Get information about all available strategies."""
-        info = {}
-        for name, retriever in self.retrievers.items():
-            info[name] = {
-                "name": name,
-                "class": retriever.__class__.__name__,
-                "description": retriever.__class__.__doc__ or "No description available"
-            }
-        return info
-    
-    def close(self):
-        """Close all retrievers and cleanup resources."""
-        for retriever in self.retrievers.values():
-            if hasattr(retriever, 'close'):
-                retriever.close()
-        logger.info("PostgreSQL router closed") 
+    @classmethod
+    def from_config(cls,
+                   config: Optional[PostgresRetrievalConfig] = None,
+                   api_key: Optional[str] = None,
+                   strategy_selector: str = "llm",
+                   llm_strategy_mode: str = "enhanced",
+                   enable_caching: bool = True,
+                   enable_query_logging: bool = True) -> "PostgresRouterRetriever":
+        """
+        Create PostgreSQL router from configuration.
+        
+        Args:
+            config: PostgreSQL configuration
+            api_key: OpenAI API key
+            strategy_selector: Strategy selection method
+            llm_strategy_mode: LLM strategy mode
+            enable_caching: Whether to enable caching
+            enable_query_logging: Whether to log queries
+            
+        Returns:
+            PostgresRouterRetriever instance
+        """
+        return cls(
+            config=config,
+            api_key=api_key,
+            strategy_selector=strategy_selector,
+            llm_strategy_mode=llm_strategy_mode,
+            enable_caching=enable_caching,
+            enable_query_logging=enable_query_logging
+        )

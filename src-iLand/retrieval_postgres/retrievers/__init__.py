@@ -1,35 +1,19 @@
-"""
-PostgreSQL-based retrieval strategies for iLand data
+"""PostgreSQL retriever implementations."""
 
-This module contains retrieval strategies that query directly
-from PostgreSQL/pgVector instead of loading embeddings from files.
-
-Currently implemented strategies:
-- BasicPostgresRetriever: Direct vector similarity search
-- SentenceWindowPostgresRetriever: Context expansion with surrounding chunks  
-- RecursivePostgresRetriever: Hierarchical summary→chunk search
-- MetadataFilterPostgresRetriever: Thai geographic/legal metadata filtering
-
-TODO: Implement remaining strategies:
-- AutoMergePostgresRetriever: Automatic chunk merging
-- EnsemblePostgresRetriever: Multiple strategy combination
-- AgenticPostgresRetriever: LLM-guided retrieval
-"""
-
-from .basic_postgres import BasicPostgresRetriever
-from .sentence_window_postgres import SentenceWindowPostgresRetriever
-from .recursive_postgres import RecursivePostgresRetriever
-from .auto_merge_postgres import AutoMergePostgresRetriever
-from .metadata_filter_postgres import MetadataFilterPostgresRetriever
-from .ensemble_postgres import EnsemblePostgresRetriever
-from .agentic_postgres import AgenticPostgresRetriever
+from .vector import PostgresVectorRetriever
+from .hybrid import PostgresHybridRetriever
+from .recursive import PostgresRecursiveRetriever
+from .chunk_decoupling import PostgresChunkDecouplingRetriever
+from .planner import PostgresPlannerRetriever
+from .metadata import PostgresMetadataRetriever
+from .summary import PostgresSummaryRetriever
 
 __all__ = [
-    "BasicPostgresRetriever",
-    "SentenceWindowPostgresRetriever", 
-    "RecursivePostgresRetriever",
-    "AutoMergePostgresRetriever",
-    "MetadataFilterPostgresRetriever",
-    "EnsemblePostgresRetriever",
-    "AgenticPostgresRetriever"
-] 
+    "PostgresVectorRetriever",
+    "PostgresHybridRetriever",
+    "PostgresRecursiveRetriever",
+    "PostgresChunkDecouplingRetriever",
+    "PostgresPlannerRetriever",
+    "PostgresMetadataRetriever",
+    "PostgresSummaryRetriever"
+]

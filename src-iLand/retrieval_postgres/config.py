@@ -1,98 +1,54 @@
-"""
-Configuration for PostgreSQL-based retrieval
-
-Handles database connection configuration and environment variable management.
-"""
+"""Configuration for PostgreSQL-based retrieval."""
 
 import os
 from typing import Optional, Dict, Any
-from dataclasses import dataclass
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+from dataclasses import dataclass, field
 
 
 @dataclass
-class PostgresConfig:
+class PostgresRetrievalConfig:
     """Configuration for PostgreSQL retrieval operations."""
     
-    # Database connection - NO DEFAULT VALUES for security
-    db_name: str = ""
-    db_user: str = ""
-    db_password: str = ""
-    db_host: str = ""
-    db_port: int = 5432
+    # Database connection
+    db_host: str = field(default_factory=lambda: os.getenv("POSTGRES_HOST", "localhost"))
+    db_port: int = field(default_factory=lambda: int(os.getenv("POSTGRES_PORT", "5432")))
+    db_name: str = field(default_factory=lambda: os.getenv("POSTGRES_DB", "iland_embeddings"))
+    db_user: str = field(default_factory=lambda: os.getenv("POSTGRES_USER", "postgres"))
+    db_password: str = field(default_factory=lambda: os.getenv("POSTGRES_PASSWORD", ""))
     
-    # Connection pool settings
-    min_connections: int = 2
-    max_connections: int = 20
-    connection_timeout: int = 30
-    
-    # Table names
-    chunks_table: str = "data_iland_chunks"
-    summaries_table: str = "data_iland_summaries"
-    indexnodes_table: str = "data_iland_indexnodes"
-    combined_table: str = "data_iland_combined"
-    source_table: str = "iland_md_data"
+    # Table configuration
+    chunks_table: str = "iland_chunks"
+    documents_table: str = "iland_documents"
     
     # Embedding configuration
-    embedding_dim: int = 1024
-    embedding_model: str = "BAAI/bge-large-en-v1.5"
+    embedding_dimension: int = 1024  # BGE-M3 dimension
+    embedding_model: str = "BGE-M3"
+    
+    # Cache configuration
+    cache_ttl: int = 3600  # 1 hour
+    enable_cache: bool = True
     
     # Retrieval settings
-    default_top_k: int = 5
-    max_top_k: int = 50
+    default_top_k: int = 10
     similarity_threshold: float = 0.7
+    hybrid_alpha: float = 0.5  # Balance between vector and keyword search
     
-    # OpenAI API for query processing
-    openai_api_key: Optional[str] = None
+    # Query settings
+    max_query_length: int = 512
+    enable_query_expansion: bool = True
+    
+    # LLM settings (for strategy selection)
+    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "gpt-4"))
+    llm_temperature: float = 0.1
     
     # Performance settings
-    enable_query_caching: bool = True
-    query_cache_ttl: int = 3600  # 1 hour
+    connection_pool_size: int = 10
+    query_timeout: int = 30  # seconds
     batch_size: int = 100
     
-    @classmethod
-    def from_env(cls) -> "PostgresConfig":
-        """Create configuration from environment variables."""
-        return cls(
-            # Database connection - require environment variables
-            db_name=os.getenv("DB_NAME", ""),
-            db_user=os.getenv("DB_USER", ""),
-            db_password=os.getenv("DB_PASSWORD", ""),
-            db_host=os.getenv("DB_HOST", ""),
-            db_port=int(os.getenv("DB_PORT", "5432")),
-            
-            # Connection pool
-            min_connections=int(os.getenv("MIN_CONNECTIONS", "2")),
-            max_connections=int(os.getenv("MAX_CONNECTIONS", "20")),
-            connection_timeout=int(os.getenv("CONNECTION_TIMEOUT", "30")),
-            
-            # Table names
-            chunks_table=os.getenv("CHUNKS_TABLE", "data_iland_chunks"),
-            summaries_table=os.getenv("SUMMARIES_TABLE", "data_iland_summaries"),
-            indexnodes_table=os.getenv("INDEXNODES_TABLE", "data_iland_indexnodes"),
-            combined_table=os.getenv("COMBINED_TABLE", "data_iland_combined"),
-            source_table=os.getenv("SOURCE_TABLE", "iland_md_data"),
-            
-            # Embedding configuration
-            embedding_dim=int(os.getenv("EMBEDDING_DIM", "1024")),
-            embedding_model=os.getenv("EMBEDDING_MODEL", "BAAI/bge-large-en-v1.5"),
-            
-            # Retrieval settings
-            default_top_k=int(os.getenv("DEFAULT_TOP_K", "5")),
-            max_top_k=int(os.getenv("MAX_TOP_K", "50")),
-            similarity_threshold=float(os.getenv("SIMILARITY_THRESHOLD", "0.7")),
-            
-            # API keys
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            
-            # Performance settings
-            enable_query_caching=os.getenv("ENABLE_QUERY_CACHING", "true").lower() == "true",
-            query_cache_ttl=int(os.getenv("QUERY_CACHE_TTL", "3600")),
-            batch_size=int(os.getenv("BATCH_SIZE", "100"))
-        )
+    # Hybrid mode settings
+    enable_hybrid_mode: bool = False  # Allow fallback to local files
+    local_index_path: Optional[str] = None
     
     @property
     def connection_string(self) -> str:
@@ -100,42 +56,23 @@ class PostgresConfig:
         return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
     
     @property
-    def connection_params(self) -> Dict[str, Any]:
-        """Get connection parameters for psycopg2."""
-        return {
-            "dbname": self.db_name,
-            "user": self.db_user,
-            "password": self.db_password,
-            "host": self.db_host,
-            "port": self.db_port,
-            "connect_timeout": self.connection_timeout
-        }
+    def async_connection_string(self) -> str:
+        """Get async PostgreSQL connection string."""
+        return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
     
-    def validate(self) -> None:
-        """Validate configuration settings."""
-        if not self.db_name:
-            raise ValueError("Database name is required")
-        
-        if not self.db_user:
-            raise ValueError("Database user is required")
-        
-        if not self.db_password:
-            raise ValueError("Database password is required")
-        
-        if not self.db_host:
-            raise ValueError("Database host is required")
-        
-        if self.db_port <= 0:
-            raise ValueError("Database port must be positive")
-        
-        if self.embedding_dim <= 0:
-            raise ValueError("Embedding dimension must be positive")
-        
-        if self.default_top_k <= 0:
-            raise ValueError("Default top_k must be positive")
-        
-        if self.max_top_k < self.default_top_k:
-            raise ValueError("Max top_k must be >= default top_k")
-        
-        if not 0 <= self.similarity_threshold <= 1:
-            raise ValueError("Similarity threshold must be between 0 and 1") 
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert config to dictionary."""
+        return {
+            "db_host": self.db_host,
+            "db_port": self.db_port,
+            "db_name": self.db_name,
+            "chunks_table": self.chunks_table,
+            "documents_table": self.documents_table,
+            "embedding_dimension": self.embedding_dimension,
+            "embedding_model": self.embedding_model,
+            "default_top_k": self.default_top_k,
+            "similarity_threshold": self.similarity_threshold,
+            "hybrid_alpha": self.hybrid_alpha,
+            "enable_hybrid_mode": self.enable_hybrid_mode,
+            "local_index_path": self.local_index_path
+        }
