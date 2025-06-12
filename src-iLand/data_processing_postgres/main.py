@@ -27,6 +27,44 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+def process_documents_for_embedding(documents, db_manager):
+    """Process documents into section-based chunks ready for embedding"""
+    from .document_processor import DocumentProcessor
+    from .models import DatasetConfig
+    
+    # Create a basic config for the processor
+    config = DatasetConfig(name="iland_deed_records", field_mappings=[])
+    processor = DocumentProcessor(config)
+    
+    all_chunks = []
+    
+    for doc in documents:
+        # Get the document ID from database
+        cursor = db_manager.connection.cursor()
+        cursor.execute("SELECT id FROM iland_md_data WHERE deed_id = %s", (doc.metadata.get('deed_id'),))
+        result = cursor.fetchone()
+        cursor.close()
+        
+        if result:
+            parent_doc_id = result[0]
+            
+            # Generate section-based chunks
+            chunks = processor.generate_section_chunks(doc)
+            
+            # Store chunks in database
+            db_manager.insert_chunks(chunks, parent_doc_id)
+            
+            # Add parent_doc_id to chunks for later reference
+            for chunk in chunks:
+                chunk['parent_doc_id'] = parent_doc_id
+            
+            all_chunks.extend(chunks)
+            
+            logger.info(f"Generated {len(chunks)} chunks for document {doc.metadata.get('deed_id')}")
+    
+    return all_chunks
+
+
 def main():
     """Main execution function for iLand dataset processing"""
     
@@ -44,6 +82,8 @@ def main():
                         help='Database port (default: 5432)')
     parser.add_argument('--input-file', type=str, default=None,
                         help='Custom input filename (default: input_dataset_iLand.xlsx)')
+    parser.add_argument('--enable-chunking', action='store_true',
+                        help='Enable section-based chunking for embedding')
     args = parser.parse_args()
     
     # Auto-detect correct paths based on script location
@@ -90,6 +130,17 @@ def main():
     logger.info("Saving documents to PostgreSQL database...")
     inserted_count = converter.save_documents_to_database(documents, batch_size=args.db_batch_size)
     
+    # Setup chunks table if needed
+    if args.enable_chunking:
+        logger.info("Setting up chunks table for section-based storage...")
+        converter.db_manager.setup_chunks_table()
+        
+        # Process documents into chunks
+        logger.info("Processing documents into section-based chunks...")
+        chunks = process_documents_for_embedding(documents, converter.db_manager)
+        logger.info(f"Generated {len(chunks)} total chunks from {len(documents)} documents")
+        logger.info(f"Average chunks per document: {len(chunks) / len(documents) if documents else 0:.1f}")
+    
     # Print summary statistics
     converter.print_summary_statistics(documents)
     
@@ -98,6 +149,9 @@ def main():
     logger.info(f"Configuration: {config.name}")
     logger.info(f"JSONL output: {jsonl_path}")
     logger.info(f"Database insertion: {inserted_count} documents inserted into iland_md_data table")
+    
+    if args.enable_chunking:
+        logger.info(f"Chunks created: {len(chunks)} chunks ready for BGE-M3 embedding")
 
 
 if __name__ == "__main__":

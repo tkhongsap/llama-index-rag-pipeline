@@ -502,4 +502,228 @@ class DatabaseManager:
                 return 'very_large'  # 50+ rai
                 
         except (ValueError, TypeError):
-            return 'unknown' 
+            return 'unknown'
+    
+    def setup_chunks_table(self):
+        """Create the chunks table for storing section-based chunks with embeddings"""
+        if not self.connection:
+            logger.error("No database connection available")
+            return False
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            # Create chunks table for BGE-M3 embeddings
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS iland_chunks (
+                    id SERIAL PRIMARY KEY,
+                    deed_id VARCHAR(255) NOT NULL,
+                    parent_doc_id INTEGER REFERENCES iland_md_data(id),
+                    
+                    -- Chunk content
+                    text TEXT NOT NULL,
+                    embedding_vector REAL[],
+                    
+                    -- Section metadata
+                    section_type VARCHAR(50) NOT NULL,
+                    section_name VARCHAR(100),
+                    chunk_type VARCHAR(20) NOT NULL,
+                    is_primary_chunk BOOLEAN DEFAULT FALSE,
+                    chunk_index INTEGER NOT NULL,
+                    total_chunks INTEGER NOT NULL,
+                    
+                    -- BGE-M3 metadata
+                    embedding_model VARCHAR(50) DEFAULT 'BAAI/bge-m3',
+                    embedding_dim INTEGER DEFAULT 1024,
+                    
+                    -- Full metadata from document
+                    metadata JSONB,
+                    
+                    -- Processing timestamps
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    
+                    CONSTRAINT check_embedding_dim CHECK (
+                        embedding_vector IS NULL OR 
+                        array_length(embedding_vector, 1) = embedding_dim
+                    )
+                );
+            """)
+            
+            # Create indexes for efficient retrieval
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_deed_id ON iland_chunks(deed_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_parent_doc ON iland_chunks(parent_doc_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_section_type ON iland_chunks(section_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_chunk_type ON iland_chunks(chunk_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_primary ON iland_chunks(is_primary_chunk) WHERE is_primary_chunk = TRUE")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_metadata ON iland_chunks USING GIN(metadata)")
+            
+            # Try to add pgvector support if available
+            try:
+                cursor.execute("ALTER TABLE iland_chunks ADD COLUMN IF NOT EXISTS embedding_pgvector vector(1024)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON iland_chunks USING ivfflat (embedding_pgvector vector_cosine_ops)")
+                logger.info("pgVector support enabled for similarity search")
+            except Exception as e:
+                logger.warning(f"Could not add pgVector support: {e}")
+            
+            self.connection.commit()
+            logger.info("Successfully created/updated chunks table for BGE-M3 embeddings")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error setting up chunks table: {e}")
+            self.connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()
+    
+    def insert_chunks(self, chunks: List[Dict[str, Any]], parent_doc_id: int) -> int:
+        """Insert section-based chunks into the chunks table"""
+        if not chunks:
+            return 0
+        
+        if not self.connection:
+            if not self.connect():
+                logger.error("Failed to establish database connection")
+                return 0
+        
+        successful_inserts = 0
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            for chunk in chunks:
+                try:
+                    cursor.execute("""
+                        INSERT INTO iland_chunks 
+                        (deed_id, parent_doc_id, text, section_type, section_name, 
+                         chunk_type, is_primary_chunk, chunk_index, total_chunks, metadata)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        chunk['deed_id'],
+                        parent_doc_id,
+                        chunk['text'],
+                        chunk['section_type'],
+                        chunk.get('section_name'),
+                        chunk['chunk_type'],
+                        chunk.get('is_primary', False),
+                        chunk['chunk_index'],
+                        chunk['total_chunks'],
+                        json.dumps(chunk.get('metadata', {}))
+                    ))
+                    
+                    chunk_id = cursor.fetchone()[0]
+                    successful_inserts += 1
+                    
+                    if successful_inserts <= 3:
+                        logger.info(f"Inserted chunk {chunk_id}: section={chunk['section_type']}, "
+                                  f"type={chunk['chunk_type']}, index={chunk['chunk_index']}/{chunk['total_chunks']}")
+                    
+                except Exception as e:
+                    logger.error(f"Error inserting chunk: {e}")
+            
+            self.connection.commit()
+            logger.info(f"Successfully inserted {successful_inserts}/{len(chunks)} chunks")
+            return successful_inserts
+            
+        except Exception as e:
+            logger.error(f"Error during chunk insertion: {e}")
+            self.connection.rollback()
+            return successful_inserts
+        finally:
+            if cursor:
+                cursor.close()
+    
+    def update_chunk_embeddings(self, chunk_embeddings: List[Dict[str, Any]]) -> int:
+        """Update chunks with BGE-M3 embeddings"""
+        if not chunk_embeddings:
+            return 0
+        
+        if not self.connection:
+            if not self.connect():
+                return 0
+        
+        successful_updates = 0
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            for chunk_data in chunk_embeddings:
+                try:
+                    # Update with embedding vector
+                    cursor.execute("""
+                        UPDATE iland_chunks 
+                        SET embedding_vector = %s,
+                            embedding_model = %s,
+                            embedding_dim = %s,
+                            processed_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (
+                        chunk_data['embedding_vector'],
+                        chunk_data.get('embedding_model', 'BAAI/bge-m3'),
+                        chunk_data.get('embedding_dim', 1024),
+                        chunk_data['chunk_id']
+                    ))
+                    
+                    # Also update pgvector column if available
+                    if 'embedding_pgvector' in chunk_data:
+                        cursor.execute("""
+                            UPDATE iland_chunks 
+                            SET embedding_pgvector = %s
+                            WHERE id = %s
+                        """, (chunk_data['embedding_pgvector'], chunk_data['chunk_id']))
+                    
+                    successful_updates += 1
+                    
+                except Exception as e:
+                    logger.error(f"Error updating chunk {chunk_data.get('chunk_id')} with embedding: {e}")
+            
+            self.connection.commit()
+            logger.info(f"Successfully updated {successful_updates}/{len(chunk_embeddings)} chunks with embeddings")
+            return successful_updates
+            
+        except Exception as e:
+            logger.error(f"Error during embedding update: {e}")
+            self.connection.rollback()
+            return successful_updates
+        finally:
+            if cursor:
+                cursor.close()
+    
+    def get_pending_chunks_for_embedding(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get chunks that need embeddings"""
+        if not self.connection:
+            if not self.connect():
+                return []
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            cursor.execute("""
+                SELECT id, deed_id, text, section_type, chunk_type, metadata
+                FROM iland_chunks
+                WHERE embedding_vector IS NULL
+                LIMIT %s
+            """, (limit,))
+            
+            columns = [desc[0] for desc in cursor.description]
+            chunks = []
+            
+            for row in cursor.fetchall():
+                chunk = dict(zip(columns, row))
+                # Parse JSONB metadata
+                if chunk['metadata']:
+                    chunk['metadata'] = chunk['metadata']
+                chunks.append(chunk)
+            
+            logger.info(f"Found {len(chunks)} chunks pending embedding")
+            return chunks
+            
+        except Exception as e:
+            logger.error(f"Error getting pending chunks: {e}")
+            return []
+        finally:
+            if cursor:
+                cursor.close() 
