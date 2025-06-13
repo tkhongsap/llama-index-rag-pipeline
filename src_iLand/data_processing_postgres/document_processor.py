@@ -12,12 +12,36 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Import section parser for chunking
+StandaloneLandDeedSectionParser = None
+try:
+    # Try absolute import first
+    import sys
+    from pathlib import Path
+    current_dir = Path(__file__).parent.parent
+    sys.path.insert(0, str(current_dir))
+    from docs_embedding_postgres.standalone_section_parser import StandaloneLandDeedSectionParser
+    logger.info("Successfully imported StandaloneLandDeedSectionParser")
+except ImportError as e:
+    logger.warning(f"Could not import StandaloneLandDeedSectionParser: {e}. Section chunking will be disabled")
+    StandaloneLandDeedSectionParser = None
+
 
 class DocumentProcessor:
     """Handles document processing, text generation, and metadata extraction"""
     
     def __init__(self, dataset_config: DatasetConfig):
         self.dataset_config = dataset_config
+        
+        # Initialize section parser if available
+        self.section_parser = None
+        if StandaloneLandDeedSectionParser:
+            self.section_parser = StandaloneLandDeedSectionParser(
+                chunk_size=512,
+                chunk_overlap=50,
+                min_section_size=50
+            )
+            logger.info("Section-based chunking enabled with BGE-M3 optimized settings")
     
     def clean_value(self, value: Any) -> Any:
         """Clean and normalize values for metadata"""
@@ -437,4 +461,58 @@ class DocumentProcessor:
                 return f"iland_{hashlib.md5(id_string.encode()).hexdigest()[:12]}"
             else:
                 # Fallback to timestamp-based ID
-                return f"iland_{datetime.now().strftime('%Y%m%d%H%M%S%f')[:16]}" 
+                return f"iland_{datetime.now().strftime('%Y%m%d%H%M%S%f')[:16]}"
+    
+    def generate_section_chunks(self, document: SimpleDocument) -> List[Dict[str, Any]]:
+        """
+        Generate section-based chunks from a document for BGE-M3 embedding.
+        
+        Returns list of chunks with metadata ready for embedding.
+        """
+        if not self.section_parser:
+            logger.warning("Section parser not available, returning single document")
+            return [{
+                'text': document.text,
+                'metadata': document.metadata,
+                'section_type': 'full_document',
+                'section_name': 'Complete Document',
+                'chunk_type': 'fallback',
+                'is_primary': True,
+                'chunk_index': 0,
+                'total_chunks': 1
+            }]
+        
+        # Parse document into sections
+        sections = self.section_parser.parse_document_to_sections(
+            document_text=document.text,
+            metadata=document.metadata
+        )
+        
+        chunks = []
+        for idx, section_node in enumerate(sections):
+            # Extract section metadata
+            section_metadata = section_node.metadata
+            
+            chunk_data = {
+                'text': section_node.text,
+                'deed_id': document.metadata.get('deed_id'),
+                'section_type': section_metadata.get('section', 'unknown'),
+                'section_name': section_metadata.get('original_header', section_metadata.get('section', 'unknown')),
+                'chunk_type': section_metadata.get('chunk_type', 'section'),
+                'is_primary': section_metadata.get('is_primary_chunk', False),
+                'chunk_index': idx,
+                'total_chunks': len(sections),
+                'metadata': {
+                    **document.metadata,  # Include all document metadata
+                    **section_metadata    # Add section-specific metadata
+                }
+            }
+            chunks.append(chunk_data)
+        
+        # Log chunking statistics
+        stats = self.section_parser.get_chunking_statistics(sections)
+        logger.info(f"Document {document.metadata.get('deed_id', 'unknown')} chunked into {len(chunks)} sections")
+        logger.info(f"Chunk types: {stats['chunk_types']}")
+        logger.info(f"Sections: {stats['sections']}")
+        
+        return chunks 

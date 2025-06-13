@@ -47,7 +47,7 @@ try:
         print("✅ Multi-model embedding support enabled (BGE-M3 + OpenAI)")
     except ImportError:
         # Fallback to original embedding processor
-        from .embedding_processor import EmbeddingProcessor
+        from .embedding_processor import BGEEmbeddingProcessor
         MULTI_MODEL_SUPPORT = False
         print("⚠️ Using legacy OpenAI-only embedding processor")
 except ImportError:
@@ -64,7 +64,7 @@ except ImportError:
             print("✅ Multi-model embedding support enabled (BGE-M3 + OpenAI)")
         except ImportError:
             # Fallback to original embedding processor
-            from embedding_processor import EmbeddingProcessor
+            from embedding_processor import BGEEmbeddingProcessor
             MULTI_MODEL_SUPPORT = False
             print("⚠️ Using legacy OpenAI-only embedding processor")
     except ImportError as e:

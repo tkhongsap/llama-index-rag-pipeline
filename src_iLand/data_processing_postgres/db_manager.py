@@ -110,19 +110,19 @@ class DatabaseManager:
                     );
                 """)
                 
-                # Create indexes for faster lookups and filtering
-                cursor.execute(f"CREATE INDEX idx_{table_name}_deed_id ON {table_name} (deed_id)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_province ON {table_name} (province)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_district ON {table_name} (district)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_land_use ON {table_name} (land_use_category)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_deed_type ON {table_name} (deed_type_category)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_area ON {table_name} (area_category)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_processing_status ON {table_name} (processing_status)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_embedding_status ON {table_name} (embedding_status)")
+                # Create indexes for faster lookups and filtering (use IF NOT EXISTS)
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_deed_id ON {table_name} (deed_id)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_province ON {table_name} (province)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_district ON {table_name} (district)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_land_use ON {table_name} (land_use_category)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_deed_type ON {table_name} (deed_type_category)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_area ON {table_name} (area_category)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_processing_status ON {table_name} (processing_status)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_embedding_status ON {table_name} (embedding_status)")
                 
                 # Create GIN index for JSONB metadata searching
-                cursor.execute(f"CREATE INDEX idx_{table_name}_raw_metadata ON {table_name} USING GIN (raw_metadata)")
-                cursor.execute(f"CREATE INDEX idx_{table_name}_extracted_metadata ON {table_name} USING GIN (extracted_metadata)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_raw_metadata ON {table_name} USING GIN (raw_metadata)")
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_extracted_metadata ON {table_name} USING GIN (extracted_metadata)")
                 
                 # Create trigger for updating timestamp
                 cursor.execute(f"""
@@ -161,6 +161,7 @@ class DatabaseManager:
     
     def _update_table_schema(self, cursor, table_name: str):
         """Update existing table schema with new columns if they don't exist"""
+        # First, update table columns
         try:
             # Get existing columns
             cursor.execute(f"""
@@ -186,44 +187,76 @@ class DatabaseManager:
             }
             
             # Add missing columns
+            columns_added = False
             for column_name, column_type in required_columns.items():
                 if column_name not in existing_columns:
                     cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
                     logger.info(f"Added column {column_name} to {table_name}")
+                    columns_added = True
             
-            # Add missing indexes
-            self._ensure_indexes_exist(cursor, table_name)
+            # Check and add UNIQUE constraint on deed_id if it doesn't exist
+            cursor.execute(f"""
+                SELECT COUNT(*) FROM information_schema.table_constraints 
+                WHERE table_name = '{table_name}' 
+                AND constraint_type = 'UNIQUE' 
+                AND constraint_name LIKE '%deed_id%'
+            """)
+            unique_constraint_exists = cursor.fetchone()[0] > 0
             
-            self.connection.commit()
+            if not unique_constraint_exists:
+                try:
+                    # First check if deed_id column exists
+                    if 'deed_id' in existing_columns or columns_added:
+                        cursor.execute(f"ALTER TABLE {table_name} ADD CONSTRAINT uq_{table_name}_deed_id UNIQUE (deed_id)")
+                        logger.info(f"Added UNIQUE constraint on deed_id for {table_name}")
+                        columns_added = True
+                except Exception as e:
+                    logger.warning(f"Could not add UNIQUE constraint on deed_id: {e}")
+            
+            # Commit column changes first
+            if columns_added:
+                self.connection.commit()
+                logger.info(f"Successfully added missing columns to {table_name}")
             
         except Exception as e:
-            logger.warning(f"Could not update table schema: {e}")
+            logger.warning(f"Could not update table columns: {e}")
+            self.connection.rollback()
+        
+        # Then, create indexes separately
+        try:
+            self._ensure_indexes_exist(cursor, table_name)
+            self.connection.commit()
+            logger.info(f"Index creation completed for {table_name}")
+            
+        except Exception as e:
+            logger.warning(f"Could not create indexes: {e}")
             self.connection.rollback()
     
     def _ensure_indexes_exist(self, cursor, table_name: str):
         """Ensure all required indexes exist"""
-        indexes = [
-            f"idx_{table_name}_province",
-            f"idx_{table_name}_district", 
-            f"idx_{table_name}_land_use",
-            f"idx_{table_name}_deed_type",
-            f"idx_{table_name}_area",
-            f"idx_{table_name}_processing_status",
-            f"idx_{table_name}_embedding_status",
-            f"idx_{table_name}_raw_metadata",
-            f"idx_{table_name}_extracted_metadata"
+        indexes_config = [
+            (f"idx_{table_name}_province", "province"),
+            (f"idx_{table_name}_district", "district"), 
+            (f"idx_{table_name}_land_use_category", "land_use_category"),
+            (f"idx_{table_name}_deed_type_category", "deed_type_category"),
+            (f"idx_{table_name}_area_category", "area_category"),
+            (f"idx_{table_name}_processing_status", "processing_status"),
+            (f"idx_{table_name}_embedding_status", "embedding_status"),
+            (f"idx_{table_name}_raw_metadata", "raw_metadata"),
+            (f"idx_{table_name}_extracted_metadata", "extracted_metadata")
         ]
         
-        for index_name in indexes:
+        for index_name, column_name in indexes_config:
             try:
-                if 'metadata' in index_name:
-                    column = index_name.split('_')[-1]
-                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING GIN ({column})")
+                # Use separate transactions for each index to prevent cascade failures
+                if 'metadata' in column_name:
+                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING GIN ({column_name})")
                 else:
-                    column = index_name.replace(f"idx_{table_name}_", "")
-                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({column})")
+                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({column_name})")
+                # Don't commit here - let the caller handle it
             except Exception as e:
                 logger.warning(f"Could not create index {index_name}: {e}")
+                # Continue with other indexes even if one fails
     
     def close(self):
         """Close database connection"""
@@ -247,13 +280,18 @@ class DatabaseManager:
                 return 0
         
         # Import metadata extractor for enhanced processing
+        ThaiProvinceMapper = None
         try:
-            from ..common.thai_provinces import ThaiProvinceMapper
+            # Try absolute import first
+            import sys
+            from pathlib import Path
+            current_dir = Path(__file__).parent.parent
+            sys.path.insert(0, str(current_dir))
+            from common.thai_provinces import ThaiProvinceMapper
         except ImportError:
             try:
                 from thai_provinces import ThaiProvinceMapper
             except ImportError:
-                ThaiProvinceMapper = None
                 logger.warning("ThaiProvinceMapper not available - province mapping disabled")
         
         successful_inserts = 0
@@ -305,34 +343,51 @@ class DatabaseManager:
                     area_category = extracted_metadata.get('area_category')
                     
                     try:
-                        # Insert into the enhanced iland_md_data table
-                        cursor.execute(
-                            f"""
-                            INSERT INTO {table_name} 
-                            (deed_id, md_string, raw_metadata, extracted_metadata, 
-                             province, district, land_use_category, deed_type_category, area_category,
-                             processing_status, processing_timestamp)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            ON CONFLICT (deed_id) DO UPDATE SET
-                                md_string = EXCLUDED.md_string,
-                                raw_metadata = EXCLUDED.raw_metadata,
-                                extracted_metadata = EXCLUDED.extracted_metadata,
-                                province = EXCLUDED.province,
-                                district = EXCLUDED.district,
-                                land_use_category = EXCLUDED.land_use_category,
-                                deed_type_category = EXCLUDED.deed_type_category,
-                                area_category = EXCLUDED.area_category,
-                                processing_status = EXCLUDED.processing_status,
-                                processing_timestamp = EXCLUDED.processing_timestamp
-                            """,
-                            (deed_id, md_string, raw_metadata, extracted_metadata_json,
-                             province, district, land_use_category, deed_type_category, area_category,
-                             'processed', datetime.now())
-                        )
+                        # First check if the deed_id already exists
+                        cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE deed_id = %s", (deed_id,))
+                        exists = cursor.fetchone()[0] > 0
+                        
+                        if exists:
+                            # Update existing record
+                            cursor.execute(
+                                f"""
+                                UPDATE {table_name} SET
+                                    md_string = %s,
+                                    raw_metadata = %s,
+                                    extracted_metadata = %s,
+                                    province = %s,
+                                    district = %s,
+                                    land_use_category = %s,
+                                    deed_type_category = %s,
+                                    area_category = %s,
+                                    processing_status = %s,
+                                    processing_timestamp = %s
+                                WHERE deed_id = %s
+                                """,
+                                (md_string, raw_metadata, extracted_metadata_json,
+                                 province, district, land_use_category, deed_type_category, area_category,
+                                 'processed', datetime.now(), deed_id)
+                            )
+                        else:
+                            # Insert new record
+                            cursor.execute(
+                                f"""
+                                INSERT INTO {table_name} 
+                                (deed_id, md_string, raw_metadata, extracted_metadata, 
+                                 province, district, land_use_category, deed_type_category, area_category,
+                                 processing_status, processing_timestamp)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                """,
+                                (deed_id, md_string, raw_metadata, extracted_metadata_json,
+                                 province, district, land_use_category, deed_type_category, area_category,
+                                 'processed', datetime.now())
+                            )
+                        
                         successful_inserts += 1
                         
                         if successful_inserts <= 3:  # Log details for first few documents
-                            logger.info(f"Inserted document deed_id: {deed_id}, province: {province}, "
+                            action = "Updated" if exists else "Inserted"
+                            logger.info(f"{action} document deed_id: {deed_id}, province: {province}, "
                                       f"land_use: {land_use_category}, text length: {len(md_string)} chars")
                             
                     except Exception as e:
@@ -362,7 +417,12 @@ class DatabaseManager:
         if province_raw:
             # Try to normalize province name
             try:
-                from ..common.thai_provinces import ThaiProvinceMapper
+                # Try absolute import first
+                import sys
+                from pathlib import Path
+                current_dir = Path(__file__).parent.parent
+                sys.path.insert(0, str(current_dir))
+                from common.thai_provinces import ThaiProvinceMapper
                 mapper = ThaiProvinceMapper()
                 province_normalized = mapper.normalize_province_name(province_raw)
                 extracted['province'] = province_normalized
@@ -452,4 +512,228 @@ class DatabaseManager:
                 return 'very_large'  # 50+ rai
                 
         except (ValueError, TypeError):
-            return 'unknown' 
+            return 'unknown'
+    
+    def setup_chunks_table(self):
+        """Create the chunks table for storing section-based chunks with embeddings"""
+        if not self.connection:
+            logger.error("No database connection available")
+            return False
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            # Create chunks table for BGE-M3 embeddings
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS iland_chunks (
+                    id SERIAL PRIMARY KEY,
+                    deed_id VARCHAR(255) NOT NULL,
+                    parent_doc_id INTEGER REFERENCES iland_md_data(id),
+                    
+                    -- Chunk content
+                    text TEXT NOT NULL,
+                    embedding_vector REAL[],
+                    
+                    -- Section metadata
+                    section_type VARCHAR(50) NOT NULL,
+                    section_name VARCHAR(100),
+                    chunk_type VARCHAR(20) NOT NULL,
+                    is_primary_chunk BOOLEAN DEFAULT FALSE,
+                    chunk_index INTEGER NOT NULL,
+                    total_chunks INTEGER NOT NULL,
+                    
+                    -- BGE-M3 metadata
+                    embedding_model VARCHAR(50) DEFAULT 'BAAI/bge-m3',
+                    embedding_dim INTEGER DEFAULT 1024,
+                    
+                    -- Full metadata from document
+                    metadata JSONB,
+                    
+                    -- Processing timestamps
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    
+                    CONSTRAINT check_embedding_dim CHECK (
+                        embedding_vector IS NULL OR 
+                        array_length(embedding_vector, 1) = embedding_dim
+                    )
+                );
+            """)
+            
+            # Create indexes for efficient retrieval
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_deed_id ON iland_chunks(deed_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_parent_doc ON iland_chunks(parent_doc_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_section_type ON iland_chunks(section_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_chunk_type ON iland_chunks(chunk_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_primary ON iland_chunks(is_primary_chunk) WHERE is_primary_chunk = TRUE")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_metadata ON iland_chunks USING GIN(metadata)")
+            
+            # Try to add pgvector support if available
+            try:
+                cursor.execute("ALTER TABLE iland_chunks ADD COLUMN IF NOT EXISTS embedding_pgvector vector(1024)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON iland_chunks USING ivfflat (embedding_pgvector vector_cosine_ops)")
+                logger.info("pgVector support enabled for similarity search")
+            except Exception as e:
+                logger.warning(f"Could not add pgVector support: {e}")
+            
+            self.connection.commit()
+            logger.info("Successfully created/updated chunks table for BGE-M3 embeddings")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error setting up chunks table: {e}")
+            self.connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()
+    
+    def insert_chunks(self, chunks: List[Dict[str, Any]], parent_doc_id: int) -> int:
+        """Insert section-based chunks into the chunks table"""
+        if not chunks:
+            return 0
+        
+        if not self.connection:
+            if not self.connect():
+                logger.error("Failed to establish database connection")
+                return 0
+        
+        successful_inserts = 0
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            for chunk in chunks:
+                try:
+                    cursor.execute("""
+                        INSERT INTO iland_chunks 
+                        (deed_id, parent_doc_id, text, section_type, section_name, 
+                         chunk_type, is_primary_chunk, chunk_index, total_chunks, metadata)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        chunk['deed_id'],
+                        parent_doc_id,
+                        chunk['text'],
+                        chunk['section_type'],
+                        chunk.get('section_name'),
+                        chunk['chunk_type'],
+                        chunk.get('is_primary', False),
+                        chunk['chunk_index'],
+                        chunk['total_chunks'],
+                        json.dumps(chunk.get('metadata', {}))
+                    ))
+                    
+                    chunk_id = cursor.fetchone()[0]
+                    successful_inserts += 1
+                    
+                    if successful_inserts <= 3:
+                        logger.info(f"Inserted chunk {chunk_id}: section={chunk['section_type']}, "
+                                  f"type={chunk['chunk_type']}, index={chunk['chunk_index']}/{chunk['total_chunks']}")
+                    
+                except Exception as e:
+                    logger.error(f"Error inserting chunk: {e}")
+            
+            self.connection.commit()
+            logger.info(f"Successfully inserted {successful_inserts}/{len(chunks)} chunks")
+            return successful_inserts
+            
+        except Exception as e:
+            logger.error(f"Error during chunk insertion: {e}")
+            self.connection.rollback()
+            return successful_inserts
+        finally:
+            if cursor:
+                cursor.close()
+    
+    def update_chunk_embeddings(self, chunk_embeddings: List[Dict[str, Any]]) -> int:
+        """Update chunks with BGE-M3 embeddings"""
+        if not chunk_embeddings:
+            return 0
+        
+        if not self.connection:
+            if not self.connect():
+                return 0
+        
+        successful_updates = 0
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            for chunk_data in chunk_embeddings:
+                try:
+                    # Update with embedding vector
+                    cursor.execute("""
+                        UPDATE iland_chunks 
+                        SET embedding_vector = %s,
+                            embedding_model = %s,
+                            embedding_dim = %s,
+                            processed_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (
+                        chunk_data['embedding_vector'],
+                        chunk_data.get('embedding_model', 'BAAI/bge-m3'),
+                        chunk_data.get('embedding_dim', 1024),
+                        chunk_data['chunk_id']
+                    ))
+                    
+                    # Also update pgvector column if available
+                    if 'embedding_pgvector' in chunk_data:
+                        cursor.execute("""
+                            UPDATE iland_chunks 
+                            SET embedding_pgvector = %s
+                            WHERE id = %s
+                        """, (chunk_data['embedding_pgvector'], chunk_data['chunk_id']))
+                    
+                    successful_updates += 1
+                    
+                except Exception as e:
+                    logger.error(f"Error updating chunk {chunk_data.get('chunk_id')} with embedding: {e}")
+            
+            self.connection.commit()
+            logger.info(f"Successfully updated {successful_updates}/{len(chunk_embeddings)} chunks with embeddings")
+            return successful_updates
+            
+        except Exception as e:
+            logger.error(f"Error during embedding update: {e}")
+            self.connection.rollback()
+            return successful_updates
+        finally:
+            if cursor:
+                cursor.close()
+    
+    def get_pending_chunks_for_embedding(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get chunks that need embeddings"""
+        if not self.connection:
+            if not self.connect():
+                return []
+        
+        try:
+            cursor = self.connection.cursor()
+            
+            cursor.execute("""
+                SELECT id, deed_id, text, section_type, chunk_type, metadata
+                FROM iland_chunks
+                WHERE embedding_vector IS NULL
+                LIMIT %s
+            """, (limit,))
+            
+            columns = [desc[0] for desc in cursor.description]
+            chunks = []
+            
+            for row in cursor.fetchall():
+                chunk = dict(zip(columns, row))
+                # Parse JSONB metadata
+                if chunk['metadata']:
+                    chunk['metadata'] = chunk['metadata']
+                chunks.append(chunk)
+            
+            logger.info(f"Found {len(chunks)} chunks pending embedding")
+            return chunks
+            
+        except Exception as e:
+            logger.error(f"Error getting pending chunks: {e}")
+            return []
+        finally:
+            if cursor:
+                cursor.close() 
