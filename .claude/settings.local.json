@@ -2,6 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
       "Bash(touch:*)"
     ],
     "deny": []
