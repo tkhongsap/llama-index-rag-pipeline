@@ -6,7 +6,8 @@
       "Bash(python3:*)",
       "Bash(pip3 install:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }

@@ -24,6 +24,7 @@ accelerate==1.7.0
 # PostgreSQL and Database Dependencies
 psycopg2-binary==2.9.10
 llama-index-vector-stores-postgres==0.5.3
+chardet==5.2.0
 asyncpg==0.30.0
 pgvector==0.4.1
 sqlalchemy==2.0.36
