@@ -124,6 +124,46 @@ Typical join coverage rates (based on sample verification):
 - Material descriptions: 100%
 - Customer names: 99%
 
+## Monthly File Enrichment
+
+The `enrich_monthly.py` script enriches individual monthly transaction files with master data descriptions, providing month-level granular analysis capabilities.
+
+### Usage
+
+```bash
+# Enrich all file types for January 2025
+python3 enrich_monthly.py --month 202501
+
+# Enrich specific file type
+python3 enrich_monthly.py --month 202501 --type actual_gl
+
+# Enrich all months (all 52 files)
+python3 enrich_monthly.py --all
+
+# Enrich month range
+python3 enrich_monthly.py --from 202401 --to 202501
+```
+
+### Output Structure
+
+Enriched monthly files are saved in `monthly/enriched/` directory with naming pattern: `{OriginalName}_enriched.txt`
+
+**Example for January 2025:**
+- `Actual_GL_202501_enriched.txt` (27.6 MB, 19 columns)
+- `Actual_Sale_202501_enriched.txt` (4.2 MB, 24 columns)
+- `Actual_Sale_Billing_202501_enriched.txt` (4.2 MB, 51 columns)
+- `Cost_Alloc_202501_enriched.txt` (1.9 MB, 17 columns)
+
+**Total enriched size per month:** ~38 MB
+
+### Benefits of Monthly Enrichment
+
+- ✅ Smaller file sizes for targeted month analysis
+- ✅ Faster loading and processing
+- ✅ Month-by-month comparison capabilities
+- ✅ Same enrichment quality as consolidated files
+- ✅ Flexible CLI for various use cases
+
 ## File Format
 
 All transaction files use tab-delimited format with headers.
