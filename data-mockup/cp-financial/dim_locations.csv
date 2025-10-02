@@ -1,0 +1,73 @@
+location_id,store_code,store_name,store_name_thai,district,province,region,lat,lon,store_type,store_format,open_date,area_sqm,active
+LOC-00001,7E-BKK-0001,7-Eleven Sukhumvit 11,เซเว่น อีเลฟเว่น สุขุมวิท 11,Watthana,Bangkok,Central,13.7437,100.5551,Convenience,7-Eleven,2010-03-15,120,TRUE
+LOC-00002,7E-BKK-0002,7-Eleven Silom Complex,เซเว่น อีเลฟเว่น สีลมคอมเพล็กซ์,Bang Rak,Bangkok,Central,13.7289,100.5229,Convenience,7-Eleven,2009-06-20,95,TRUE
+LOC-00003,7E-BKK-0003,7-Eleven Siam Square,เซเว่น อีเลฟเว่น สยามสแควร์,Pathum Wan,Bangkok,Central,13.7461,100.5345,Convenience,7-Eleven,2008-11-10,110,TRUE
+LOC-00004,7E-BKK-0004,7-Eleven Ratchada 3,เซเว่น อีเลฟเว่น รัชดา 3,Huai Khwang,Bangkok,Central,13.7653,100.5722,Convenience,7-Eleven,2011-02-28,105,TRUE
+LOC-00005,7E-BKK-0005,7-Eleven Sathorn,เซเว่น อีเลฟเว่น สาทร,Sathon,Bangkok,Central,13.7208,100.5310,Convenience,7-Eleven,2012-08-12,130,TRUE
+LOC-00006,7E-BKK-0006,7-Eleven Asoke,เซเว่น อีเลฟเว่น อโศก,Watthana,Bangkok,Central,13.7368,100.5603,Convenience,7-Eleven,2010-05-18,115,TRUE
+LOC-00007,7E-BKK-0007,7-Eleven Thonglor 13,เซเว่น อีเลฟเว่น ทองหล่อ 13,Watthana,Bangkok,Central,13.7349,100.5738,Convenience,7-Eleven,2013-01-20,100,TRUE
+LOC-00008,7E-BKK-0008,7-Eleven Phahonyothin 32,เซเว่น อีเลฟเว่น พหลโยธิน 32,Chatuchak,Bangkok,Central,13.8113,100.5563,Convenience,7-Eleven,2009-09-05,108,TRUE
+LOC-00009,7E-BKK-0009,7-Eleven Rama 9 Tower,เซเว่น อีเลฟเว่น พระราม 9 ทาวเวอร์,Huai Khwang,Bangkok,Central,13.7594,100.5650,Convenience,7-Eleven,2014-07-22,125,TRUE
+LOC-00010,7E-BKK-0010,7-Eleven Bearing BTS,เซเว่น อีเลฟเว่น แบริ่ง BTS,Bang Na,Bangkok,Central,13.6622,100.6104,Convenience,7-Eleven,2015-03-10,92,TRUE
+LOC-00011,7E-BKK-0011,7-Eleven Lat Phrao 101,เซเว่น อีเลฟเว่น ลาดพร้าว 101,Wang Thonglang,Bangkok,Central,13.7695,100.6073,Convenience,7-Eleven,2011-11-08,98,TRUE
+LOC-00012,7E-BKK-0012,7-Eleven Bang Khae Market,เซเว่น อีเลฟเว่น ตลาดบางแค,Bang Khae,Bangkok,Central,13.7108,100.3982,Convenience,7-Eleven,2010-04-25,105,TRUE
+LOC-00013,7E-BKK-0013,7-Eleven Don Mueang Airport,เซเว่น อีเลฟเว่น ดอนเมือง,Don Mueang,Bangkok,Central,13.9126,100.6064,Convenience,7-Eleven,2016-02-14,140,TRUE
+LOC-00014,7E-BKK-0014,7-Eleven Ari Soi 1,เซเว่น อีเลฟเว่น อารีย์ ซอย 1,Phaya Thai,Bangkok,Central,13.7792,100.5429,Convenience,7-Eleven,2012-06-30,95,TRUE
+LOC-00015,7E-BKK-0015,7-Eleven MRT Phra Ram 9,เซเว่น อีเลฟเว่น MRT พระราม 9,Huai Khwang,Bangkok,Central,13.7594,100.5640,Convenience,7-Eleven,2016-08-19,112,TRUE
+LOC-00016,7E-NTB-0001,7-Eleven Impact Muang Thong,เซเว่น อีเลฟเว่น อิมแพ็ค เมืองทอง,Pak Kret,Nonthaburi,Central,13.9085,100.5507,Convenience,7-Eleven,2011-10-12,118,TRUE
+LOC-00017,7E-NTB-0002,7-Eleven Tiwanon Road,เซเว่น อีเลฟเว่น ถนนติวานนท์,Mueang Nonthaburi,Nonthaburi,Central,13.8657,100.5149,Convenience,7-Eleven,2010-07-08,102,TRUE
+LOC-00018,7E-NTB-0003,7-Eleven Bang Yai,เซเว่น อีเลฟเว่น บางใหญ่,Bang Yai,Nonthaburi,Central,13.8589,100.4025,Convenience,7-Eleven,2013-03-22,96,TRUE
+LOC-00019,7E-PTN-0001,7-Eleven Future Park Rangsit,เซเว่น อีเลฟเว่น ฟิวเจอร์พาร์ค รังสิต,Thanyaburi,Pathum Thani,Central,14.0363,100.6208,Convenience,7-Eleven,2012-05-15,135,TRUE
+LOC-00020,7E-PTN-0002,7-Eleven Rangsit Klong 3,เซเว่น อีเลฟเว่น รังสิต คลอง 3,Thanyaburi,Pathum Thani,Central,14.0471,100.6113,Convenience,7-Eleven,2011-09-20,100,TRUE
+LOC-00021,7E-SPK-0001,7-Eleven Mega Bangna,เซเว่น อีเลฟเว่น เมกา บางนา,Bang Phli,Samut Prakan,Central,13.6682,100.7315,Convenience,7-Eleven,2014-11-28,128,TRUE
+LOC-00022,7E-SPK-0002,7-Eleven Bearing Station,เซเว่น อีเลฟเว่น แบริ่ง สเตชั่น,Bang Phli,Samut Prakan,Central,13.6622,100.6094,Convenience,7-Eleven,2013-04-10,110,TRUE
+LOC-00023,7E-SPK-0003,7-Eleven Suvarnabhumi Airport,เซเว่น อีเลฟเว่น สุวรรณภูมิ,Bang Phli,Samut Prakan,Central,13.6900,100.7501,Convenience,7-Eleven,2015-12-05,145,TRUE
+LOC-00024,7E-CMI-0001,7-Eleven Nimman Soi 1,เซเว่น อีเลฟเว่น นิมมาน ซอย 1,Mueang Chiang Mai,Chiang Mai,North,18.7964,98.9681,Convenience,7-Eleven,2010-02-18,105,TRUE
+LOC-00025,7E-CMI-0002,7-Eleven Maya Lifestyle,เซเว่น อีเลฟเว่น มายา ไลฟ์สไตล์,Mueang Chiang Mai,Chiang Mai,North,18.8023,98.9673,Convenience,7-Eleven,2013-08-22,115,TRUE
+LOC-00026,7E-CMI-0003,7-Eleven Chang Puak Gate,เซเว่น อีเลฟเว่น ประตูช้างเผือก,Mueang Chiang Mai,Chiang Mai,North,18.8007,98.9836,Convenience,7-Eleven,2009-11-30,92,TRUE
+LOC-00027,7E-CMI-0004,7-Eleven Airport Plaza,เซเว่น อีเลฟเว่น แอร์พอร์ต พลาซ่า,Mueang Chiang Mai,Chiang Mai,North,18.7713,98.9624,Convenience,7-Eleven,2011-06-12,108,TRUE
+LOC-00028,7E-CRI-0001,7-Eleven Central Chiang Rai,เซเว่น อีเลฟเว่น เซ็นทรัล เชียงราย,Mueang Chiang Rai,Chiang Rai,North,19.9103,99.8313,Convenience,7-Eleven,2012-09-08,110,TRUE
+LOC-00029,7E-CRI-0002,7-Eleven Night Bazaar CR,เซเว่น อีเลฟเว่น ไนท์บาซาร์ เชียงราย,Mueang Chiang Rai,Chiang Rai,North,19.9082,99.8353,Convenience,7-Eleven,2010-05-20,95,TRUE
+LOC-00030,7E-LPG-0001,7-Eleven Lampang Center,เซเว่น อีเลฟเว่น ลำปาง เซ็นเตอร์,Mueang Lampang,Lampang,North,18.2882,99.4930,Convenience,7-Eleven,2011-04-15,100,TRUE
+LOC-00031,7E-KKN-0001,7-Eleven Central Plaza KK,เซเว่น อีเลฟเว่น เซ็นทรัล พลาซ่า ขอนแก่น,Mueang Khon Kaen,Khon Kaen,Northeast,16.4322,102.8359,Convenience,7-Eleven,2013-01-10,120,TRUE
+LOC-00032,7E-KKN-0002,7-Eleven KKU Front Gate,เซเว่น อีเลฟเว่น มข. ประตูหน้า,Mueang Khon Kaen,Khon Kaen,Northeast,16.4703,102.8228,Convenience,7-Eleven,2009-08-25,98,TRUE
+LOC-00033,7E-KKN-0003,7-Eleven Fairy Plaza,เซเว่น อีเลฟเว่น แฟรี่ พลาซ่า,Mueang Khon Kaen,Khon Kaen,Northeast,16.4361,102.8312,Convenience,7-Eleven,2012-03-18,105,TRUE
+LOC-00034,7E-NMA-0001,7-Eleven Terminal 21 Korat,เซเว่น อีเลฟเว่น เทอร์มินอล 21 โคราช,Mueang Nakhon Ratchasima,Nakhon Ratchasima,Northeast,14.9711,102.0961,Convenience,7-Eleven,2014-10-20,125,TRUE
+LOC-00035,7E-NMA-0002,7-Eleven Korat Gateway,เซเว่น อีเลฟเว่น โคราช เกตเวย์,Mueang Nakhon Ratchasima,Nakhon Ratchasima,Northeast,14.9717,102.0774,Convenience,7-Eleven,2011-12-08,112,TRUE
+LOC-00036,7E-UDN-0001,7-Eleven UD Town,เซเว่น อีเลฟเว่น ยูดี ทาวน์,Mueang Udon Thani,Udon Thani,Northeast,17.4131,102.7876,Convenience,7-Eleven,2013-05-22,108,TRUE
+LOC-00037,7E-UDN-0002,7-Eleven Central Udon,เซเว่น อีเลฟเว่น เซ็นทรัล อุดร,Mueang Udon Thani,Udon Thani,Northeast,17.3897,102.8156,Convenience,7-Eleven,2015-02-14,115,TRUE
+LOC-00038,7E-PKT-0001,7-Eleven Patong Beach,เซเว่น อีเลฟเว่น ป่าตอง บีช,Kathu,Phuket,South,7.8971,98.2966,Convenience,7-Eleven,2010-11-18,110,TRUE
+LOC-00039,7E-PKT-0002,7-Eleven Central Phuket,เซเว่น อีเลฟเว่น เซ็นทรัล ภูเก็ต,Mueang Phuket,Phuket,South,7.8915,98.3847,Convenience,7-Eleven,2012-07-25,118,TRUE
+LOC-00040,7E-PKT-0003,7-Eleven Phuket Airport,เซเว่น อีเลฟเว่น สนามบินภูเก็ต,Thalang,Phuket,South,8.1063,98.3067,Convenience,7-Eleven,2015-09-10,135,TRUE
+LOC-00041,7E-SRT-0001,7-Eleven Central Suratthani,เซเว่น อีเลฟเว่น เซ็นทรัล สุราษฎร์,Mueang Surat Thani,Surat Thani,South,9.1332,99.3295,Convenience,7-Eleven,2011-03-20,102,TRUE
+LOC-00042,7E-SRT-0002,7-Eleven Tapi Riverfront,เซเว่น อีเลฟเว่น ริเวอร์ฟร้อนท์ ตาปี,Mueang Surat Thani,Surat Thani,South,9.1397,99.3211,Convenience,7-Eleven,2013-08-15,95,TRUE
+LOC-00043,7E-SKA-0001,7-Eleven Hat Yai Plaza,เซเว่น อีเลฟเว่น หาดใหญ่ พลาซ่า,Hat Yai,Songkhla,South,7.0089,100.4760,Convenience,7-Eleven,2010-06-12,108,TRUE
+LOC-00044,7E-SKA-0002,7-Eleven Central Hat Yai,เซเว่น อีเลฟเว่น เซ็นทรัล หาดใหญ่,Hat Yai,Songkhla,South,7.0186,100.4724,Convenience,7-Eleven,2014-04-28,120,TRUE
+LOC-00045,7E-CBI-0001,7-Eleven Central Pattaya,เซเว่น อีเลฟเว่น เซ็นทรัล พัทยา,Bang Lamung,Chonburi,East,12.9275,100.8842,Convenience,7-Eleven,2011-05-10,115,TRUE
+LOC-00046,7E-CBI-0002,7-Eleven Pattaya Beach Rd,เซเว่น อีเลฟเว่น พัทยา บีช โร้ด,Bang Lamung,Chonburi,East,12.9311,100.8831,Convenience,7-Eleven,2009-09-22,100,TRUE
+LOC-00047,7E-CBI-0003,7-Eleven Sriracha Motorway,เซเว่น อีเลฟเว่น ศรีราชา มอเตอร์เวย์,Si Racha,Chonburi,East,13.1746,100.9298,Convenience,7-Eleven,2012-11-08,105,TRUE
+LOC-00048,7E-RYG-0001,7-Eleven Rayong City,เซเว่น อีเลฟเว่น ระยอง ซิตี้,Mueang Rayong,Rayong,East,12.6810,101.2818,Convenience,7-Eleven,2013-02-18,98,TRUE
+LOC-00049,7E-RYG-0002,7-Eleven Map Ta Phut,เซเว่น อีเลฟเว่น มาบตาพุด,Mueang Rayong,Rayong,East,12.6445,101.1630,Convenience,7-Eleven,2014-07-30,110,TRUE
+LOC-00050,7E-CTI-0001,7-Eleven Chanthaburi Gem,เซเว่น อีเลฟเว่น จันทบุรี เจม,Mueang Chanthaburi,Chanthaburi,East,12.6112,102.1037,Convenience,7-Eleven,2011-10-25,92,TRUE
+LOC-01001,MK-BKK-001,Makro Ratchada,แม็คโคร รัชดา,Huai Khwang,Bangkok,Central,13.7594,100.5750,Wholesale,Makro,2008-03-15,8500,TRUE
+LOC-01002,MK-BKK-002,Makro Bangna,แม็คโคร บางนา,Bang Na,Bangkok,Central,13.6622,100.6204,Wholesale,Makro,2009-07-20,9200,TRUE
+LOC-01003,MK-BKK-003,Makro Rama 2,แม็คโคร พระราม 2,Bang Khun Thian,Bangkok,Central,13.6489,100.4358,Wholesale,Makro,2010-11-10,8800,TRUE
+LOC-01004,MK-NTB-001,Makro Chaengwatthana,แม็คโคร แจ้งวัฒนะ,Pak Kret,Nonthaburi,Central,13.9085,100.5307,Wholesale,Makro,2011-05-18,9500,TRUE
+LOC-01005,MK-PTN-001,Makro Rangsit,แม็คโคร รังสิต,Thanyaburi,Pathum Thani,Central,14.0363,100.6108,Wholesale,Makro,2012-02-28,9000,TRUE
+LOC-01006,MK-CMI-001,Makro Chiang Mai,แม็คโคร เชียงใหม่,Mueang Chiang Mai,Chiang Mai,North,18.7713,98.9524,Wholesale,Makro,2010-08-12,8200,TRUE
+LOC-01007,MK-KKN-001,Makro Khon Kaen,แม็คโคร ขอนแก่น,Mueang Khon Kaen,Khon Kaen,Northeast,16.4322,102.8259,Wholesale,Makro,2011-01-20,8400,TRUE
+LOC-01008,MK-NMA-001,Makro Nakhon Ratchasima,แม็คโคร นครราชสีมา,Mueang Nakhon Ratchasima,Nakhon Ratchasima,Northeast,14.9711,102.0861,Wholesale,Makro,2009-09-05,8600,TRUE
+LOC-01009,MK-PKT-001,Makro Phuket,แม็คโคร ภูเก็ต,Mueang Phuket,Phuket,South,7.8915,98.3747,Wholesale,Makro,2014-07-22,8300,TRUE
+LOC-01010,MK-SRT-001,Makro Surat Thani,แม็คโคร สุราษฎร์ธานี,Mueang Surat Thani,Surat Thani,South,9.1332,99.3195,Wholesale,Makro,2015-03-10,8100,TRUE
+LOC-01011,MK-CBI-001,Makro Chonburi,แม็คโคร ชลบุรี,Mueang Chonburi,Chonburi,East,13.3563,100.9846,Wholesale,Makro,2011-11-08,8700,TRUE
+LOC-01012,MK-RYG-001,Makro Rayong,แม็คโคร ระยอง,Mueang Rayong,Rayong,East,12.6810,101.2718,Wholesale,Makro,2013-04-25,8500,TRUE
+LOC-02001,LS-BKK-001,Lotus's Bangkapi,โลตัส บางกะปิ,Bueng Kum,Bangkok,Central,13.7738,100.6437,Retail,Lotus's,2007-02-14,15000,TRUE
+LOC-02002,LS-BKK-002,Lotus's Rama 1,โลตัส พระราม 1,Pathum Wan,Bangkok,Central,13.7461,100.5245,Retail,Lotus's,2008-06-30,18500,TRUE
+LOC-02003,LS-BKK-003,Lotus's Onnut,โลตัส อ่อนนุช,Prawet,Bangkok,Central,13.6984,100.6064,Retail,Lotus's,2009-10-12,16200,TRUE
+LOC-02004,LS-NTB-001,Lotus's Nonthaburi,โลตัส นนทบุรี,Mueang Nonthaburi,Nonthaburi,Central,13.8657,100.5049,Retail,Lotus's,2010-05-15,17800,TRUE
+LOC-02005,LS-PTN-001,Lotus's Pathum Thani,โลตัส ปทุมธานี,Thanyaburi,Pathum Thani,Central,14.0363,100.6008,Retail,Lotus's,2011-09-20,16500,TRUE
+LOC-02006,LS-CMI-001,Lotus's Chiang Mai,โลตัส เชียงใหม่,Mueang Chiang Mai,Chiang Mai,North,18.7713,98.9424,Retail,Lotus's,2012-03-08,16000,TRUE
+LOC-02007,LS-KKN-001,Lotus's Khon Kaen,โลตัส ขอนแก่น,Mueang Khon Kaen,Khon Kaen,Northeast,16.4322,102.8159,Retail,Lotus's,2010-11-28,15800,TRUE
+LOC-02008,LS-NMA-001,Lotus's Nakhon Ratchasima,โลตัส นครราชสีมา,Mueang Nakhon Ratchasima,Nakhon Ratchasima,Northeast,14.9711,102.0761,Retail,Lotus's,2009-07-15,17200,TRUE
+LOC-02009,LS-PKT-001,Lotus's Phuket,โลตัส ภูเก็ต,Mueang Phuket,Phuket,South,7.8915,98.3647,Retail,Lotus's,2013-04-10,16800,TRUE
+LOC-02010,LS-CBI-001,Lotus's Chonburi,โลตัส ชลบุรี,Mueang Chonburi,Chonburi,East,13.3563,100.9746,Retail,Lotus's,2014-12-05,17500,TRUE

@@ -1,0 +1,89 @@
+CoCd	Cost Center	Name	Description	Profit Center	Person Responsible	Valid From	Valid To	Actual: Primary Costs (Lock Indicator)	Actual: Revenues (Lock Indicator)	Actual: Secondary Costs (Lock Indicator)	Commitments Update (Lock Indicator)	Plan: Primary Costs (Lock Indicator)	Plan: Revenues (Lock Indicator)	Plan: Secondary Costs (Lock Indicator)
+8993	0008993327	Bangna Operation Fl6	Bangna Operation Floor 6	0000899300	Bangna Operation Fl6	19000101	99991231							
+8993	0008993324	Sales External	Commercial - Sales External	0000899304	Sales External	19000101	99991231	X	X	X		X	X	X
+8993	0008993401	Finance & Corporate	Finance & Corporate Services	0000899304	Finance & Corporate	19000101	99991231							
+8993	0008993602	Outsourcing Services	MD Office - Outsourcing Services	0000899302	Outsourcing Services	19000101	99991231							
+8993	0008993603	Commercial Support	Commercial - Commercial Support	0000899303	Commercial Support	19000101	99991231							
+8993	0008993605	Technical & Network	Operation - Technical & Network Service	0000899303	Technical & Network	19000101	99991231							
+8993	0008993606	Consulting Business	Consulting Management - Business Service	0000899302	Consulting Business	19000101	99991231							
+8993	0008993607	Operation-E-Business	Operation - E-Business	0000899303	Operation-E-Business	19000101	99991231							
+8993	0008993608	Operation - GIS	Operation - GIS	0000899303	Operation - GIS	19000101	99991231							
+8993	899332A	Allocate by Power	Allocate by Power Capacity	0000899300	Allocate by Power	19000101	99991231							
+8993	899332B	Allocate by Chiller	Allocate by Chiller, UPS	0000899300	Allocate by Chiller	19000101	99991231							
+8993	899332C	Allocate by Power Ex	Allocate by Power Expansion	0000899300	Allocate by Power Ex	19000101	99991231							
+8993	899335A	Allocate by Inter	Allocateby B/W Inter	0000899300	Allocate by Inter	19000101	99991231							
+8993	0008993311	Empire DC Operation	Operation - Empire DC Operation	0000899300	Empire DC Operation	19000101	99991231							
+8993	899335B	Allocate by Domestic	Allocate by B/W Domestic	0000899300	Allocate by Domestic	19000101	99991231							
+8993	899335C	Allocate by Asset DP	Allocate by Asset DP	0000899300	Allocate by Asset DP	19000101	99991231							
+8993	899335D	Allocate by IIG	Allocate by IIG	0000899300	Allocate by IIG	19000101	99991231							
+8993	899365B	Allocate by Network2	Allocate by Rack-Network2	0000899303	Allocate by Network2	19000101	99991231							
+8993	899365C	Allocate by Network3	Allocate by Rack-Network3	0000899303	Allocate by Network3	19000101	99991231							
+8993	899365D	Allocate by Network4	Allocate by Rack-Network4	0000899303	Allocate by Network4	19000101	99991231							
+8993	899365E	Allocate by Network5	Allocate by Rack-Network5	0000899303	Allocate by Network5	19000101	99991231							
+8993	0008993326	Bangna Operation Fl5	Bangna Operation Floor 5	0000899300	Bangna Operation Fl5	19000101	99991231							
+8993	0008993501	MD Office	MD Office	0000899304	MD Office	19000101	99991231							
+8993	899365F	Allocate by Network6	Allocate by Rack-Network6	0000899303	Allocate by Network6	19000101	99991231							
+8993	899365G	Allocate by Network7	Allocate by Rack-Network7	0000899303	Allocate by Network7	19000101	99991231							
+8993	899365H	Allocate by Network8	Allocate by Rack-Network8	0000899303	Allocate by Network8	19000101	99991231							
+8993	899365I	Allocate by Network9	Allocate by Rack-Network9	0000899303	Allocate by Network9	19000101	99991231							
+8993	899365J	Allocate byNetwork10	Allocate by Rack-Network10	0000899303	Allocate byNetwork10	19000101	99991231							
+8993	0008993801	EPS-PS (OTHERS)	EPS-PS (OTHERS)	0000899302	EPS-PS (OTHERS)	19000101	99991231							
+8993	0008993610	Security Solution	Security Solution	0000899303	Security Solution	20200101	99991231							
+8993	0008993811	EPS-PS (Internal)	EPS-PS (Internal)	0000899302	EPS-PS (Internal)	20190101	99991231							
+8993	0008993812	EPS-AMS (Internal)	EPS-AMS (Internal)	0000899302	Consulting-BI	20190101	99991231							
+8993	899365K	Allocate byNetwork11	Allocate by Rack-Network11	0000899303	Allocate byNetwork11	19000101	99991231							
+8993	899365L	Allocate byNetwork12	Allocate by Rack-Network12	0000899303	Allocate byNetwork12	19000101	99991231							
+8993	0008993328	Bangna Operation 3.2	Bangna Operation Floor 3.2	0000899300	Bangna Operation 3.2	19000101	99991231							
+8993	0008993330	Krones Showroom	Krones Showroom	0000899300	Krones Showroom	19000101	99991231							
+8993	0008993821	EPS-PS (PRESALES)	EPS-PS (PRESALES)	0000899302	EPS-PS (PRESALES)	20190101	99991231							
+8993	0008993822	EPS-AMS(PRESALES)	EPS-AMS(PRESALES)	0000899302	EPS-AMS(PRESALES)	20190101	99991231							
+8993	0008993902	Standardize Assuranc	Standardize Assuranc	0000899303	Standardize Assuranc	20200201	99991231							
+8993	0008993316	Sales Internal	Commercial - Sales Internal	0000899304	Sales Internal	19000101	99991231							
+8993	0008993103	Solution Dev 1	Solution Development 1	0000899300	Solution Dev 1	20190101	99991231							
+8993	0008993901	Communication	Corporat-Communication	0000899304	Communication	19000101	99991231							
+8993	0008993107	Command Center	Command Center (One Bangkok Project)	0000899303	Command Center	20240101	99991231							
+8993	899360A	Allocate PALO ETDC	Allocate Cost PALO ETDC	0000899303	Allocate PALO ETDC	19000101	99991231							
+8993	899360B	Allocate PALO BNDC	Allocate Cost PALO BNDC	0000899303	Allocate PALO BNDC	19000101	99991231							
+8993	0008993701	Presales & PM	Project Management Office-Presales &PM	0000899304	Presales & PM	19000101	99991231							
+8993	0008993802	EPS-AMS (OTHERS)	EPS-AMS (OTHERS)	0000899302	EPS-AMS (OTHERS)	20200201	99991231							
+8993	0008993005	CPU	CPU	0000899300	CPU	19000101	99991231							
+8993	0008993001	SAP	SAP	0000899300	SAP	19000101	99991231							
+8993	899365A	Allocate by Network1	Allocate by Rack-Network1	0000899303	Allocate by Network1	19000101	99991231							
+8993	0008993102	MD Office - Kidney	MD Office - Kidney	0000899302	MD Office - Kidney	19000101	99991231							
+8993	0008993201	Product	Commercial - Product	0000899304	Product	19000101	99991231							
+8993	0008993003	PR Cloud-Technical	PR Cloud-Technical	0000899300	PR Cloud-Technical	19000101	99991231							
+8993	0008993910	CM-Corporate	CM-Corporate		CM-Corporate	19000101	99991231		X				X	
+8993	0008993329	Customer Care	Operation -Customer Care & Service Desk	0000899304	Customer Care	19000101	99991231							
+8993	0008993072	STR-PR Cloud	STR-PR Cloud	0000899300	STR-PR Cloud	19000101	99991231							
+8993	0008993004	Cloud Center	Cloud Center	0000899300	Cloud Center	19000101	99991231							
+8993	0008993006	RAM	RAM	0000899300	RAM	19000101	99991231							
+8993	0008993007	Storage	Storage	0000899300	Storage	19000101	99991231							
+8993	0008993008	Public Cloud-NGP	Public Cloud-NGP	0000899300	Public Cloud-NGP	19000101	99991231							
+8993	0008993051	CPU-SAP	CPU-SAP	0000899300	CPU-SAP	19000101	99991231							
+8993	0008993052	CPU-PR Cloud	CPU-PR Cloud	0000899300	CPU-PR Cloud	19000101	99991231							
+8993	0008993061	RAM-SAP	RAM-SAP	0000899300	RAM-SAP	19000101	99991231							
+8993	0008993062	RAM-PR Cloud	RAM-PR Cloud	0000899300	RAM-PR Cloud	19000101	99991231							
+8993	0008993071	STR-SAP	STR-SAP	0000899300	STR-SAP	19000101	99991231							
+8993	0008993002	PR Cloud-Support	PR Cloud-Support	0000899303	PR Cloud-Support	19000101	99991231							
+8993	0008993321	Bangna Operation Fl2	Bangna Operation Floor 2	0000899300	Bangna Operation Fl2	19000101	99991231							
+8993	0008993322	Bangna DC Operation	Operation - Bangna DC Operation	0000899300	Bangna DC Operation	19000101	99991231							
+8993	899335F	Allocate by BKKRing	Allocate by BKKRing	0000899300	Allocate by BKKRing	20230701	99991231							
+8993	0008993323	Bangna Operation Fl4	Bangna Operation Floor 4	0000899300	Bangna Operation Fl4	19000101	99991231							
+8993	0008993325	Amata DC Operation	Operation - Amata DC Operation	0000899300	Amata DC Operation	19000101	99991231							
+8993	899323A	Allocate by DRC4	Allocate by DRC4		Allocate by DRC4	19000101	99991231		X				X	
+8993	0008993105	Smart Solution	Smart Solution (One Bangkok Team)	0000899303	Smart Solution	20190101	99991231							
+8993	0008993106	Argento	Argento	0000899303	Argento	19000101	99991231							
+8993	899351A	Allocate SL Office	Allocate SL Office	0000899304	Allocate SL Office	20230701	99991231							
+8993	0008993609	IT Services	IT Services	0000899304	IT Services	20200201	99991231							
+8993	0008993053	CPU-VPS	CPU-VPS		CPU-VPS	20000101	99991231		X				X	
+8993	0008993063	RAM-VPS	RAM-VPS		RAM-VPS	20000101	99991231							
+8993	0008993073	STR-VPS	STR-VPS		STR-VPS	20000101	99991231							
+8993	0008993104	Solution Dev 2	Solution Development 2	0000899305	Solution Dev 2	20190101	99991231							
+8993	0008993314	ICT Operation	ICT Operation	0000899303	ICT Operation	19900101	99991231							
+8993	0008993751	Presales Smart	Presales Smart	0000899304	Presales Smart	20000101	99991231							
+8993	0008993108	Solution Dev 3	Solution Development 3	0000899305	Solution Dev 3	20190101	99991231							
+8993	899335G	Allocate by FOBB OBK	Allocate by FOBB OBK	0000899300	Allocate by FOBB OBK	20190101	99991231							
+8993	0008993721	Presales EPS-Cloud	Presales EPS-Cloud	0000899304	Presales EPS-Cloud	20000101	99991231							
+8993	0008993722	Presales EPS-AMS	Presales EPS-AMS	0000899304	Presales EPS-AMS	20000101	99991231							
+8993	0008993315	Internation. Gateway	Operation - International Gateway	0000899300	Internation. Gateway	19000101	99991231							
+8993	899335E	Allocate by NW-MA	Allocate by Network MA	0000899300	Allocate by NW-MA	19000101	99991231							

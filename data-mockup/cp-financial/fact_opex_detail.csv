@@ -1,0 +1,72 @@
+period_id,cost_center_id,opex_type,opex_category,vendor_id,actual_amount_thb,budget_amount_thb,variance_thb,variance_pct
+202401,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-320000,-315000,-5000,1.59
+202401,CC-7002,Store Rent,Rental & Occupancy,VND-1002,-280000,-275000,-5000,1.82
+202401,CC-7001,Electricity,Utilities,VND-2001,-125000,-120000,-5000,4.17
+202401,CC-7002,Electricity,Utilities,VND-2001,-140000,-135000,-5000,3.70
+202401,CC-7001,Salaries & Wages,Personnel,NULL,-450000,-445000,-5000,1.12
+202401,CC-7002,Salaries & Wages,Personnel,NULL,-520000,-510000,-10000,1.96
+202401,CC-0004,Advertising,Marketing & Advertising,VND-3001,-8500000,-8200000,-300000,3.66
+202401,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4200000,-4100000,-100000,2.44
+202401,CC-0003,Software Licenses,IT & Technology,VND-5001,-1200000,-1150000,-50000,4.35
+202401,CC-0006,Professional Fees,Other Operating Expenses,VND-6001,-450000,-430000,-20000,4.65
+202401,CC-0001,Insurance,Other Operating Expenses,VND-7001,-1200000,-1180000,-20000,1.69
+202402,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-320000,-315000,-5000,1.59
+202402,CC-7002,Store Rent,Rental & Occupancy,VND-1002,-280000,-275000,-5000,1.82
+202402,CC-7001,Electricity,Utilities,VND-2001,-128000,-120000,-8000,6.67
+202402,CC-7002,Electricity,Utilities,VND-2001,-144000,-135000,-9000,6.67
+202402,CC-7001,Salaries & Wages,Personnel,NULL,-460000,-445000,-15000,3.37
+202402,CC-7002,Salaries & Wages,Personnel,NULL,-532000,-510000,-22000,4.31
+202402,CC-0004,Advertising,Marketing & Advertising,VND-3001,-8700000,-8200000,-500000,6.10
+202402,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4300000,-4100000,-200000,4.88
+202402,CC-0003,Software Licenses,IT & Technology,VND-5001,-1200000,-1150000,-50000,4.35
+202403,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-325000,-315000,-10000,3.17
+202403,CC-7002,Store Rent,Rental & Occupancy,VND-1002,-285000,-275000,-10000,3.64
+202403,CC-7001,Electricity,Utilities,VND-2001,-132000,-120000,-12000,10.00
+202403,CC-7001,Salaries & Wages,Personnel,NULL,-470000,-445000,-25000,5.62
+202403,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9000000,-8200000,-800000,9.76
+202403,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4500000,-4100000,-400000,9.76
+202404,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-325000,-320000,-5000,1.56
+202404,CC-7001,Electricity,Utilities,VND-2001,-135000,-125000,-10000,8.00
+202404,CC-7001,Salaries & Wages,Personnel,NULL,-475000,-455000,-20000,4.40
+202404,CC-0004,Advertising,Marketing & Advertising,VND-3001,-8800000,-8500000,-300000,3.53
+202404,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4400000,-4200000,-200000,4.76
+202405,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-325000,-320000,-5000,1.56
+202405,CC-7001,Electricity,Utilities,VND-2001,-138000,-125000,-13000,10.40
+202405,CC-7001,Salaries & Wages,Personnel,NULL,-480000,-455000,-25000,5.49
+202405,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9100000,-8500000,-600000,7.06
+202405,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4600000,-4200000,-400000,9.52
+202406,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-330000,-320000,-10000,3.13
+202406,CC-7001,Electricity,Utilities,VND-2001,-142000,-125000,-17000,13.60
+202406,CC-7001,Salaries & Wages,Personnel,NULL,-485000,-455000,-30000,6.59
+202406,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9300000,-8500000,-800000,9.41
+202406,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4700000,-4200000,-500000,11.90
+202501,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-330000,-325000,-5000,1.54
+202501,CC-7001,Electricity,Utilities,VND-2001,-145000,-130000,-15000,11.54
+202501,CC-7001,Salaries & Wages,Personnel,NULL,-490000,-465000,-25000,5.38
+202501,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9000000,-8800000,-200000,2.27
+202501,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4800000,-4500000,-300000,6.67
+202502,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-330000,-325000,-5000,1.54
+202502,CC-7001,Electricity,Utilities,VND-2001,-148000,-130000,-18000,13.85
+202502,CC-7001,Salaries & Wages,Personnel,NULL,-495000,-465000,-30000,6.45
+202502,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9200000,-8800000,-400000,4.55
+202502,CC-1001,Transportation,Logistics & Distribution,VND-4001,-4900000,-4500000,-400000,8.89
+202503,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-335000,-325000,-10000,3.08
+202503,CC-7001,Electricity,Utilities,VND-2001,-152000,-130000,-22000,16.92
+202503,CC-7001,Salaries & Wages,Personnel,NULL,-500000,-465000,-35000,7.53
+202503,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9500000,-8800000,-700000,7.95
+202503,CC-1001,Transportation,Logistics & Distribution,VND-4001,-5100000,-4500000,-600000,13.33
+202504,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-335000,-330000,-5000,1.52
+202504,CC-7001,Electricity,Utilities,VND-2001,-155000,-135000,-20000,14.81
+202504,CC-7001,Salaries & Wages,Personnel,NULL,-505000,-475000,-30000,6.32
+202504,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9400000,-9000000,-400000,4.44
+202504,CC-1001,Transportation,Logistics & Distribution,VND-4001,-5000000,-4600000,-400000,8.70
+202505,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-335000,-330000,-5000,1.52
+202505,CC-7001,Electricity,Utilities,VND-2001,-158000,-135000,-23000,17.04
+202505,CC-7001,Salaries & Wages,Personnel,NULL,-510000,-475000,-35000,7.37
+202505,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9600000,-9000000,-600000,6.67
+202505,CC-1001,Transportation,Logistics & Distribution,VND-4001,-5200000,-4600000,-600000,13.04
+202506,CC-7001,Store Rent,Rental & Occupancy,VND-1001,-340000,-330000,-10000,3.03
+202506,CC-7001,Electricity,Utilities,VND-2001,-162000,-135000,-27000,20.00
+202506,CC-7001,Salaries & Wages,Personnel,NULL,-515000,-475000,-40000,8.42
+202506,CC-0004,Advertising,Marketing & Advertising,VND-3001,-9800000,-9000000,-800000,8.89
+202506,CC-1001,Transportation,Logistics & Distribution,VND-4001,-5300000,-4600000,-700000,15.22
