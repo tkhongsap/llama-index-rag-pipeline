@@ -1,0 +1,67 @@
+gl_code,gl_name,gl_name_thai,level1,level2,level3,account_type,is_leaf
+400000,Revenue,รายได้,Revenue,,,P&L,FALSE
+410000,Merchandise Revenue,รายได้จากสินค้า,Revenue,Merchandise Revenue,,P&L,FALSE
+411000,Food & Beverage Revenue,รายได้อาหารและเครื่องดื่ม,Revenue,Merchandise Revenue,Food & Beverage,P&L,TRUE
+412000,Personal Care Revenue,รายได้สินค้าดูแลส่วนตัว,Revenue,Merchandise Revenue,Personal Care,P&L,TRUE
+413000,Household Items Revenue,รายได้สินค้าใช้ในบ้าน,Revenue,Merchandise Revenue,Household Items,P&L,TRUE
+414000,Cigarettes & Tobacco Revenue,รายได้บุหรี่และยาสูบ,Revenue,Merchandise Revenue,Cigarettes & Tobacco,P&L,TRUE
+420000,Service Revenue,รายได้จากบริการ,Revenue,Service Revenue,,P&L,FALSE
+421000,Bill Payment Revenue,รายได้ชำระบิล,Revenue,Service Revenue,Bill Payment,P&L,TRUE
+422000,Delivery Revenue,รายได้จัดส่ง,Revenue,Service Revenue,Delivery,P&L,TRUE
+423000,Financial Services Revenue,รายได้บริการทางการเงิน,Revenue,Service Revenue,Financial Services,P&L,TRUE
+430000,Wholesale Revenue,รายได้ขายส่ง,Revenue,Wholesale Revenue,,P&L,FALSE
+431000,Makro Food Revenue,รายได้สินค้าอาหาร Makro,Revenue,Wholesale Revenue,Makro Food,P&L,TRUE
+432000,Makro Non-Food Revenue,รายได้สินค้าทั่วไป Makro,Revenue,Wholesale Revenue,Makro Non-Food,P&L,TRUE
+440000,Rental & Other Revenue,รายได้ค่าเช่าและอื่นๆ,Revenue,Rental & Other Revenue,,P&L,FALSE
+441000,Rental Income,รายได้ค่าเช่า,Revenue,Rental & Other Revenue,Rental Income,P&L,TRUE
+442000,Franchise Fees,รายได้ค่าแฟรนไชส์,Revenue,Rental & Other Revenue,Franchise Fees,P&L,TRUE
+500000,Cost of Sales,ต้นทุนขาย,Cost of Sales,,,P&L,FALSE
+510000,Merchandise COGS,ต้นทุนสินค้า,Cost of Sales,Merchandise COGS,,P&L,FALSE
+511000,Food & Beverage COGS,ต้นทุนอาหารและเครื่องดื่ม,Cost of Sales,Merchandise COGS,Food & Beverage COGS,P&L,TRUE
+512000,Personal Care COGS,ต้นทุนสินค้าดูแลส่วนตัว,Cost of Sales,Merchandise COGS,Personal Care COGS,P&L,TRUE
+513000,Household Items COGS,ต้นทุนสินค้าใช้ในบ้าน,Cost of Sales,Merchandise COGS,Household Items COGS,P&L,TRUE
+514000,Cigarettes & Tobacco COGS,ต้นทุนบุหรี่และยาสูบ,Cost of Sales,Merchandise COGS,Cigarettes & Tobacco COGS,P&L,TRUE
+520000,Wholesale COGS,ต้นทุนขายส่ง,Cost of Sales,Wholesale COGS,,P&L,FALSE
+521000,Makro Food COGS,ต้นทุนสินค้าอาหาร Makro,Cost of Sales,Wholesale COGS,Makro Food COGS,P&L,TRUE
+522000,Makro Non-Food COGS,ต้นทุนสินค้าทั่วไป Makro,Cost of Sales,Wholesale COGS,Makro Non-Food COGS,P&L,TRUE
+600000,Operating Expenses,ค่าใช้จ่ายในการดำเนินงาน,Operating Expenses,,,P&L,FALSE
+610000,Personnel Expenses,ค่าใช้จ่ายบุคลากร,Operating Expenses,Personnel Expenses,,P&L,FALSE
+611000,Salaries & Wages,เงินเดือนและค่าจ้าง,Operating Expenses,Personnel Expenses,Salaries & Wages,P&L,TRUE
+612000,Employee Benefits,สวัสดิการพนักงาน,Operating Expenses,Personnel Expenses,Employee Benefits,P&L,TRUE
+613000,Training & Development,ค่าฝึกอบรม,Operating Expenses,Personnel Expenses,Training & Development,P&L,TRUE
+620000,Rental & Occupancy,ค่าเช่าและสถานที่,Operating Expenses,Rental & Occupancy,,P&L,FALSE
+621000,Store Rent,ค่าเช่าร้านค้า,Operating Expenses,Rental & Occupancy,Store Rent,P&L,TRUE
+622000,Warehouse Rent,ค่าเช่าคลังสินค้า,Operating Expenses,Rental & Occupancy,Warehouse Rent,P&L,TRUE
+623000,Property Tax,ภาษีที่ดินและสิ่งปลูกสร้าง,Operating Expenses,Rental & Occupancy,Property Tax,P&L,TRUE
+630000,Utilities,ค่าสาธารณูปโภค,Operating Expenses,Utilities,,P&L,FALSE
+631000,Electricity,ค่าไฟฟ้า,Operating Expenses,Utilities,Electricity,P&L,TRUE
+632000,Water,ค่าน้ำประปา,Operating Expenses,Utilities,Water,P&L,TRUE
+633000,Telecommunications,ค่าโทรศัพท์และอินเทอร์เน็ต,Operating Expenses,Utilities,Telecommunications,P&L,TRUE
+640000,Marketing & Advertising,ค่าการตลาดและโฆษณา,Operating Expenses,Marketing & Advertising,,P&L,FALSE
+641000,Advertising Expenses,ค่าโฆษณา,Operating Expenses,Marketing & Advertising,Advertising,P&L,TRUE
+642000,Promotional Expenses,ค่าส่งเสริมการขาย,Operating Expenses,Marketing & Advertising,Promotional,P&L,TRUE
+643000,Digital Marketing,ค่าการตลาดดิจิทัล,Operating Expenses,Marketing & Advertising,Digital Marketing,P&L,TRUE
+650000,Logistics & Distribution,ค่าขนส่งและกระจายสินค้า,Operating Expenses,Logistics & Distribution,,P&L,FALSE
+651000,Transportation,ค่าขนส่ง,Operating Expenses,Logistics & Distribution,Transportation,P&L,TRUE
+652000,Warehouse Operations,ค่าดำเนินการคลังสินค้า,Operating Expenses,Logistics & Distribution,Warehouse Operations,P&L,TRUE
+653000,Fuel & Vehicle Maintenance,ค่าน้ำมันและซ่อมบำรุงรถ,Operating Expenses,Logistics & Distribution,Fuel & Vehicle,P&L,TRUE
+660000,IT & Technology,ค่าไอทีและเทคโนโลยี,Operating Expenses,IT & Technology,,P&L,FALSE
+661000,Software Licenses,ค่าลิขสิทธิ์ซอฟต์แวร์,Operating Expenses,IT & Technology,Software Licenses,P&L,TRUE
+662000,IT Support & Maintenance,ค่าบำรุงรักษาระบบไอที,Operating Expenses,IT & Technology,IT Support,P&L,TRUE
+663000,Cloud Services,ค่าบริการคลาวด์,Operating Expenses,IT & Technology,Cloud Services,P&L,TRUE
+670000,Depreciation & Amortization,ค่าเสื่อมราคาและตัดจำหน่าย,Operating Expenses,Depreciation & Amortization,,P&L,FALSE
+671000,Building Depreciation,ค่าเสื่อมราคาอาคาร,Operating Expenses,Depreciation & Amortization,Building Depreciation,P&L,TRUE
+672000,Equipment Depreciation,ค่าเสื่อมราคาอุปกรณ์,Operating Expenses,Depreciation & Amortization,Equipment Depreciation,P&L,TRUE
+673000,Vehicle Depreciation,ค่าเสื่อมราคายานพาหนะ,Operating Expenses,Depreciation & Amortization,Vehicle Depreciation,P&L,TRUE
+680000,Other Operating Expenses,ค่าใช้จ่ายอื่นๆ,Operating Expenses,Other Operating Expenses,,P&L,FALSE
+681000,Professional Fees,ค่าที่ปรึกษา,Operating Expenses,Other Operating Expenses,Professional Fees,P&L,TRUE
+682000,Insurance,ค่าประกันภัย,Operating Expenses,Other Operating Expenses,Insurance,P&L,TRUE
+683000,Office Supplies,ค่าวัสดุสำนักงาน,Operating Expenses,Other Operating Expenses,Office Supplies,P&L,TRUE
+684000,Repairs & Maintenance,ค่าซ่อมบำรุง,Operating Expenses,Other Operating Expenses,Repairs & Maintenance,P&L,TRUE
+700000,Financial Income & Expenses,รายได้และค่าใช้จ่ายทางการเงิน,Financial,,,P&L,FALSE
+710000,Interest Income,ดอกเบี้ยรับ,Financial,Interest Income,,P&L,TRUE
+720000,Interest Expense,ดอกเบี้ยจ่าย,Financial,Interest Expense,,P&L,TRUE
+730000,Foreign Exchange Gain/Loss,กำไร/ขาดทุนจากอัตราแลกเปลี่ยน,Financial,FX Gain/Loss,,P&L,TRUE
+800000,Tax Expenses,ค่าใช้จ่ายภาษี,Tax,,,P&L,FALSE
+810000,Corporate Income Tax,ภาษีเงินได้นิติบุคคล,Tax,Corporate Income Tax,,P&L,TRUE
+820000,Deferred Tax,ภาษีเงินได้รอการตัดบัญชี,Tax,Deferred Tax,,P&L,TRUE

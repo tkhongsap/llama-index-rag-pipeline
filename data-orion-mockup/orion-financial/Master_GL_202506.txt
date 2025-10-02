@@ -1,0 +1,542 @@
+ChAc	B/S Acct	CoCd	AcGp	G/L Acct	Long Name TH	Long Name EN	Tx	Recon.ID	Date	House Bank	Account ID
+GL00	X	8993	CASH	0010101030	งฝ.ออมทรัพย์-ธ.กรุงเทพ สข.เอ็มไพร์ทาวเวอร์	S/A-BBL-Empire			20190911	BBL01	STB01
+GL00	X	8993	CASH	0010101031	งฝ.ออมทรัพย์ เช็ค/ดราฟท์-ธ.กรุงเทพ สข.เอ็มไพร์ทาว	S/A-BBL-Empire-In Ch			20190911	BBL01	STB01
+GL00	X	8993	CASH	0010102060	งฝ.ออมทรัพย์-ธ.กรุงไทย สข. สีลม	S/A-KTB-Silom			20190911	KTB02	STB01
+GL00	X	8993	CASH	0010102061	งฝ.ออมทรัพย์ เช็ค/ดราฟท์-ธ.กรุงไทย สีลม-รับ	S/A-KTB-Silom-In C/D			20190911	KTB02	STB01
+GL00	X	8993	CASH	0010102062	Saving A/C -ธ.กรุงไทย-สีลม-จ่าย	S/A-KTB-Silom-Out			20190911	KTB02	STB01
+GL00	X	8993	CASH	0010104060	งฝ.ออมทรัพย์-ธ.กสิกรไทย สข.เอ็มไพร์ ทาวเวอร์	S/A-KBANK-Empire T			20190911	TFB01	STB01
+GL00	X	8993	CASH	0010104061	งฝ.ออมทรัพย์ เช็ค/ดราฟท์-ธ.กสิกรไทย สข.เอ็มไพร์	S/A-KBANK-Em.T-Incom			20190911	KTB01	STB01
+GL00	X	8993	CASH	0010105020	งฝ.ออมทรัพย์-ธ.ทหารไทยธนชาต สข.สวนมะลิ	S/A-TTB-Suanmali			20190911	SCI01	STB01
+GL00	X	8993	CASH	0010105021	งฝ.ออมทรัพย์ เช็ค/ดราฟท์-ธ.ทหารไทยธนชาต สข.สวนมะลิ	S/A-TTB-Suanmali-IN			20190911	SCI01	STB01
+GL00	X	8993	CASH	0010119020	งฝ.ออมทรัพย์-ธ.ซูมิโตโม	S/A-Sumitomo			20190911	SMBC1	STB01
+GL00	X	8993	CASH	0010119021	งฝ.ออมทรัพย์ เช็ค/ดราฟท์-ธ.ซูมิโตโม	S/A-Sumitomo in Chq			20190911	SMBC1	STB01
+GL00	X	8993	CASH	0010119022	เงินจ่ายออกบัญชีออมทรัพย์-ธ.ซูมิโตโม	S/A-Sumitomo Out			20190911	SMBC1	STB01
+GL00	X	8993	CASH	0010201040	งฝ.กระแสรายวัน-ธ.กรุงเทพ สข.เอ็มไพร์ทาวเวอร์	C/A-BBL-Empire			20190911	BBL01	CTB01
+GL00	X	8993	CASH	0010201042	เงินจ่ายออกบัญชีกระแสฯ-ธ.กรุงเทพ สข.เอ็มไพร์ทาวเวอ	C/A-BBL-Empire-Out			20190911	BBL01	CTB01
+GL00	X	8993	CASH	0010204070	งฝ.กระแสรายวัน-ธ.กสิกรไทย สข.เอ็มไพร์ ทาวเวอร์	C/A-KBANK-ET(Main)			20190911	TFB01	CTB01
+GL00	X	8993	CASH	0010204072	เงินจ่ายออกบัญชีกระแสฯ-ธ.กสิกรไทย สข.เอ็มไพร์	C/A-KBANK-ET-Out			20190911	TFB01	CTB01
+GL00	X	8993	CASH	0010205020	งฝ.กระแสรายวัน-ธ.ธนชาต สข.สวนมะลิ	C/A-TBANK-Suanmali			20190911	SCI01	CTB01
+GL00	X	8993	CASH	0010205022	เงินจ่ายออกบัญชีกระแสฯ-ธ.ธนชาต สข.สวนมะลิ	C/A-TBANK-Suanmli-Ou			20190911	SCI01	CTB01
+GL00	X	8993	CASH	0010206010	งฝ.กระแสรายวัน-ธ.ทหารไทยธนชาต สนง.ใหญ่	C/A-TTB-H/O			20190911	TMB01	CTB01
+GL00	X	8993	CASH	0010206012	เงินจ่ายออกบัญชีกระแสฯ-ธ.ทหารไทยธนชาต สนง.ใหญ่	C/A-TTB-HO-Out			20190911	TMB01	CTB01
+GL00	X	8993	CASH	0010219010	งฝ.กระแสรายวัน-ธ.ซูมิโตโม มิตซุย	C/A-Sumitomo			20190911	SMBC1	CTB01
+GL00	X	8993	CASH	0010000100	เงินสดในมือ	Cash on hand			20190911		
+GL00	X	8993	RECN	0010000110	เงินสดย่อย	Petty Cash	-	K	20190911		
+GL00		8993	PL	0049220100	เงินปันผลรับ-บริษัทร่วม	Dividend Income-Associated Companies	+		20190911		
+GL00		8993	PL	0049240100	เงินปันผลรับ-บุคคลอื่น	Dividend Income-Third Party	+		20190911		
+GL00		8993	PL	0049900900	รายได้อื่นๆ-บริษัทแม่	Other Revenue -(FI) Parent	+		20190911		
+GL00		8993	PL	0049900910	รายได้อื่นๆ (SD)-แม่	Other Revenue other (SD) Parent	+		20190911		
+GL00		8993	PL	0049910900	รายได้อื่นๆ-(FI)-บริษัทย่อย	Other Revenue -(FI) Subsidiary	+		20190911		
+GL00		8993	PL	0049910910	รายได้อื่นๆ (SD)-ย่อย	Other Revenue other (SD) Subsidiary	+		20190911		
+GL00		8993	PL	0049920900	รายได้อื่นๆ-(FI)-บริษัทร่วม	Other Revenue - other (FI) Associated	+		20190911		
+GL00		8993	PL	0049920910	รายได้อื่นๆ (SD)-ร่วม	Other Revenue other (SD) Associated	+		20190911		
+GL00		8993	PL	0049930900	รายได้อื่นๆ-(FI)-บ.อื่นที่เกี่ยวข้อง	Other Revenue - other (FI) Other related	+		20190911		
+GL00		8993	PL	0049930910	รายได้อื่นๆ (SD)-กข.	Other Revenue other (SD) Other related	+		20190911		
+GL00		8993	PL	0049940900	รายได้อื่นๆ-(FI)-บุคคลอื่น	Other Revenue - other (FI) 3rd Party	+		20190911		
+GL00		8993	PL	0049940910	รายได้อื่นๆ (SD)-อื่น	Other Revenue other (SD) 3rd Party	+		20190911		
+GL00		8993	PL	0049950900	รายได้อื่น ๆ (FI)-บริษัทร่วมค้า	Other Revenue(FI)-Joint Venture	+		20190911		
+GL00		8993	PL	0049950910	รายได้อื่น ๆ (SD)-บริษัทร่วมค้า	Other Revenue -(SD) Joint Venture	+		20190911		
+GL00		8993	PL	0051000103	ต้นทุนขาย-สินค้าสำเร็จรูป ปรับปรุง	Cost of Sales-Finished Products-Adjustment			20190911		
+GL00		8993	PL	0051000190	ต้นทุนขายสินค้า Conversion	Cost of Sales-Finished Prd for Conversion	-		20190911		
+GL00		8993	PL	0053000100	ปรับปรุงสต็อค-สินค้าสำเร็จรูป	STOCK ADJUSTMENTS-FINISHED PRODUCT	*		20190911		
+GL00		8993	PL	0053000999	ปันส่วนปรับปรุงสต็อค	STOCK ADJUSTMENTS Allocated	*		20190911		
+GL00		8993	PL	0053100100	มูลค่าผลต่างจากการสั่งซื้อสินค้าสำเร็จรูป	PRICE VARIANCES-FINISHED PRODUCT	-		20190911		
+GL00		8993	PL	0055110100	ค่าเช่าที่ดินและสิ่งปลูกสร้าง	Prm Rental	*		20190911		
+GL00		8993	PL	0055110110	ค่ายามรักษาความปลอดภัย	Prm Security Guard	-		20190911		
+GL00		8993	PL	0055110120	ค่าทำความสะอาด	Prm Cleaning Service	-		20190911		
+GL00		8993	PL	0055110130	ค่าไฟฟ้า	Prm Electricity Exps	*		20190911		
+GL00		8993	PL	0055110140	ค่าน้ำประปา	Prm Water  Expenses	-		20190911		
+GL00		8993	PL	0055110145	ค่าซ่อมแซมและบำรุงรักษาอาคาร	Prm Repair&Maint.-Building	-		20190911		
+GL00		8993	PL	0055110160	Premises exps.-Depreciation-Bldg.&Construction	Premises exps.-Depreciation-Bldg.&Constructi	-		20190911		
+GL00		8993	PL	0055110161	Premises exps.-Depreciation-Bldg.Improve-Office	Premises exps.-Depreciation-Bldg.Improve-O	-		20190911		
+GL00		8993	PL	0055110162	Premises exps.-Insurance - Building (Showroom)	Premises exps.-Insurance - Building (Showroo	-		20190911		
+GL00		8993	PL	0055110170	Premises exps.-Other	Premises exps.-Other	-		20190911		
+GL00		8993	PL	0055910100	เงินเดือน-มีสิทธิ์รับโบนัส	Personnel Exps.-Basic Salary with entitle bonus	*		20190911		
+GL00		8993	PL	0055910110	ค่าล่วงเวลา	Personnel Exps.-Overtime	*		20190911		
+GL00		8993	PL	0055910115	ค่ากะ	Personnel Exps.-Shift Allowance	*		20190911		
+GL00		8993	PL	0055910120	โบนัส	Personnel Exps.-Bonus	*		20190911		
+GL00		8993	PL	0055910130	เงินประกันสังคม	Personnel Exps.-Social Security Fund	*		20190911		
+GL00		8993	PL	0055910140	เงินกองทุนสำรองเลี้ยงชีพ	Personnel Exps.-Provident Fund	*		20190911		
+GL00		8993	PL	0055910150	เงินกองทุนทดแทน	Personnel Exps.-Workmen Compensation	*		20190911		
+GL00		8993	PL	0055910160	เงินชดเชยเกษียณอายุ	Personnel Exps.-Retirement Benefits	*		20190911		
+GL00		8993	PL	0055910170	เงินช่วยเหลือค่าครองชีพ	Personnel Exps.-Cost of Living allowance	*		20190911		
+GL00		8993	PL	0055910180	ค่าจ้างพนักงานชั่วคราว	Personnel Exps.-Temporary Staff (Salary)	*		20190911		
+GL00		8993	PL	0055910190	ค่าล่วงเวลาพนักงานชั่วคราว	Personnel Exps.-Temporary Staff (Overtime)	*		20190911		
+GL00		8993	PL	0055920100	สวัสดิการพนง.-ค่ารักษาพยาบาลโรงพยาบาลตามสัญญา	Staff Benefits-Medical-contracted hospital/outside	-		20190911		
+GL00		8993	PL	0055920110	สวัสดิการพนง.-ค่ายา	Staff Benefits-Medical - in house	-		20190911		
+GL00		8993	PL	0055920120	สวัสดิการพนง.-ค่าฝึกอบรมภายนอกองค์กรในประเทศ	Staff Benefits-Training - local(Public)	-		20190911		
+GL00		8993	PL	0055920130	สวัสดิการพนง.-ค่าฝึกอบรมต่างประเทศ	Staff Benefits-Training - abroad	-		20190911		
+GL00		8993	PL	0055920150	สวัสดิการพนง.-ค่าสมาชิก	Staff Benefits-Membership and subscription fee	*		20190911		
+GL00		8993	PL	0055920170	สวัสดิการพนง.-ค่ากิจกรรมพนักงาน	Staff Benefits-Staff Activities	-		20190911		
+GL00		8993	PL	0055920190	สวัสดิการพนง.-อื่นๆ	Staff Benefits-Other	-		20190911		
+GL00		8993	PL	0055920200	Staff Benefits-Life Insurance	Staff Benefits-Life Insurance	-		20190911		
+GL00		8993	PL	0055920210	สวัสดิการพนักงาน-รางวัลสำหรับพนักงานทำงานนาน	Staff Benefits-Long service award			20190911		
+GL00		8993	PL	0055930100	ค่าเช่าอาคารสำนักงาน	Office Rental	-		20190911		
+GL00		8993	PL	0055930110	ค่าเครื่องเขียนและแบบพิมพ์	Off. Stationary & Print	-		20190911		
+GL00		8993	PL	0055930120	ค่าถ่ายเอกสาร	Off. Photocopy Exp.	-		20190911		
+GL00		8993	PL	0055930130	ค่าซ่อมแซมและบำรุงรักษาอุปกรณ์สำนักงาน	Off. Repair & Maintenance Office	-		20190911		
+GL00		8993	PL	0055930140	ค่าเบี้ยประกันภัย	Off. Insurance	-		20190911		
+GL00		8993	PL	0055930150	ค่าเสื่อมราคา-เครื่องใช้สนง.,ตกแต่งและติดตั้ง	Office exps.-Depreciation - Off.Fur.,Fixtures&Equi	*		20190911		
+GL00		8993	PL	0055930160	ค่าเสื่อมราคา-เครื่องจักร,อุปกรณ์และเครื่องมือ	Off. Depreciation Machinery,Equipment & Tools	*		20190911		
+GL00		8993	PL	0055930190	ค่าใช้จ่ายอื่นๆ ในสำนักงาน	Office expenses - General	-		20190911		
+GL00		8993	PL	0055940100	ค่าใช้จ่ายการเดินทาง-ในประเทศ	Travel Local	-		20190911		
+GL00		8993	PL	0055940110	ค่าใช้จ่ายการเดินทาง-ต่างประเทศ	Travel Aboard	-		20190911		
+GL00		8993	PL	0055940120	ค่าประกันภัยในการเดินทาง	Travel Isurance	-		20190911		
+GL00		8993	PL	0055940130	ค่าน้ำมันรถยนต์บริษัท	Company Cars-Gasoline	-		20190911		
+GL00		8993	PL	0055940140	ค่าเช่ารถยนต์บริษัท	Company Cars-Rental	-		20190911		
+GL00		8993	PL	0055950100	ค่าโทรศัพท์ภายในประเทศ	Commu. Tel Local	-		20190911		
+GL00		8993	PL	0055950110	ค่าโทรศัพท์ต่างประเทศ	Commu. Tel Aboard	-		20190911		
+GL00		8993	PL	0055950120	ค่าส่งเอกสารและค่าไปรษณีย์	Commu. Cour & Postage	-		20190911		
+GL00		8993	PL	0055960100	ค่าใช้จ่ายคอมพิวเตอร์-ค่าบำรุงรักษาตามสัญญา	Computer exps.-Maintenance & Support  Agreements	-		20190911		
+GL00		8993	PL	0055960110	ค่าใช้จ่ายคอมพิวเตอร์-ค่าอะไหล่สิ้นเปลือง	Computer exps.-Consumables and PC Accessories	-		20190911		
+GL00		8993	PL	0055960120	ค่าใช้จ่ายคอมพิวเตอร์-ค่าซ่อมแซมและบำรุงรักษา	Computer exps.-Repair & Maintenance	*		20190911		
+GL00		8993	PL	0055960130	ค่าใช้จ่ายคอมพิวเตอร์-สื่อสาร	Computer exps.-Communication expenses	-		20190911		
+GL00		8993	PL	0055960140	ค่าใช้จ่ายคอมพิวเตอร์-ค่าเสื่อมราคา	Computer exps.-Depreciation	*		20190911		
+GL00		8993	PL	0055960150	ค่าใช้จ่ายคอมพิวเตอร์-ค่าตัดจำหน่ายซอฟท์แวร์	Computer exps.-Computer Software Amortization	-		20190911		
+GL00		8993	PL	0055960160	ค่าใช้จ่ายคอมพิวเตอร์-ค่าเช่า	Computer exps.-Computer rental	-		20190911		
+GL00		8993	PL	0055960190	ค่าใช้จ่ายคอมพิวเตอร์-อื่นๆ	Computer exps.-Other	-		20190911		
+GL00		8993	PL	0055970110	Entertainment expenses	Entertainment expenses	-		20190911		
+GL00		8993	PL	0055970130	ค่าประกันภัยอื่นๆ	Other Insurance	-		20190911		
+GL00		8993	PL	0055970140	ค่าสมาชิก	Member & Subscript	-		20190911		
+GL00		8993	PL	0055970150	ค่าที่ปรึกษาวิชาชีพและกฎหมาย	Professional and Legal Fees	*		20190911		
+GL00		8993	PL	0055970160	ค่าใช้จ่ายในการสรรหาบุคลากร	Recruitment expenses	-		20190911		
+GL00		8993	PL	0055970170	ค่าใช้จ่ายที่ถือเป็นค่าใช้จ่ายในทางภาษีไม่ได้	Non-Taxable expenses	-		20190911		
+GL00		8993	PL	0055970190	ค่าใช้จ่ายอื่นๆ	Other General Expenses	-		20190911		
+GL00		8993	PL	0055970220	ภาษีมูลค่าเพิ่มไม่สามารถเคลมได้	Unclaimed VAT			20190911		
+GL00		8993	PL	0055980100	ค่าใช้จ่ายในการปันส่วน	Corp Overhead X-Charge	*		20190911		
+GL00		8993	PL	0055980110	ค่าใช้จ่ายในการปันส่วนจากแผนกคอมพิวเตอร์	ISD Overhead X-Charge	*		20190911		
+GL00		8993	PL	0060100100	ค่านายหน้า-พนักงานขาย	Commission - salesman	-		20190911		
+GL00		8993	PL	0060100200	ค่านายหน้า-เงินพิเศษ	Commission - incentive	-		20190911		
+GL00		8993	PL	0060100300	ค่านายหน้า-บุคคลอื่น	Commission - third parties	-		20190911		
+GL00		8993	PL	0061000120	ค่าใช้จ่ายในการส่งเสริมการขาย-ค่าใช้จ่าย	A&P expenses - Expenses	-		20190911		
+GL00		8993	PL	0061000121	ค่าใช้จ่ายในการส่งเสริมการขาย-คชจ.-VAT Unclaimed	A&P Expenses - VAT Unclaimed	*		20190911		
+GL00		8993	PL	0061100500	MKT-ค่าใช้จ่าย Event	A&P Mkt Cons Event MKTG	-		20190911		
+GL00		8993	PL	0061100890	MKT-ค่าใช้จ่ายอื่นๆ	A&P Mkt Misc Others	-		20190911		
+GL00		8993	PL	0063000100	ค่าใช้จ่ายในการทำวิจัยตลาด	Marketing Research expenses	-		20190911		
+GL00		8993	PL	0070000100	เงินเดือน-มีสิทธิ์รับโบนัส	Personnel Exps.-Basic Salary with entit	-		20190911		
+GL00		8993	PL	0070000200	ค่าล่วงเวลา	Personnel Exps.-Overtime	-		20190911		
+GL00		8993	PL	0070000300	โบนัส	Personnel Exps.-Bonus	-		20190911		
+GL00		8993	PL	0070000310	เงินค่ากะ	Personnel Exps.-Shift Allowance	-		20190911		
+GL00		8993	PL	0070000400	ค่าจ้างพนักงานชั่วคราว	Personnel Exps.-Temporary Staff (Salary)	-		20190911		
+GL00		8993	PL	0070000410	ค่าล่วงเวลาพนักงานชั่วคราว	Personnel Exps.-Temporary Staff (Overtime)	-		20190911		
+GL00		8993	PL	0070000600	ค่าเงินประกันสังคม	Personnel Exps.-Social Security Fund	-		20190911		
+GL00		8993	PL	0070000700	เงินกองทุนสำรองเลี้ยงชีพ	Personnel Exps.-Provident Fund	-		20190911		
+GL00		8993	PL	0070000800	เงินกองทุนทดแทน	Personnel Exps.-Workmen Compensation	-		20190911		
+GL00		8993	PL	0070000900	เงินชดเชยเกษียณอายุ	Personnel Exps.-Retirement Benefits	-		20190911		
+GL00		8993	PL	0070001000	เงินช่วยเหลือค่าครองชีพ	Personnel Exps.-Cost of Living allowance	-		20190911		
+GL00		8993	PL	0070001020	ค่าใช้จ่ายพนักงาน-อื่น ๆ (เสียภาษี)	Personnel Exps.-Others subject to Tax			20190911		
+GL00		8993	PL	0070001030	คชจ.พนง.-อื่น ๆ (ไม่เสียภาษี)	Personnel Exps.-Others Not Subject To Tax			20190911		
+GL00		8993	PL	0070001040	ค่าใช้จ่ายพนักงาน-สิทธิในการซื้อหุ้น	Personnel Exps.-Stock Options			20190911		
+GL00		8993	PL	0071000100	สวัสดิการพนง.-ค่ารักษาพยาบาลโรงพยาบาลตามสัญญา	Staff Benefits-Medical-contracted hospital/outside	-		20190911		
+GL00		8993	PL	0071000300	สวัสดิการพนง.-ค่าฝึกอบรมภายนอกองค์กรในประเทศ	Staff Benefits-Training - Local (Public)	-		20190911		
+GL00		8993	PL	0071000400	สวัสดิการพนง.-ค่าฝึกอบรมต่างประเทศ	Staff Benefits-Training - Abroad	-		20190911		
+GL00		8993	PL	0071000900	สวัสดิการพนง.-ค่าสมาชิก	Staff Benefits-Membership and subscription fee	-		20190911		
+GL00		8993	PL	0071001000	สวัสดิการพนง.-ค่ากิจกรรมพนักงาน	Staff Benefits-Staff Activities	-		20190911		
+GL00		8993	PL	0071001400	สวัสดิการพนง.-ค่าประกันชีวิต	Staff Benefits-Life Insurance	-		20190911		
+GL00		8993	PL	0071001500	สวัสดิการพนักงาน-รางวัลสำหรับพนักงานทำงานนาน	Staff Benefits-Long service award	-		20190911		
+GL00		8993	PL	0071001900	สวัสดิการพนง.-อื่นๆ	Staff Benefits-Other	-		20190911		
+GL00		8993	PL	0071009999	สวัสดิการพนง.หักบัญชี	Staff Benefits-X-Charged	-		20190911		
+GL00		8993	PL	0072000100	ค่าเช่าอาคารสำนักงาน	Premises exps.-Rental	-		20190911		
+GL00		8993	PL	0072000200	ค่ายามรักษาความปลอดภัยสำนักงาน	Premises exps.-Security Guard	-		20190911		
+GL00		8993	PL	0072000300	ค่าทำความสะอาดสำนักงาน	Premises exps.-Cleaning Services	-		20190911		
+GL00		8993	PL	0072000400	ค่าไฟฟ้า	Premises exps.-Electricity expenses	-		20190911		
+GL00		8993	PL	0072000500	ค่าน้ำประปา	Premises exps.-Water expenses	-		20190911		
+GL00		8993	PL	0072000600	ค่าซ่อมแซมและบำรุงรักษาอาคารสำนักงาน	Premises exps.-Repair and Maintenance - Building	-		20190911		
+GL00		8993	PL	0072000700	ค่าเบี้ยประกันภัย-อาคารสำนักงาน	Premises exps.-Insurance - Building	-		20190911		
+GL00		8993	PL	0072000800	ค่าเบี้ยประกันภัย-อุปกรณ์สำนักงาน	Premises exps.-Insurance - Office Equipment	-		20190911		
+GL00		8993	PL	0072000900	ค่าภาษีโรงเรือนและภาษีอื่นๆ	Premises exps.-Property Tax and Other Taxes	-		20190911		
+GL00		8993	PL	0072001100	ค่าเสื่อมราคา-อาคารและสิ่งปลูกสร้าง	Premises exps.-Depreciation-Bldg.&Construction	-		20190911		
+GL00		8993	PL	0072001110	ค่าเสื่อมราคา-ส่วนปรับปรุงอาคาร - สำนักงาน	Premises exps.-Depreciation - Bldg.Improve-Office	-		20190911		
+GL00		8993	PL	0072001900	ค่าใช้จ่ายอาคารและสิ่งปลูกสร้าง-อื่นๆ	Premises exps.-Other	-		20190911		
+GL00		8993	PL	0072009999	ค่าใช้จ่ายอาคารและสิ่งปลูกสร้างหักบัญชี	Premises exps. X-Charged	-		20190911		
+GL00		8993	PL	0073000100	ค่าใช้จ่ายสำนักงาน-ค่าเครื่องเขียน แบบพิมพ์	Office exps.-Stationery & printing	-		20190911		
+GL00		8993	PL	0073000200	ค่าใช้จ่ายสำนักงาน-ค่าถ่ายเอกสาร	Office exps.-Photocopy expenses	-		20190911		
+GL00		8993	PL	0073000300	ค่าใช้จ่ายสำนักงาน-ค่าซ่อมแซมและบำรุงรักษาสำนักงาน	Office exps.-Repair & Maintenance - Office	-		20190911		
+GL00		8993	PL	0073000500	ค่าใช้จ่ายสำนักงาน-ตัดจำหน่ายทรัพย์สินถาวร	Office exps.-Fixed Assets - Written Off	-		20190911		
+GL00		8993	PL	0073000590	บัญชีพักจากการจำหน่ายสินทรัพย์ถาวร	Office exps.-Retire Fixed Assets Clearing A/C	-		20190911		
+GL00		8993	PL	0073000700	ค่าใช้จ่ายสนง.-ค่าเสื่อมราคาเครื่องตกแต่ง-สนง.	Office exps.-Depreciation - Off.Fur.,Fixtures&Equi	-		20190911		
+GL00		8993	PL	0073000800	ค่าใช้จ่ายสำนักงาน-อื่นๆ	Office expenses - General	-		20190911		
+GL00		8993	PL	0073009999	ค่าใช้จ่ายสำนักงานหักบัญชี	Office exps.-X-Charged	-		20190911		
+GL00		8993	PL	0074000100	ค่าใช้จ่ายคอมพิวเตอร์-ค่าบำรุงรักษาตามสัญญา-อื่น ๆ	Computer exps.-Maint.&Support Agreements-Other	-		20190911		
+GL00		8993	PL	0074000200	ค่าใช้จ่ายคอมพิวเตอร์-ค่าอะไหล่สิ้นเปลือง	Computer exps.-Consumables and PC Accessories	-		20190911		
+GL00		8993	PL	0074000300	ค่าใช้จ่ายคอมพิวเตอร์-ค่าซ่อมแซมและบำรุงรักษา	Computer exps.-Repair & Maintenance	-		20190911		
+GL00		8993	PL	0074000400	ค่าใช้จ่ายคอมพิวเตอร์-สื่อสาร	Computer exps.-Communication expenses	-		20190911		
+GL00		8993	PL	0074000500	ค่าใช้จ่ายคอมพิวเตอร์-ค่าเสื่อมราคา	Computer exps.-Depreciation	-		20190911		
+GL00		8993	PL	0074000509	ค่าใช้จ่ายคอมพิวเตอร์-ค่าเสื่อมราคา-ปันส่วน	Computer exps.-Depreciation-Allocated	-		20190911		
+GL00		8993	PL	0074000510	ค่าใช้จ่ายคอมพิวเตอร์-ค่าตัดจำหน่ายซอฟท์แวร์	Computer exps.-Computer Software Amortization	-		20190911		
+GL00		8993	PL	0074000519	คชจ.คอมพิวเตอร์-ค่าตัดจำหน่ายซอฟท์แวร์-ปันส่วน	Computer exps.-Computer Software Amort-Allocated	-		20190911		
+GL00		8993	PL	0074000600	ค่าใช้จ่ายคอมพิวเตอร์-ค่าเช่า	Computer exps.-Rental	-		20190911		
+GL00		8993	PL	0074000700	ค่าใช้จ่ายคอมพิวเตอร์-ค่าประกันภัย	Computer exps.-Insurance	-		20190911		
+GL00		8993	PL	0074000900	ค่าใช้จ่ายคอมพิวเตอร์-อื่นๆ	Computer exps.-Other	-		20190911		
+GL00		8993	PL	0074009999	ค่าใช้จ่ายคอมพิวเตอร์หักบัญชี	Computer exps.-X-Charged	-		20190911		
+GL00		8993	PL	0075000100	ค่าใช้จ่ายการเดินทาง-ในประเทศ	Travelling - Local	-		20190911		
+GL00		8993	PL	0075000200	ค่าใช้จ่ายการเดินทาง-ต่างประเทศ	Travelling - Abroad	-		20190911		
+GL00		8993	PL	0075000300	ค่าประกันภัยในการเดินทาง	Travelling - Insurance Expenses	-		20190911		
+GL00		8993	PL	0075200100	ค่าน้ำมันรถยนต์บริษัท	Company Cars-Gasoline	-		20190911		
+GL00		8993	PL	0075200120	ค่าประกันภัยรถยนต์บริษัท	Company Cars-Insurance	-		20190911		
+GL00		8993	PL	0075201000	ค่าเช่ารถยนต์บริษัท	Company Cars-Rental	-		20190911		
+GL00		8993	PL	0076000100	ค่าโทรศัพท์ในประเทศ	Communication exps.-Telephone call - Local	-		20190911		
+GL00		8993	PL	0076000200	ค่าโทรศัพท์ต่างประเทศ	Communication exps.-Telephone call - Abroad	-		20190911		
+GL00		8993	PL	0076000210	ค่าโทรศัพท์มือถือ	Communication exps.-Mobile phone	-		20190911		
+GL00		8993	PL	0076000400	ค่าส่งเอกสารและค่าไปรษณีย์	Communication exps.-Courier & Postage	-		20190911		
+GL00		8993	PL	0076009999	ค่าใช้จ่ายติดต่อสื่อสารหักบัญชี	Communication exps.-X-Charged	-		20190911		
+GL00		8993	PL	0077000200	ค่ารับรองคู่ค้า	Entertainment expenses	-		20190911		
+GL00		8993	PL	0077000300	ค่าสอบบัญชี	Audit Fee	-		20190911		
+GL00		8993	PL	0077000400	ค่าที่ปรึกษาวิชาชีพและกฎหมาย	Professional and Legal Fees	-		20190911		
+GL00		8993	PL	0077000500	ค่าใช้จ่ายในการสรรหาบุคลากร	Recruitment expenses	-		20190911		
+GL00		8993	PL	0077000600	เงินประกันอื่นๆ	Other Insurance	-		20190911		
+GL00		8993	PL	0077000700	เงินบริจาค	Donations	-		20190911		
+GL00		8993	PL	0077000800	ค่าเผื่อหนี้สงสัยจะสูญ	Allowance on Accounts Receivable	-		20190911		
+GL00		8993	PL	0077000810	ตัดจำหน่ายหนี้สูญ	Write Off Bad Debtor			20190911		
+GL00		8993	PL	0077000910	ค่าสมาชิก	Member & Subscription	-		20190911		
+GL00		8993	PL	0077000980	ค่าใช้จ่ายอื่นๆ	Other General Expenses	-		20190911		
+GL00		8993	PL	0077009999	ค่าใช้จ่ายทั่วไปหักบัญชี	General exps.-X-Charged	-		20190911		
+GL00		8993	PL	0077100040	ค่าใช้จ่ายที่ถือเป็นค่าใช้จ่ายในทางภาษีไม่ได้	Non-Taxable expenses	-		20190911		
+GL00		8993	PL	0077100050	ภาษีมูลค่าเพิ่มที่ไม่สามารถเคลมได้	Unclaimed VAT	-		20190911		
+GL00		8993	PL	0077100060	ภาษีหัก ณ ที่จ่ายออกให้	Absorb WHT	-		20190911		
+GL00		8993	PL	0077200010	ค่าใช้จ่ายปันส่วนจากบริษัทแม่-การจัดการ	Head Office X-Charges : Management Fee	-		20190911		
+GL00		8993	PL	0077200020	ค่าใช้จ่ายปันส่วนจากบริษัทแม่-ส่วนบริการ ISD	Head Office X-Charges : Shared Service-ISD	-		20190911		
+GL00		8993	PL	0078000000	ขาดทุนจากการจำหน่ายทรัพย์สิน	Loss on Disposal Asset	-		20190911		
+GL00		8993	PL	0078000100	ขาดทุนจากการด้อยค่าในเงินลงทุน	Loss on Disposal Investment			20190911		
+GL00		8993	PL	0078100100	ค่าเผื่อหนี้สงสัยจะสูญ-เงินกู้กิจการที่เกี่ยวข้อง	Allowance on Loans to Related Parties	-		20190911		
+GL00		8993	PL	0078200100	ค่าเผื่อการด้อยค่าในทรัพย์สิน	Allowance for impairment of Assets	-		20190911		
+GL00		8993	PL	0078300100	ดอกเบี้ยจ่าย-บริษัทแม่	Interest Exps. - Parent Companies	-		20190911		
+GL00		8993	PL	0078300950	กำไรขาดทุน-สญ.แลกเปลี่ยนอัตราดอกเบี้ย	Gain & Loss on Interest Rate Swap	-		20190911		
+GL00		8993	PL	0078301000	ดอกเบี้ยจ่าย-เงินกู้	Interest Exps. - Loans	-		20190911		
+GL00		8993	PL	0078302000	ดอกเบี้ยจ่าย-อื่นๆ	Interest Exps. - Other	-		20190911		
+GL00		8993	PL	0078309999	ดอกเบี้ยหักบัญชี	Interest - X-Charged	-		20190911		
+GL00		8993	PL	0078310200	ดอกเบี้ยจ่าย-บริษัทย่อย	Interest Exps. - Subsidiary Companies	-		20190911		
+GL00		8993	PL	0078320300	ดอกเบี้ยจ่าย-Related Party	Interest Exps. - Related Party	-		20190911		
+GL00		8993	PL	0078400100	ค่าธรรมเนียมธนาคาร	Bank Charges	-		20190911		
+GL00		8993	PL	0078500700	ตัดจำหน่ายลูกหนี้/เจ้าหนี้ยอดคงเหลือน้อยกว่า10 บาท	Write Off AR/AP Outstanding < 10 B			20190911		
+GL00		8993	PL	0078600100	กำไรขาดทุน-อัตราแลกเปลี่ยน-เกิดแล้ว	Gain & Loss on Exchange  Transaction - Realized	-		20190911		
+GL00		8993	PL	0078600200	กำไรขาดทุน-อัตราแลกเปลี่ยน-ยังไม่เกิด	Gain & Loss on Exchange  Transaction - Unrealized	-		20190911		
+GL00		8993	PL	0078700100	กำไรขาดทุน-สญ.ซื้อขายเงินต่างปท.ล่วงหน้า-เกิดแล้ว	Gain & Loss on Forward Exchange - Realized	-		20190911		
+GL00		8993	PL	0078700200	กำไรขาดทุน-สญ.ซื้อขายเงินต่างปท.ล่วงหน้ายังไม่เกิด	Gain & Loss on Forward Exchange - Unrealized	-		20190911		
+GL00		8993	PL	0079999999	Cost Allocation (Cr.)	Cost Allocation (Cr.)	-		20190911		
+GL00		8993	PL	0099900100	รายได้จากการจำหน่ายทรัพย์สิน	Revenue from Asset Retirement	+		20190911		
+GL00		8993	PL	0099900110	บัญชีพักสำหรับการจำหน่ายทรัพย์สิน	Clearing Account for Asset Retirement	+		20190911		
+GL00		8993	PL	0099992010	AUC Clearing Acct.	Asset Under Construction Clearing Account	-		20190911		
+GL00		8993	PL	0099992020	AUC Clearing Acct.	Asset Under Construction Clearing Account  Budget	-		20190911		
+GL00		8993	PL	0099993010	Premises exps.-Rental	Premises exps.-Rental	*		20190911		
+GL00		8993	PL	0099993020	Premises exps.-Electricity expenses	Premises exps.-Electricity expenses	*		20190911		
+GL00		8993	PL	0099993030	Premises exps.-Water expenses	Premises exps.-Water expenses	-		20190911		
+GL00		8993	PL	0099993040	Premises exps.-Other	Premises exps.-Other	-		20190911		
+GL00		8993	PL	0099994010	Travel Local	Travel Local	-		20190911		
+GL00		8993	PL	0099994020	Travel Aboard	Travel Aboard	-		20190911		
+GL00		8993	PL	0099994030	Travel Insurance	Travel Insurance	-		20190911		
+GL00		8993	PL	0099994040	Communication exps.-Courier & Postage	Communication exps.-Courier & Postage	-		20190911		
+GL00		8993	PL	0099994050	Computer exps.-Consumables and PC Accessories	Computer exps.-Consumables and PC Accessories	-		20190911		
+GL00		8993	PL	0099994060	Computer exps.-Repair & Maintenance	Computer exps.-Repair & Maintenance	*		20190911		
+GL00		8993	PL	0099994070	Professional and Legal Fees	Professional and Legal Fees	*		20190911		
+GL00		8993	GL	0099999997	Dummy Asset GL	Dummy Asset GL			20190911		
+GL00	X	8993	CASH	0010102020	งฝ.ออมทรัพย์-ธ.กรุงไทย สข.สาทร	S/A-KTB-Sathorn			20190911	KTB01	STB01
+GL00	X	8993	CASH	0010102021	งฝ.ออมทรัพย์ เช็ค/ดราฟท์-ธ.กรุงไทย สข.สาทร	S/A-KTB-Sathorn-In C			20190911	KTB01	STB01
+GL00	X	8993	CASH	0010202020	งฝ.กระแสรายวัน-ธ.กรุงไทย สข.สาทร	C/A-KTB-Sathorn			20190911	KTB01	CTB01
+GL00	X	8993	CASH	0010202022	เงินจ่ายออกบัญชีกระแสฯ-ธ.กรุงไทย สข.สาทร	C/A-KTB-Sathorn-Out			20190911	KTB01	CTB01
+GL00	X	8993	RECN	0010800100	เช็คลงวันที่ล่วงหน้า-กรุงเทพ	PDC-BKK		D	20190911		
+GL00	X	8993	RECN	0010900100	เช็คคืน	Bounced Cheque		D	20190911		
+GL00	X	8993	GL	0011000100	งฝ.ประจำกับสถาบันการเงิน สกุลเงินตราในประเทศ	Dep w/ FIN inst.-LC			20190911		
+GL00	X	8993	RECN	0012060100	ลูกหนี้การค้า Hire Purchase/Leasing contract	Accounts Trade Receivable Hire Purchase/Leasing	+	D	20190911		
+GL00	X	8993	GL	0012070100	ดอกเบี้ยที่ยังไม่เกิดขึ้น Hire Purchase/Leasing	Unearned Interest-Hire Purchase/Leasing contract	+		20190911		
+GL00	X	8993	GL	0012080100	ปรับปรุงแปลงค่าลูกหนี้สิ้นเดือน	ADJ-AR Mth End Trnsl			20190911		
+GL00	X	8993	RECN	0012100100	ลูกหนี้การค้าในประเทศ-บริษัทแม่	AR Trade Local-Paren	+	D	20190911		
+GL00	X	8993	RECN	0012110100	ลูกหนี้การค้าในประเทศ-บริษัทย่อย	AR Trade Local-Sub	+	D	20190911		
+GL00	X	8993	RECN	0012120100	ลูกหนี้การค้าในประเทศ-บริษัทร่วม	AR Trade Local-Ass	+	D	20190911		
+GL00	X	8993	RECN	0012120200	ลูกหนี้การค้าในประเทศ-บริษัทร่วมค้า	AR Trade Local-Joint	+	D	20190911		
+GL00	X	8993	RECN	0012130100	ลูกหนี้การค้าในประเทศ-บริษัทอื่นที่เกี่ยวข้องกัน	AR Trade Local-Oth R	+	D	20190911		
+GL00	X	8993	RECN	0012140100	ลูกหนี้การค้าในประเทศ-บุคคลภายนอก	AR Trade Local-3rd	+	D	20190911		
+GL00	X	8993	GL	0012160100	Unearned Rental/Service Incomel	Unearned Rent/Serv.			20190911		
+GL00	X	8993	RECN	0012200100	ลูกหนี้การค้าต่างประเทศ-บริษัทแม่	AR Trade Frgn-Parent	+	D	20190911		
+GL00	X	8993	RECN	0012210100	ลูกหนี้การค้าต่างประเทศ-บริษัทย่อย	AR Trade Frgn-Sub	+	D	20190911		
+GL00	X	8993	RECN	0012220100	ลูกหนี้การค้าต่างประเทศ-บริษัทร่วม	AR Trade Frgn-Ass	+	D	20190911		
+GL00	X	8993	RECN	0012220200	ลูกหนี้การค้าต่างประเทศ-บริษัทร่วมค้า	AR Trade Frgnl-Joint	+	D	20190911		
+GL00	X	8993	RECN	0012230100	ลูกหนี้การค้าต่างประเทศ-บริษัทอื่นที่เกี่ยวข้องกัน	AR Trade Frgn-Oth R	+	D	20190911		
+GL00	X	8993	RECN	0012240100	ลูกหนี้การค้าต่างประเทศ-บุคคลภายนอก	AR Trade-Frgn-3rd	+	D	20190911		
+GL00	X	8993	GL	0012240110	ลูกหนี้การค้า-สัญญาซื้อขายเงินตราต่างปท.ล่วงหน้า	AR Accr.FWD Cont.Tra			20190911		
+GL00	X	8993	RECN	0012800100	หนี้สงสัยจะสูญ-ลูกหนี้การค้า	AR Trade-doubtful AC		D	20190911		
+GL00	X	8993	GL	0012860100	หนี้สงสัยจะสูญ-ลูกหนี้ตามสัญญาผ่อนชำระ	AR Trade-doubtful- H			20190911		
+GL00	X	8993	GL	0012900100	ค่าเผื่อหนี้สงสัยจะสูญ-ลูกหนี้การค้า	Allow for AR Trade			20190911		
+GL00	X	8993	GL	0012960100	ค่าเผื่อหนี้สงสัยจะสูญ-ลูกหนี้ตามสัญญาผ่อนชำระ	Allow for AR Trade-H			20190911		
+GL00	X	8993	GL	0012960110	ค่าเผื่อหนี้สงสัยจะสูญ-ความเสี่ยงลูกหนี้เช่าซื้อ	Allow for HP Risk			20190911		
+GL00	X	8993	RECN	0012990000	ลูกหนี้การค้า-เงินประกันผลงาน	AR Trade-Retention		D	20190911		
+GL00	X	8993	RECN	0013000100	เงินให้กู้ยืมระยะสั้น-บริษัทแม่	ST Loan to Parent		D	20190911		
+GL00	X	8993	RECN	0013010100	เงินให้กู้ยืมระยะสั้น-บริษัทย่อย	Short term loans to subsidiary companies		D	20190911		
+GL00	X	8993	RECN	0013020100	เงินให้กู้ยืมระยะสั้น-บริษัทที่เกี่ยวข้องกัน	Short term loans to Related Parties		D	20190911		
+GL00	X	8993	RECN	0013020110	เงินให้กู้ยืมระยะสั้น-บริษัทร่วมค้า	ST Loan to JV		D	20190911		
+GL00	X	8993	GL	0014100100	สินค้าระหว่างทาง	Goods in transit	-		20190911		
+GL00	X	8993	GL	0015100100	ค่าไปรษณียากรและอากรแสตมป์ในมือ	Postage and stamp duty - on hand			20190911		
+GL00	X	8993	MAT	0015100200	เครื่องเขียนและวัสดุสิ้นเปลืองคงเหลือ	Stationery & Off sup	-		20190911		
+GL00	X	8993	RECN	0015200100	เงินจ่ายล่วงหน้าแก่ Suppliers	Advance pt. to Suppl	-	K	20190911		
+GL00	X	8993	GL	0015300900	ลูกหนี้ค่าความเสียหาย-อื่นๆ	Claim receivable-oth	-		20190911		
+GL00	X	8993	GL	0015500100	ดอกเบี้ยค้างรับ	Accr Interest Inc			20190911		
+GL00	X	8993	GL	0015500200	ค่านายหน้าค้างรับ	Accr Commission Inc			20190911		
+GL00	X	8993	GL	0015500800	รายได้ค่าบริการ ค้างรับ	Accr Service Rev			20190911		
+GL00	X	8993	GL	0015600100	ค่าเบี้ยประกันจ่ายล่วงหน้า	Insurance Prepaid	-		20190911		
+GL00	X	8993	GL	0015600200	ค่าซ่อมแซมบำรุงรักษาจ่ายล่วงหน้า	Repair & Maint Prepa	-		20190911		
+GL00	X	8993	GL	0015600300	ค่าสมาชิกและค่าธรรมเนียมจ่ายล่วงหน้า	Sbsc&AnnlFee Prepaid	-		20190911		
+GL00	X	8993	GL	0015600400	ค่าใช้จ่ายโครงการจ่ายล่วงหน้า	Project Exp Prepaid	-		20190911		
+GL00	X	8993	GL	0015600900	ค่าใช้จ่ายจ่ายล่วงหน้าอื่นๆ	Other Prepaid exp	-		20190911		
+GL00	X	8993	RECN	0015700100	ลูกหนี้อื่น	AR - Others	+	D	20190911		
+GL00	X	8993	GL	0015700110	บัญชีพักลูกหนี้อื่น	AR - Others Clearing	-		20190911		
+GL00	X	8993	GL	0015700300	เงินทดรองจ่ายแก่กรรมการและพนักงาน(สำหรับธุรกิจ)	Adv to Directors & E	-	K	20190911		
+GL00	X	8993	GL	0015900100	ภาษีซื้อ	Purchase VAT	<		20190911		
+GL00	X	8993	GL	0015900200	ภาษีซื้อตั้งพักบัญชี	Purchase VAT Dferred	<		20190911		
+GL00	X	8993	GL	0015901100	ภาษีเงินได้หัก ณ ที่จ่ายตามมาตรา 3 เตรส	WTax section 3 tres			20190911		
+GL00	X	8993	GL	0015901200	ภาษีเงินได้หัก ณ ที่จ่ายตามมาตรา 69 ทวิ	WTax section 69 tre			20190911		
+GL00	X	8993	GL	0015901300	ภาษีเงินได้นิติบุคคลจ่ายกลางปี	Half Year Income Tax			20190911		
+GL00	X	8993	GL	0015901400	ลูกหนี้สรรพากร-ภาษีเงินได้นิติบุคคล	CIT-Receivable			20190911		
+GL00	X	8993	RECN	0015901500	ลูกหนี้และเงินกู้พนักงาน	AR & Loan to Emp		K	20190911		
+GL00	X	8993	RECN	0016000100	เงินกู้ยืมระยะยาว-บริษัทแม่	LT Loan to Parent		D	20190911		
+GL00	X	8993	RECN	0016010100	เงินกู้ยืมระยะยาว-บริษัทย่อย	Long Term Loans to subsidiary companies		D	20190911		
+GL00	X	8993	RECN	0016020100	เงินกู้ยืมระยะยาว-บริษัทร่วม	Long Term Loans to associated companies		D	20190911		
+GL00	X	8993	RECN	0016110100	เงินลงทุนในบริษัทย่อย	Invstmnt in sub co.		D	20190911		
+GL00	X	8993	RECN	0016120100	เงินลงทุนในบริษัทร่วม	Investments in ass c		D	20190911		
+GL00	X	8993	RECN	0016120200	เงินลงทุนในบริษัทร่วมค้า	Investmnt in joint		D	20190911		
+GL00	X	8993	RECN	0016140100	เงินลงทุนในบริษัทอื่น	Investments in Oth c		D	20190911		
+GL00	X	8993	AS	0017000100	ที่ดิน-สำนักงาน	Land-Office	*	A	20190911		
+GL00	X	8993	AS	0017000200	ส่วนปรับปรุงที่ดิน-สำนักงาน	Land Improv-Office	*	A	20190911		
+GL00	X	8993	AS	0017000300	อาคารและสิ่งปลูกสร้าง-สำนักงาน	Bld&Cons-Office	*	A	20190911		
+GL00	X	8993	AS	0017000310	ส่วนปรับปรุงอาคาร - สำนักงาน	Bld.Improv-office	*	A	20190911		
+GL00	X	8993	AS	0017000410	ทรัพย์สินที่มีมูลค่าต่ำ	Low Value Asset	*	A	20190911		
+GL00	X	8993	AS	0017000500	เครื่องจักรและอุปกรณ์-สำนักงาน	Machine Equipt&Tools	*	A	20190911		
+GL00	X	8993	AS	0017000600	เครื่องใช้สำนักงาน,เครื่องตกแต่งและติดตั้ง-สนง.	Frntr Fixture&Eqpmnt	*	A	20190911		
+GL00	X	8993	AS	0017000700	คอมพิวเตอร์-สำนักงาน	Computers-Off	*	A	20190911		
+GL00	X	8993	AS	0017000720	ศูนย์ข้อมูล	Data Center	*	A	20190911		
+GL00	X	8993	AS	0017000900	ทรัพย์สินมีตัวตนระหว่างก่อสร้าง	AUC-PPE	*	A	20190911		
+GL00	X	8993	AS	0017100300	ค่าเสื่อมราคาสะสม-อาคารและสิ่งปลูกสร้าง-สนง.	Accum Depre Bldgs &		A	20190911		
+GL00	X	8993	AS	0017100310	ค่าเสื่อมราคาสะสม-ส่วนปรับปรุงอาคาร - สำนักงาน	Accum Depre Bld Impr		A	20190911		
+GL00	X	8993	AS	0017100500	ค่าเสื่อมราคาสะสม-เครื่องจักรและอุปกรณ์-สนง.	Accum Depre Machine		A	20190911		
+GL00	X	8993	AS	0017100600	ค่าเสื่อมราคาสะสม-เครื่องใช้สนง.และตกแต่ง-สนง.	Accum Depre Frntr Fi		A	20190911		
+GL00	X	8993	AS	0017100700	ค่าเสื่อมราคาสะสม-คอมพิวเตอร์-สนง.	Accum Depre Comp-Off		A	20190911		
+GL00	X	8993	AS	0017100720	ค่าเสื่อมราคาสะสม-ศูนย์ข้อมูล	Accum Depre Data Cen		A	20190911		
+GL00	X	8993	GL	0017200900	เงินสำรองสำหรับทรัพย์สินถาวร	Prov for Fixed Asset			20190911		
+GL00	X	8993	GL	0018000100	ภาษีเงินได้นิติบุคคลรอตัดบัญชี	Deferred income tax			20190911		
+GL00	X	8993	GL	0018100200	ดอกเบี้ยจ่ายรอตัดบัญชี	Deferred interst exp			20190911		
+GL00	X	8993	RECN	0018200100	เงินมัดจำที่เรียกคืนได้	Refundable deposits		K	20190911		
+GL00	X	8993	AS	0018300100	ทรัพย์สินไม่มีตัวตน	Intangible Assets	*	A	20190911		
+GL00	X	8993	AS	0018400100	ค่าตัดจำหน่ายสินทรัพย์ไม่มีตัวตน	Amrtz Intngble Asset		A	20190911		
+GL00	X	8993	GL	0018500100	สินทรัพย์อื่น	Other assets			20190911		
+GL00	X	8993	AS	0018900010	Technical Clearing AA:Integration Acquisition	Technical Clearing AA:Integration Acquisition	*	A	20190911		
+GL00	X	8993	RECN	0021001010	เงินกู้ยืมระยะสั้นจากสถาบันการเงิน(บาท)	ST Loans - Baht		K	20190911		
+GL00	X	8993	RECN	0021500100	เจ้าหนี้ตั๋วเงินจ่าย	Notes Payable		K	20190911		
+GL00	X	8993	GL	0021500200	เจ้าหนี้ตั๋วเงินจ่าย-สญ.ซื้อขายเงินต่างปท.ล่วงหน้า	NP-Accr.FWD Cont.Tra			20190911		
+GL00	X	8993	GL	0021500300	ปรับปรุงแปลงค่าเจ้าหนี้ตั๋วเงินจ่ายสิ้นเดือน	NP-Adj.M/E Translati			20190911		
+GL00	X	8993	RECN	0022100100	บัญชีเจ้าหนี้  -  ในประเทศ	Accounts Trade Payable-Local-Parent Company	-	K	20190911		
+GL00	X	8993	RECN	0022110100	เจ้าหนี้การค้าในประเทศ-บริษัทย่อย	Accounts Trade Payable-Local-Subsidiary Company	-	K	20190911		
+GL00	X	8993	RECN	0022120100	เจ้าหนี้การค้าในประเทศ-บริษัทร่วม	Accounts Trade Payable-Local-Associated Company	-	K	20190911		
+GL00	X	8993	RECN	0022120110	เจ้าหนี้การค้าในประเทศ-บริษัทร่วมค้า	AP Trade Local-Joint	-	K	20190911		
+GL00	X	8993	RECN	0022140100	เจ้าหนี้การค้าในประเทศ-บุคคลอื่น	AP Trade Local-3rd	-	K	20190911		
+GL00	X	8993	RECN	0022200100	เจ้าหนี้การค้า-บริษัทแม่ ต่างประเทศ	Accounts Trade Payable-Foreign-Parent Company	-	K	20190911		
+GL00	X	8993	GL	0022200105	เจ้าหนี้เช่าซื้อส่วนที่ถึงกำหนดชำระภายใน 1 ปี	Curr prtn Hire-prchs			20190911		
+GL00	X	8993	GL	0099999971	GL Conversion	GL Conversion			20190911		
+GL00	X	8993	GL	0099999972	AP Conversion	AP Conversion			20190911		
+GL00	X	8993	GL	0099999973	AR Conversion	AR Conversion			20190911		
+GL00	X	8993	GL	0099999974	AA Conversion	AA Conversion			20190911		
+GL00	X	8993	GL	0099999975	MM Conversion	MM Conversion			20190911		
+GL00	X	8993	RECN	0099999991	เจ้าหนี้เงินค้ำประกันธนาคาร-จ่าย	AP Bank Guarantee Paid		K	20190911		
+GL00	X	8993	RECN	0099999992	เจ้าหนี้เงินค้ำประกันธนาคาร-รับ	AP Bank Guarantee Re		K	20190911		
+GL00	X	8993	RECN	0099999993	ลูกหนี้เงินค้ำประกันธนาคาร-จ่าย	AR Bank Guarantee Pa		D	20190911		
+GL00	X	8993	RECN	0099999994	ลูกหนี้เงินค้ำประกันธนาคาร-จ่าย	AR Bank Guarantee Receive		D	20190911		
+GL00		8993	PL	0049909999	รายได้อื่นหักบัญชี	Other Revenue X-Charge	*		20190911		
+GL00		8993	PL	0079900000	ค่าใช้จ่ายปันส่วนจากการจัดการ	Management Fee X-Charges	-		20190911		
+GL00		8993	PL	0079900010	ค่าใช้จ่ายปันส่วนจากส่วนบริการอื่น	Shared Service-Other X-Charges	-		20190911		
+GL00		8993	PL	0079900030	ค่าใช้จ่ายปันส่วนจากบริการ-ISD	Shared Service-ISD X-Charges	-		20190911		
+GL00		8993	PL	0079900040	ค่าใช้จ่ายปันส่วนจากโดยตรง	Direct Service X-Charges	-		20190911		
+GL00		8993	PL	0079900050	ค่าใช้จ่ายจัดจำหน่ายหักบัญชี	Distribution Fee X-Charges	-		20190911		
+GL00		8993	PL	0079900060	ดอกเบี้ยจ่ายปันส่วน	Interest Exps. X-Charges Allocate			20190911		
+GL00		8993	PL	0079910000	ค่าใช้จ่ายปันส่วนจากแผนก	Division Overhed X-Charges	-		20190911		
+GL00		8993	PL	0079910001	ค่าใช้จ่ายพนักงานปันส่วน	Personnel Expense X-Charge	-		20190911		
+GL00		8993	PL	0079910002	ค่าใช้จ่ายผลประโยชน์พนักงานปันส่วน	Staff Benefits X-Charge	-		20190911		
+GL00		8993	PL	0079910003	ค่าใช้จ่ายทรัพย์สินบริษัทปันส่วน	Co.Asset Expense X-Charge	-		20190911		
+GL00		8993	PL	0079910004	ค่าใช้จ่ายในการเดินทางปันส่วน	Travelling X-Charge	-		20190911		
+GL00		8993	PL	0079910005	ค่าใช้จ่ายในการสื่อสารปันส่วน	Communication X-Charge	-		20190911		
+GL00		8993	PL	0079910006	ค่าใช้จ่ายทั่วไปปันส่วน	General Expense. X-Charge	-		20190911		
+GL00		8993	PL	0079910007	สำรองลูกหนี้และหนี้สูญปันส่วน	Provision Bad debt & Expense X-Charge	-		20190911		
+GL00		8993	PL	0079910009	ค่าเสื่อมราคาปันส่วน	Depreciation X-Charge	-		20190911		
+GL00		8993	PL	0079910011	ค่าธรรมเนียมธนาคารปันส่วน	Bank Charge X-Charge	-		20190911		
+GL00		8993	PL	0079910012	กำไร&ขาดทุนจากอัตราแลกเปลี่ยนปันส่วน	G&L from Exchange rate X-Charge	-		20190911		
+GL00		8993	PL	0079910013	กำไร&ขาดทุนจากอัตราแลกเปลี่ยนที่ยังไม่เกิดปันส่วน	Unrealized G&L from Exchange rate X-Charge	-		20190911		
+GL00		8993	PL	0055960131	Computer exps.-Infrastructure expenses	Computer exps.-Infrastructure expenses	-		20190911		
+GL00		8993	PL	0055110163	Premises exps.-Insurance - Office Equipment (Showr	Premises exps.-Insurance - Offic	-		20190911		
+GL00		8993	PL	0055110164	Premises exps.-Property Tax and Other Taxes	Premises exps.-Property Tax and Other Taxes	-		20190911		
+GL00		8993	PL	0055920121	Staff Benefits-Training - TAX Exp.200%	Staff Benefits-Training - TAX Exp.200%	-		20190911		
+GL00		8993	PL	0055950111	Communication exps.-Mobile phone	Communication exps.-Mobile phone	-		20190911		
+GL00		8993	PL	0055960170	Computer exps.-Subscription for SW licenses	Computer exps.-Subscription for SW licenses	-		20190911		
+GL00		8993	PL	0055960180	Computer exps.-Insurance	Computer exps.-Insurance	-		20190911		
+GL00		8993	PL	0071000310	Staff Benefits-Training - TAX Exp.200%	Staff Benefits-Training - TAX Exp.200%	-		20190911		
+GL00		8993	PL	0074000401	Computer exps.-Infrastructure expenses	Computer exps.-Infrastructure expenses	-		20190911		
+GL00		8993	PL	0074000800	Computer exps.-Subscription for SW licenses	Computer exps.-Subscription for SW licenses	-		20190911		
+GL00		8993	PL	0051000500	ต้นทุนบริการ	Cost of Services	-		20190911		
+GL00		8993	PL	0079000100	ภาษีเงินได้นิติบุคคล	Company Income Tax	-		20190911		
+GL00		8993	PL	0051000100	ต้นทุนขาย-สินค้าสำเร็จรูป	Cost of Sales-Finished Products	-		20190911		
+GL00		8993	PL	0040100100	รายได้จากการขาย-บริษัทแม่	Sales from Parent	+		20190911		
+GL00		8993	PL	0040110100	รายได้จากการขาย-บริษัทย่อย	Sales from subsidiary	+		20190911		
+GL00		8993	PL	0040120100	รายได้จากการขาย-บริษัทร่วม	Sales from associated	+		20190911		
+GL00		8993	PL	0040130100	รายได้จากการขาย-บริษัทอื่นที่เกี่ยวข้อง	Sales from other related	+		20190911		
+GL00		8993	PL	0040140100	รายได้จากการขาย-บุคคลอื่น	Sales from Third Party	+		20190911		
+GL00		8993	PL	0040150100	รายได้จากการขาย-บริษัทร่วมค้า	Sales from Joint Venture	+		20190911		
+GL00		8993	PL	0040200100	รับคืนจากการขาย-บริษัทแม่	Sales Returned from Parent	+		20190911		
+GL00		8993	PL	0040210100	รับคืนจากการขาย-บริษัทย่อย	Sales Returned from subsidiary	+		20190911		
+GL00		8993	PL	0040220100	รับคืนจากการขาย-บริษัทร่วม	Sales Returned from associated	+		20190911		
+GL00		8993	PL	0040230100	รับคืนจากการขาย-บริษัทอื่นที่เกี่ยวข้อง	Sales Returned from other related	+		20190911		
+GL00		8993	PL	0040240100	รับคืนจากการขาย-บุคคลอื่น	Sales Returned from Third Party	+		20190911		
+GL00		8993	PL	0040300100	Trade Discount from Parent	Trade Discount from Parent	+		20190911		
+GL00		8993	PL	0040310100	Trade Discount from Subsidiary	Trade Discount from Subsidiary	+		20190911		
+GL00		8993	PL	0040320100	Trade Discount from Associated	Trade Discount from Associated	+		20190911		
+GL00		8993	PL	0040330100	Trade Discount from Oth related	Trade Discount from Oth related	+		20190911		
+GL00		8993	PL	0040340100	ส่วนลดการค้า-บุคคลอื่น	Trade Discount from Third Party	+		20190911		
+GL00		8993	PL	0040390000	ส่วนลดเงินสดจากการเก็บเงิน	Cash Discount from Collection			20190911		
+GL00		8993	PL	0040400100	รายได้ค่าบริการ(FI)-บริษัทแม่	Service Revenue(FI) from  Parent	+		20190911		
+GL00		8993	PL	0040400200	รายได้ค่าบริการ-บริษัทแม่	Service Revenue from Parent	+		20190911		
+GL00		8993	PL	0040400210	Service Revenue Discount from Parent	Service Revenue Discount from Parent	+		20190911		
+GL00		8993	PL	0040400300	รายได้ค่าเช่า-บริษัทแม่	Rental Service Revenue from Parent	+		20190911		
+GL00		8993	PL	0040400400	Rental Service Revenue (FI) from Parent	Rental Service Revenue (FI) from Parent	+		20190911		
+GL00		8993	PL	0040410100	รายได้ค่าบริการ(FI)-บริษัทย่อย	Service Revenue(FI) from  Subsidiary	+		20190911		
+GL00		8993	PL	0040410200	รายได้ค่าบริการ-บริษัทย่อย	Service Revenue from subsidiary	+		20190911		
+GL00		8993	PL	0040410210	Service Revenue Discount from Subsidiary	Service Revenue Discount from Subsidiary	+		20190911		
+GL00		8993	PL	0040410300	รายได้ค่าเช่า-บริษัทย่อย	Rental Service Revenue from Subsidiary	+		20190911		
+GL00		8993	PL	0040410400	Rental Service Revenue (FI) from Subsidiary	Rental Service Revenue (FI) from Subsidiary	+		20190911		
+GL00		8993	PL	0040420100	รายได้ค่าบริการ(FI)-บริษัทร่วม	Service Revenue(FI) from Associated	+		20190911		
+GL00		8993	PL	0040420200	รายได้ค่าบริการ-บริษัทร่วม	Service Revenue from associated	+		20190911		
+GL00		8993	PL	0040420210	Service Revenue Discount from Associated	Service Revenue Discount from Associated	+		20190911		
+GL00		8993	PL	0040420300	รายได้ค่าเช่า-บริษัทร่วม	Rental Service Revenue from Associated	+		20190911		
+GL00		8993	PL	0040420400	Rental Service Revenue (FI) from Associated	Rental Service Revenue (FI) from Associated	+		20190911		
+GL00		8993	PL	0040430100	รายได้ค่าบริการ(FI)-บริษัทอื่นที่เกี่ยวข้อง	Service Revenue(FI) from other related	+		20190911		
+GL00		8993	PL	0040430200	รายได้ค่าบริการ-บริษัทอื่นที่เกี่ยวข้อง	Service Revenue from other related	+		20190911		
+GL00		8993	PL	0040430210	Service Revenue Discount from Oth related	Service Revenue Discount from Oth related	+		20190911		
+GL00		8993	PL	0040430300	รายได้ค่าเช่า-บริษัทอื่นที่เกี่ยวข้อง	Rental Service Revenue from Other related	+		20190911		
+GL00		8993	PL	0040430400	Rental Service Revenue (FI) from Other related	Rental Service Revenue (FI) from Other related	+		20190911		
+GL00		8993	PL	0040440100	รายได้ค่าบริการ(FI)-บุคคลอื่น	Service Revenue(FI) from Third Party	+		20190911		
+GL00		8993	PL	0040440200	รายได้ค่าบริการ-บุคคลอื่น	Service Revenue from 3rd Party	+		20190911		
+GL00		8993	PL	0040440210	Service Revenue Discount from 3rd Party	Service Revenue Discount from 3rd Party	+		20190911		
+GL00		8993	PL	0040440300	รายได้ค่าเช่า-บุคคลอื่น	Rental Service Revenue from Third Party	+		20190911		
+GL00		8993	PL	0040440400	Rental Service Revenue (FI) from 3rd Party	Rental Service Revenue (FI) from 3rd Party	+		20190911		
+GL00		8993	PL	0040450100	รายได้ค่าบริการ(FI)-บริษัทร่วมค้า	Service Revenue(FI) from Joint Venture	+		20190911		
+GL00		8993	PL	0040450200	รายได้ค่าบริการ-บริษัทร่วมค้า	Service Revenue from Joint Venture	+		20190911		
+GL00		8993	PL	0040450210	Service Revenue Discount from Joint Venture	Service Revenue Discount from Joint Venture	+		20190911		
+GL00		8993	PL	0040450300	รายได้ค่าเช่า-บริษัทร่วมค้า	Rental Service Revenue from Joint Venture	+		20190911		
+GL00		8993	PL	0040450400	รายได้ค่าเช่า(FI)-บริษัทร่วมค้า	Rental Service Revenue(FI) from Joint Venture	+		20190911		
+GL00		8993	PL	0049000200	ดอกเบี้ยรับ-ไม่มีภาษีธุรกิจเฉพาะ-(FI)-บริษัทแม่	Interest Income-w/o Special Tax-(FI)-Parent Compan	+		20190911		
+GL00		8993	PL	0049010200	ดอกเบี้ยรับ-ไม่มีภาษีธุรกิจเฉพาะ-(FI)-บริษัทย่อย	Interest Income-w/o Special Tax-(FI)-Subsidiary	+		20190911		
+GL00		8993	PL	0049020200	ดอกเบี้ยรับ-ไม่มีภาษีธุรกิจเฉพาะ-(FI)-Related Part	Interest Income-w/o Special Tax-(FI)-Related Party	+		20190911		
+GL00		8993	PL	0049040910	ดอกเบี้ยรับ-ไม่มีภาษีธุรกิจเฉพาะ-(FI)-บุคคลอื่น	Interest Income-w/o Special Tax-(FI)-Other	+		20190911		
+GL00		8993	PL	0049050200	ดอกเบี้ยรับ-ไม่มีภาษีธุรกิจเฉพาะ(FI)-ร่วมค้า	Interest Income-w/o Special Tax(FI) Joint venture	+		20190911		
+GL00		8993	PL	0049200000	กำไรจากการจำหน่ายทรัพย์สิน	Gain on Disposal of Asset	+		20190911		
+GL00		8993	PL	0049200200	กำไรจากการจำหน่ายเงินลงทุน	Gain on Disposal of Investments	+		20190911		
+GL00		8993	PL	0049210100	เงินปันผลรับ-บริษัทย่อย	Dividend Income-Subsidiary Companies	+		20190911		
+GL00	X	8993	RECN	0013100900	ลูกหนี้อื่น-บ.แม่	AR Oth to Parent	+	D	20190911		
+GL00	X	8993	RECN	0013110900	ลูกหนี้อื่นบริษัทที่เกี่ยวข้องกัน-บ.ย่อย	AR Oth to sub	+	D	20190911		
+GL00	X	8993	RECN	0013120900	ลูกหนี้อื่นบริษัทที่เกี่ยวข้องกัน-บ.ร่วม	AR Oth to Ass	+	D	20190911		
+GL00	X	8993	RECN	0013120910	ลูกหนี้อื่นบริษัทที่เกี่ยวข้องกัน-บ.ร่วมค้า	AR Oth to Joint	+	D	20190911		
+GL00	X	8993	RECN	0013130900	ลูกหนี้อื่นบริษัทที่เกี่ยวข้องกัน-บ.อื่นที่เกี่ยวข	AR Oth to Oth relate	+	D	20190911		
+GL00	X	8993	GL	0013910100	ค่าเผื่อหนี้สงสัยจะสูญ-เงินกู้ยืมระยะสั้นบ.ย่อย	Allow f ST Loan to S			20190911		
+GL00	X	8993	GL	0013910900	ค่าเผื่อหนี้สงสัยจะสูญ-ลน.อื่นบ.เกี่ยวข้อง-บ.ย่อย	Allow to Oth AR to S			20190911		
+GL00	X	8993	GL	0013920100	ค่าเผื่อหนี้สงสัยจะสูญ-เงินกู้ยืมระยะสั้นบ.ร่วม	Allow f ST Loan to A			20190911		
+GL00	X	8993	GL	0013920900	ค่าเผื่อหนี้สงสัยจะสูญ-ลน.อื่นบ.เกี่ยวข้อง-บ.ร่วม	Allow to Oth AR to A			20190911		
+GL00	X	8993	MAT	0014000100	สินค้าสำเร็จรูป	Finished goods	-		20190911		
+GL00	X	8993	GL	0014000110	สินค้าสำเร็จรูป-ปรับปรุง	Finished goods-Adj.			20190911		
+GL00	X	8993	MAT	0014000200	งานระหว่างทำ	Work in process	-		20190911		
+GL00	X	8993	RECN	0022210100	เจ้าหนี้การค้าต่างประเทศ-บริษัทย่อย	AP Trade Foreign - S	-	K	20190911		
+GL00	X	8993	RECN	0022240100	เจ้าหนี้การค้าต่างประเทศ-บุคคลอื่น	AP Trade Freign-3rd	-	K	20190911		
+GL00	X	8993	GL	0022240110	เจ้าหนี้การค้า-สัญญาซื้อขายเงินตราต่างปท.ล่วงหน้า	AP Accr.FWD Cont.Tra			20190911		
+GL00	X	8993	GL	0022240120	ปรับปรุงแปลงค่าเจ้าหนี้การค้าสิ้นเดือน	AP Trade-Adj M/E Trn			20190911		
+GL00	X	8993	GL	0022280000	เงินมัดจำรอจ่ายคืน	Returnable Deposit	+		20190911		
+GL00	X	8993	RECN	0022300100	เงินทดรองจ่ายจากกรรมการและพนักงาน	Adv fr Employees		K	20190911		
+GL00	X	8993	RECN	0023000100	เงินกู้ยืมระยะสั้น-บริษัทแม่	ST Loan fr Parent		K	20190911		
+GL00	X	8993	RECN	0023000900	เงินกู้ยืมระยะสั้น-สถาบันการเงิน	ST Loan fr Financ In		K	20190911		
+GL00	X	8993	RECN	0023010100	เงินกู้ยืมระยะสั้น-บริษัทย่อย	ST Loan fr Sub co.		K	20190911		
+GL00	X	8993	RECN	0023020100	เงินกู้ยืมระยะสั้น-Related Party	ST Loan fr Ass co.		K	20190911		
+GL00	X	8993	RECN	0024000100	เจ้าหนี้อื่นที่เกี่ยวข้องกัน-บริษัทแม่	Oth AP related fr. P		K	20190911		
+GL00	X	8993	RECN	0024100900	เจ้าหนี้อื่นที่เกี่ยวข้อง-บ.อื่นที่เกี่ยวข้องกัน	Oth AP related fr. O		K	20190911		
+GL00	X	8993	RECN	0024110100	เจ้าหนี้อื่นที่เกี่ยวข้องกัน-บริษัทย่อย	Oth AP related fr. S		K	20190911		
+GL00	X	8993	RECN	0024120100	เจ้าหนี้อื่นที่เกี่ยวข้องกัน-บริษัทร่วม	Oth AP related fr. A		K	20190911		
+GL00	X	8993	RECN	0024120110	เจ้าหนี้อื่นบริษัทที่เกี่ยวข้องกัน-บ.ร่วมค้า	AP Oth fr Joint		K	20190911		
+GL00	X	8993	GL	0024200100	สำรอง ESOP-บริษัทที่เกี่ยวข้องกัน	Provision ESOP-Related Parties			20190911		
+GL00	X	8993	RECN	0024290000	เจ้าหนี้อื่น-เงินประกัน	Oth AP-Retention		K	20190911		
+GL00	X	8993	GL	0025000100	เงินเดือนค้างจ่าย	Accr Salary exp			20190911		
+GL00	X	8993	GL	0025000200	โบนัสค้างจ่าย	Accr Bonus exp			20190911		
+GL00	X	8993	GL	0025000300	ค่านายหน้าพนักงานขายค้างจ่าย	Accr Slm Comm.			20190911		
+GL00	X	8993	GL	0025000610	ค่าซ่อมแซมและบำรุงรักษาค้างจ่าย	Accr R&M			20190911		
+GL00	X	8993	GL	0025000700	ค่าใช้จ่ายทางการตลาดค้างจ่าย	Accr Mkt Actvty exp			20190911		
+GL00	X	8993	GL	0025000900	ค่าใช้จ่ายในการฝึกอบรมและส่งเสริมการขายค้างจ่าย	Accr Train&Pro exp			20190911		
+GL00	X	8993	GL	0025001000	ต้นทุนบริการค้างจ่าย	Accr service cost			20190911		
+GL00	X	8993	GL	0025001200	ค่าถ่ายเอกสารค้างจ่าย	Accr PhotoCopy Serv			20190911		
+GL00	X	8993	GL	0025001300	ค่าธรรมเนียมวิชาชีพและกฎหมายค้างจ่าย	Accr Prfssnl&LglFee			20190911		
+GL00	X	8993	GL	0025001400	Accrued Telephone expenses	Accrued Telephone expenses			20190911		
+GL00	X	8993	GL	0025001500	ค่าไฟฟ้าค้างจ่าย	Accr Electricty exp			20190911		
+GL00	X	8993	GL	0025001600	ค่าน้ำประปาค้างจ่าย	Accr Water exp			20190911		
+GL00	X	8993	GL	0025001700	ค่าโทรศัพท์ค้างจ่าย	Accr Commntnt exp			20190911		
+GL00	X	8993	GL	0025001800	Accrued Rental expenses	Accrued Rental expenses			20190911		
+GL00	X	8993	GL	0025001900	ค่าไปรษณีย์ค้างจ่าย	Accr Postage exp			20190911		
+GL00	X	8993	GL	0025002000	ดอกเบี้ยจ่ายค้างจ่าย	Accr Interest exp			20190911		
+GL00	X	8993	GL	0025002300	ค่าใช้จ่ายเบ็ดเตล็ดค้างจ่าย	Accr Sundry exp			20190911		
+GL00	X	8993	GL	0025002600	ภาษีเงินได้นิติบุคคลค้างจ่าย	Co.Inc.Tax Payable			20190911		
+GL00	X	8993	GL	0026000200	หนี้สินระยะยาวอื่นที่ถึงกำหนดชำระภายใน 1 ปี	Curr Prtn Oth LT Lia			20190911		
+GL00	X	8993	GL	0027000100	ภาษีขาย	Output VAT	>		20190911		
+GL00	X	8993	GL	0027000200	ภาษีขายรอนำส่ง	Output VAT Deferred	>		20190911		
+GL00	X	8993	GL	0027000300	เจ้าหนี้สรรพากร-ภาษีมูลค่าเพิ่ม	VAT Payable			20190911		
+GL00	X	8993	GL	0027100100	ภาษีเงินได้หัก ณ ที่จ่าย-ภงด.1	WTax - P.Ng.D. 1			20190911		
+GL00	X	8993	GL	0027100200	ภาษีเงินได้หัก ณ ที่จ่าย-ภงด.2	WTax - P.Ng.D. 2			20190911		
+GL00	X	8993	GL	0027100300	ภาษีเงินได้หัก ณ ที่จ่าย-ภงด.3	WTax - P.Ng.D. 3			20190911		
+GL00	X	8993	GL	0027105300	ภาษีเงินได้หัก ณ ที่จ่าย-ภงด.53	WTax - P.Ng.D. 53			20190911		
+GL00	X	8993	GL	0027105400	ภาษีเงินได้หัก ณ ที่จ่าย-ภงด.54	WTax - P.Ng.D. 54			20190911		
+GL00	X	8993	GL	0028000100	รายได้รอตัดบัญชี	Deferred incomes	+		20190911		
+GL00	X	8993	GL	0028000200	Advance Deposit - Short Term	Advance Deposit - Short Term	+		20190911		
+GL00	X	8993	GL	0028000900	เงินปันผลค้างจ่าย	Dividend Payable			20190911		
+GL00	X	8993	RECN	0028100100	เจ้าหนี้อื่นในประเทศ	Other AP - Local	-	K	20190911		
+GL00	X	8993	RECN	0028200100	เจ้าหนี้อื่นต่างประเทศ	Other Accounts payable - Foreign	-	K	20190911		
+GL00	X	8993	GL	0028200110	เจ้าหนี้ต่างปท.อื่น-สญ.ซื้อขายเงินต่างปท.ล่วงหน้า	Oth AP-For-Accr Fwd			20190911		
+GL00	X	8993	RECN	0028900000	เจ้าหนี้อื่น-ซื้อทรัพย์สินถาวร	Oth Payable - Purc F		K	20190911		
+GL00	X	8993	GL	0028900050	บัญชีพักสินค้าสำเร็จรูป	GR/IR - Finish Goods	-		20190911		
+GL00	X	8993	GL	0028900110	GR No Invoice-ปรับปรุงงบดุล	GR NO INVOICE -B/S A			20190911		
+GL00	X	8993	GL	0028900240	สินค้าระหว่างทาง-ปรับปรุงงบดุล	GOODS IN TRS -B/S AD			20190911		
+GL00	X	8993	GL	0028900250	รับสินค้าไม่มีอินวอยซ์	GOODS RECEIVED NO IN			20190911		
+GL00	X	8993	GL	0028900300	บัญชีพักค่าบริการ	GR/IR - Services	-		20190911		
+GL00	X	8993	GL	0028900400	บัญชีพักอื่นๆ	GR/IR - Others	-		20190911		
+GL00	X	8993	RECN	0029100100	เงินกู้ยืมระยะยาว-บริษัทแม่	Long Term Loans from Parent Company	-	K	20190911		
+GL00	X	8993	RECN	0029110100	เงินกู้ยืมระยะยาว-บริษัทย่อย	LT Loans fr Sub	-	K	20190911		
+GL00	X	8993	RECN	0029120100	เงินกู้ยืมระยะยาว-บริษัทร่วม	LT Loans fr Ass	-	K	20190911		
+GL00	X	8993	RECN	0029140100	เงินกู้ยืมระยะยาว-สถาบันการเงิน	LT Loan fr Financ In	-	K	20190911		
+GL00	X	8993	RECN	0029200100	เงินกู้ยืมระยะยาว-เงินตราในประเทศ	LT loans - LC	-	K	20190911		
+GL00	X	8993	RECN	0029200200	เงินกู้ยืมระยะยาว-เงินตราต่างประเทศ	LT loans - FC	-	K	20190911		
+GL00	X	8993	RECN	0029300100	เจ้าหนี้เช่าซื้อ	Hire-purchase Payble	-	K	20190911		
+GL00	X	8993	GL	0029500100	Advance Deposit - Long Term	Advance Deposit - Long Term	+		20190911		
+GL00	X	8993	GL	0029700200	สำรองเงินชดเชยเกษียณอายุ	Accru pension fund			20190911		
+GL00	X	8993	GL	0029700900	หนี้สินอื่น	Other Liabilities			20190911		
+GL00	X	8993	GL	0029800100	หนี้สินภาษีเงินได้นิติบุคคลรอตัดบ/ช	Def Income tax Liab.			20190911		
+GL00	X	8993	GL	0031100100	ทุนเรือนหุ้น	Share Capital			20190911		
+GL00	X	8993	GL	0032100100	ส่วนเกินมูลค่าหุ้น	Prem - share capital			20190911		
+GL00	X	8993	GL	0033100100	สำรองตามกฎหมาย	Legal reserve			20190911		
+GL00	X	8993	GL	0033600100	กำไรสะสม-ยังไม่ได้จัดสรร	Unappropriated R/E			20190911		
+GL00	X	8993	GL	0033610100	เงินปันผลจ่าย	Dividend paid			20190911		
+GL00		8993	PL	0049149998	ดอกเบี้ยรับระหว่างกันหักบัญชี	Interest Income Inter-company X-Charge			20190911		
+GL00		8993	PL	0049149999	รายได้ดอกเบี้ยหักบัญชี	Interest Income X-Charge			20190911		
+GL00		8993	PL	0041040200	รายได้จากอาคารและสิ่งปลูกสร้าง(FI)-บุคคลอื่น	Premises Revenue(FI) from 3rd Party	+		20190915		
+GL00		8993	PL	0041040100	รายได้จากอาคารและสิ่งปลูกสร้าง-บุคคลอื่น	Premises Revenue from 3rd Party	+		20190915		
+GL00	X	8993	RECN	0028001000	เงินรับล่วงหน้า	Advance Receivable (FI)	+	D	20190915		
+GL00	X	8993	RECN	0022130100	Accounts Trade Payable-Local-Other Related Company	Accounts Trade Payable-Local-Other Related Company	-	K	20190919		
+GL00	X	8993	AS	0017000910	ทรัพย์สินมีตัวตนระหว่างก่อสร้าง-AJD.CONV.	AUC-PPE-AJD.CONV.			20191010		
+GL00	X	8993	GL	0099999999	Balance Sheet clearing				20191011		
+GL00	X	8993	RECN	0016030100	เงินกู้ยืมระยะยาว-บริษัทร่วมค้า	Long Term Loans to Joint Venture		D	20191206		
+GL00	X	8993	GL	0099999998	Balance Sheet Clearing for X-Charge	Balance Sheet Clearing for X-Charge			20191206		
+GL00		8993	PL	0078500600	ส่วนลดเงินสดจากการเก็บเงิน	Cash Discount from Collection	-		20200102		
+GL00	X	8993	CASH	0010103020	S/A-SCB-Sathorn/งฝ.ออมทรัพย์-ธ.ไทยพาณิชย์ สข.สาทร	S/A-SCB-Sathorn			20200106	SCB01	STB01
+GL00	X	8993	CASH	0010103021	S/A-SCB-Sathorn-In Coming/งฝ.ออมทรัพย์-ธ.ไทยพาณิชย	S/A-SCB-Empire-Incoming			20200106	SCB01	STB01
+GL00	X	8993	GL	0028001010	เงินรับล่วงหน้า	Advance Receivable	+		20200120		
+GL00		8993	PL	0071001501	สวัสดิการพนักงาน-รางวัลสำหรับพนักงานทำงานนาน	Staff Benefits-Long service award-Actual	-		20200306		
+GL00		8993	PL	0055920211	สวัสดิการพนักงาน-รางวัลสำหรับพนักงานทำงานนาน	Staff Benefits-Long service award-Actual			20200306		
+GL00		8993	PL	0040140110	รายได้จากการขาย-บุคคลอื่น-ปรับปรุง	Sales from Third Party-Adjustment	+		20230405		
+GL00		8993	PL	0070000901	เงินชดเชยเกษียณอายุ	Personnel Exps.-Retirement Benefits-Actual	-		20200623		
+GL00	X	8993	GL	0016030200	เงินกู้ยืมระยะยาว-ร่วมค้าที่ถึงกำหนดชำระภายใน 1 ปี	Current portion of Long Term Loans to JV			20210114		
+GL00	X	8993	RECN	0022290000	เจ้าหนี้การค้า-เงินประกันผลงาน	Accounts Trade Payable - Retention		K	20210525		
+GL00		8993	PL	0072001120	ค่าใช้จ่ายอาคารและสิ่งปลูกสร้าง-ค่าบริการพื้นที่	Premises exps.-Service	-		20220527		
+GL00		8993	PL	0053500100	กำไร/ขาดทุนจากการประเมินราคาสินค้าสำเร็จรูป	gain/loss form revaluation-FG	*		20220907		
+GL00	X	8993	GL	0029700300	เจ้าหนี้อื่นเงินชดเชยเกษียณอายุ	AP-Others Retirement			20231010		
+GL00	X	8993	GL	0018500200	ลูกหนี้อื่นเงินชดเชยเกษียณอายุ	AR-Others Retirement			20231010		
+GL00	X	8993	GL	0015700200	Not use	Not use	-		20231010		
+GL00	X	8993	GL	0028000400	รายได้รอตัดบัญชี Hire Purchase/Leasing contract	Deferred income Hire Purchase/Leasing contract	+		20240801		
+GL00		8993	PL	0040140200	รายได้จากการขาย Hire Purchase/Leasing Contract	Sales from Hire Purchase/Leasing Contract	+		20240801		
+GL00		8993	PL	0049000010	ดอกเบี้ยที่รับ Hire Purchase/Leasing Contract_FI	Interest Income Hire Purchase/Leasing Contract_FI	+		20240801		
+GL00	X	8993	GL	0016010200	เงินกู้ยืมระยะยาว-บ.ย่อยที่ถึงกำหนดชำระภายใน 1 ปี	Current portion of Long Term Loans to subsidiary			20240807		
+GL00		8993	PL	0055910161	เงินชดเชยเกษียณอายุตามจริง	Personnel Exps.-Retirement Benefits-Actual	*		20250320		

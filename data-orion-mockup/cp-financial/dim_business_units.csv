@@ -1,0 +1,13 @@
+bu_id,bu_code,bu_name,bu_name_thai,division,country,region,currency,active,primary_brand
+BU-001,CONV-7E,Convenience Stores - 7-Eleven,ร้านสะดวกซื้อ - เซเว่น อีเลฟเว่น,Retail,Thailand,All Regions,THB,TRUE,7-Eleven
+BU-002,CONV-ALL,Convenience Stores - All Cafe,ร้านสะดวกซื้อ - ออล คาเฟ่,Retail,Thailand,All Regions,THB,TRUE,All Cafe
+BU-003,WS-MAKRO-F,Wholesale - Makro Food,ขายส่ง - แม็คโคร อาหาร,Wholesale,Thailand,All Regions,THB,TRUE,Makro
+BU-004,WS-MAKRO-N,Wholesale - Makro Non-Food,ขายส่ง - แม็คโคร ทั่วไป,Wholesale,Thailand,All Regions,THB,TRUE,Makro
+BU-005,WS-SIAM,Wholesale - Siam Makro,ขายส่ง - สยาม แม็คโคร,Wholesale,Thailand,All Regions,THB,TRUE,Siam Makro
+BU-006,RTL-LOTUS,Retail - Lotus's Hypermarket,ค้าปลีก - โลตัส ไหปเปอร์มาร์เก็ต,Retail,Thailand,All Regions,THB,TRUE,Lotus's
+BU-007,RTL-MALL,Retail - Shopping Malls,ค้าปลีก - ศูนย์การค้า,Retail,Thailand,Central,THB,TRUE,CP Mall
+BU-008,RTL-ONLINE,Retail - E-commerce,ค้าปลีก - อีคอมเมิร์ซ,Retail,Thailand,All Regions,THB,TRUE,All Online
+BU-009,SVC-FINTECH,Services - Financial Technology,บริการ - ฟินเทค,Services,Thailand,All Regions,THB,TRUE,TrueMoney
+BU-010,SVC-LOGISTICS,Services - Logistics & Distribution,บริการ - โลจิสติกส์,Services,Thailand,All Regions,THB,TRUE,CP Logistics
+BU-011,SVC-PROPERTY,Services - Property Management,บริการ - บริหารอสังหาริมทรัพย์,Services,Thailand,All Regions,THB,TRUE,CP Land
+BU-012,OTHER,Other Business Units,หน่วยธุรกิจอื่นๆ,Other,Thailand,All Regions,THB,TRUE,Various

@@ -1,0 +1,99 @@
+cost_center_id,cost_center_name,cost_center_name_thai,region,province,cc_type,manager,active
+CC-0001,Corporate Finance,การเงินองค์กร,Corporate,Bangkok,Corporate,Somchai Rattanakul,TRUE
+CC-0002,Corporate HR,ทรัพยากรบุคคลองค์กร,Corporate,Bangkok,Corporate,Siriwan Chaiyaphum,TRUE
+CC-0003,Corporate IT,ไอทีองค์กร,Corporate,Bangkok,Corporate,Prasert Wongsakul,TRUE
+CC-0004,Corporate Marketing,การตลาดองค์กร,Corporate,Bangkok,Corporate,Nuttapong Srisuwan,TRUE
+CC-0005,Corporate Procurement,จัดซื้อองค์กร,Corporate,Bangkok,Corporate,Wichai Limprasert,TRUE
+CC-0006,Corporate Legal,กฎหมายองค์กร,Corporate,Bangkok,Corporate,Apinya Boonsombat,TRUE
+CC-0007,Corporate Strategy,กลยุทธ์องค์กร,Corporate,Bangkok,Corporate,Kittipong Surasak,TRUE
+CC-0008,Corporate Real Estate,อสังหาริมทรัพย์,Corporate,Bangkok,Corporate,Pornthip Thongsuk,TRUE
+CC-0009,Corporate Supply Chain,ห่วงโซ่อุปทาน,Corporate,Bangkok,Corporate,Anupong Kritsana,TRUE
+CC-0010,Corporate Quality Assurance,ควบคุมคุณภาพ,Corporate,Bangkok,Corporate,Thitima Rattana,TRUE
+CC-1001,Central DC - Bangkok,ศูนย์กระจายสินค้ากรุงเทพ,Central,Bangkok,Distribution Center,Surasak Phongphan,TRUE
+CC-1002,Central DC - Nonthaburi,ศูนย์กระจายสินค้านนทบุรี,Central,Nonthaburi,Distribution Center,Chalerm Saengsuk,TRUE
+CC-1003,Central DC - Samut Prakan,ศูนย์กระจายสินค้าสมุทรปราการ,Central,Samut Prakan,Distribution Center,Rungroj Pattana,TRUE
+CC-1004,Central DC - Pathum Thani,ศูนย์กระจายสินค้าปทุมธานี,Central,Pathum Thani,Distribution Center,Kritchai Somjai,TRUE
+CC-2001,North DC - Chiang Mai,ศูนย์กระจายสินค้าเชียงใหม่,North,Chiang Mai,Distribution Center,Worawut Chaiwong,TRUE
+CC-2002,North DC - Chiang Rai,ศูนย์กระจายสินค้าเชียงราย,North,Chiang Rai,Distribution Center,Manop Kaewsai,TRUE
+CC-2003,North DC - Lampang,ศูนย์กระจายสินค้าลำปาง,North,Lampang,Distribution Center,Suwit Jankaew,TRUE
+CC-3001,Northeast DC - Khon Kaen,ศูนย์กระจายสินค้าขอนแก่น,Northeast,Khon Kaen,Distribution Center,Sompong Boonya,TRUE
+CC-3002,Northeast DC - Nakhon Ratchasima,ศูนย์กระจายสินค้านครราชสีมา,Northeast,Nakhon Ratchasima,Distribution Center,Narong Srisawat,TRUE
+CC-3003,Northeast DC - Udon Thani,ศูนย์กระจายสินค้าอุดรธานี,Northeast,Udon Thani,Distribution Center,Thawatchai Khumtong,TRUE
+CC-4001,South DC - Phuket,ศูนย์กระจายสินค้าภูเก็ต,South,Phuket,Distribution Center,Somkid Charoenwong,TRUE
+CC-4002,South DC - Surat Thani,ศูนย์กระจายสินค้าสุราษฎร์ธานี,South,Surat Thani,Distribution Center,Bancha Sriprasert,TRUE
+CC-4003,South DC - Songkhla,ศูนย์กระจายสินค้าสงขลา,South,Songkhla,Distribution Center,Wasan Tantiwit,TRUE
+CC-5001,East DC - Chonburi,ศูนย์กระจายสินค้าชลบุรี,East,Chonburi,Distribution Center,Chatchai Wongsuk,TRUE
+CC-5002,East DC - Rayong,ศูนย์กระจายสินค้าระยอง,East,Rayong,Distribution Center,Nattapong Suthiwan,TRUE
+CC-6001,West DC - Kanchanaburi,ศูนย์กระจายสินค้ากาฬสินธุ์,West,Kanchanaburi,Distribution Center,Prasit Sangkham,TRUE
+CC-7001,BKK Zone 1 - Sukhumvit,กลุ่มร้านสุขุมวิท,Central,Bangkok,Store Group,Prajak Srisuk,TRUE
+CC-7002,BKK Zone 2 - Silom,กลุ่มร้านสีลม,Central,Bangkok,Store Group,Chalermpol Pradit,TRUE
+CC-7003,BKK Zone 3 - Ratchada,กลุ่มร้านรัชดา,Central,Bangkok,Store Group,Narongsak Boonsri,TRUE
+CC-7004,BKK Zone 4 - Phra Nakhon,กลุ่มร้านพระนคร,Central,Bangkok,Store Group,Thawee Kruethong,TRUE
+CC-7005,BKK Zone 5 - Thonburi,กลุ่มร้านธนบุรี,Central,Bangkok,Store Group,Anan Wongsakul,TRUE
+CC-7006,BKK Zone 6 - Don Mueang,กลุ่มร้านดอนเมือง,Central,Bangkok,Store Group,Surachet Khamphaeng,TRUE
+CC-7007,BKK Zone 7 - Bang Khae,กลุ่มร้านบางแค,Central,Bangkok,Store Group,Worapong Srisawang,TRUE
+CC-7008,BKK Zone 8 - Lat Phrao,กลุ่มร้านลาดพร้าว,Central,Bangkok,Store Group,Piyapong Thongsuk,TRUE
+CC-7101,Nonthaburi Stores,กลุ่มร้านนนทบุรี,Central,Nonthaburi,Store Group,Sarawut Chaikul,TRUE
+CC-7102,Pathum Thani Stores,กลุ่มร้านปทุมธานี,Central,Pathum Thani,Store Group,Weerasak Puangpetch,TRUE
+CC-7103,Samut Prakan Stores,กลุ่มร้านสมุทรปราการ,Central,Samut Prakan,Store Group,Kittisak Chankaew,TRUE
+CC-7104,Samut Sakhon Stores,กลุ่มร้านสมุทรสาคร,Central,Samut Sakhon,Store Group,Pongsakorn Wuthikrai,TRUE
+CC-7105,Nakhon Pathom Stores,กลุ่มร้านนครปฐม,Central,Nakhon Pathom,Store Group,Nipon Srisomboon,TRUE
+CC-7106,Ayutthaya Stores,กลุ่มร้านพระนครศรีอยุธยา,Central,Phra Nakhon Si Ayutthaya,Store Group,Montri Phongsawat,TRUE
+CC-7107,Saraburi Stores,กลุ่มร้านสระบุรี,Central,Saraburi,Store Group,Thongchai Pongpan,TRUE
+CC-7108,Lopburi Stores,กลุ่มร้านลพบุรี,Central,Lopburi,Store Group,Arthit Sukhum,TRUE
+CC-7109,Ratchaburi Stores,กลุ่มร้านราชบุรี,Central,Ratchaburi,Store Group,Viroj Thanawat,TRUE
+CC-7110,Kanchanaburi Stores,กลุ่มร้านกาญจนบุรี,West,Kanchanaburi,Store Group,Somphong Santiwong,TRUE
+CC-7201,Chiang Mai Stores,กลุ่มร้านเชียงใหม่,North,Chiang Mai,Store Group,Sakchai Chotiros,TRUE
+CC-7202,Chiang Rai Stores,กลุ่มร้านเชียงราย,North,Chiang Rai,Store Group,Uthai Phongsri,TRUE
+CC-7203,Lampang Stores,กลุ่มร้านลำปาง,North,Lampang,Store Group,Bundit Suwanno,TRUE
+CC-7204,Lamphun Stores,กลุ่มร้านลำพูน,North,Lamphun,Store Group,Kritsada Chaiyapum,TRUE
+CC-7205,Mae Hong Son Stores,กลุ่มร้านแม่ฮ่องสอน,North,Mae Hong Son,Store Group,Samart Kittipong,TRUE
+CC-7206,Phayao Stores,กลุ่มร้านพะเยา,North,Phayao,Store Group,Noppadon Krailas,TRUE
+CC-7207,Nan Stores,กลุ่มร้านน่าน,North,Nan,Store Group,Somkiat Wongsa,TRUE
+CC-7208,Phrae Stores,กลุ่มร้านแพร่,North,Phrae,Store Group,Wuttichai Srikaew,TRUE
+CC-7209,Uttaradit Stores,กลุ่มร้านอุตรดิตถ์,North,Uttaradit,Store Group,Yongyut Pongpat,TRUE
+CC-7210,Sukhothai Stores,กลุ่มร้านสุโขทัย,North,Sukhothai,Store Group,Chaiyaporn Chaisri,TRUE
+CC-7301,Khon Kaen Stores,กลุ่มร้านขอนแก่น,Northeast,Khon Kaen,Store Group,Suphot Thongpakdee,TRUE
+CC-7302,Nakhon Ratchasima Stores,กลุ่มร้านนครราชสีมา,Northeast,Nakhon Ratchasima,Store Group,Somsak Kaewmanee,TRUE
+CC-7303,Udon Thani Stores,กลุ่มร้านอุดรธานี,Northeast,Udon Thani,Store Group,Paisit Sripromma,TRUE
+CC-7304,Ubon Ratchathani Stores,กลุ่มร้านอุบลราชธานี,Northeast,Ubon Ratchathani,Store Group,Suthep Rattana,TRUE
+CC-7305,Nong Khai Stores,กลุ่มร้านหนองคาย,Northeast,Nong Khai,Store Group,Thanat Chotsawat,TRUE
+CC-7306,Sakon Nakhon Stores,กลุ่มร้านสกลนคร,Northeast,Sakon Nakhon,Store Group,Preecha Wongwan,TRUE
+CC-7307,Nakhon Phanom Stores,กลุ่มร้านนครพนม,Northeast,Nakhon Phanom,Store Group,Somphop Boonlert,TRUE
+CC-7308,Mukdahan Stores,กลุ่มร้านมุกดาหาร,Northeast,Mukdahan,Store Group,Boonchai Namsai,TRUE
+CC-7309,Roi Et Stores,กลุ่มร้านร้อยเอ็ด,Northeast,Roi Et,Store Group,Chakrit Prasert,TRUE
+CC-7310,Maha Sarakham Stores,กลุ่มร้านมหาสารคาม,Northeast,Maha Sarakham,Store Group,Niwat Suriyawong,TRUE
+CC-7311,Kalasin Stores,กลุ่มร้านกาฬสินธุ์,Northeast,Kalasin,Store Group,Prapat Srisamut,TRUE
+CC-7312,Buriram Stores,กลุ่มร้านบุรีรัมย์,Northeast,Buriram,Store Group,Seksan Srisuk,TRUE
+CC-7313,Surin Stores,กลุ่มร้านสุรินทร์,Northeast,Surin,Store Group,Withun Chanthorn,TRUE
+CC-7314,Sisaket Stores,กลุ่มร้านศรีสะเกษ,Northeast,Sisaket,Store Group,Amnuay Srisawat,TRUE
+CC-7315,Chaiyaphum Stores,กลุ่มร้านชัยภูมิ,Northeast,Chaiyaphum,Store Group,Sarawut Kaewsri,TRUE
+CC-7401,Phuket Stores,กลุ่มร้านภูเก็ต,South,Phuket,Store Group,Pongpat Samutprakarn,TRUE
+CC-7402,Surat Thani Stores,กลุ่มร้านสุราษฎร์ธานี,South,Surat Thani,Store Group,Wanchai Kongkaew,TRUE
+CC-7403,Songkhla Stores,กลุ่มร้านสงขลา,South,Songkhla,Store Group,Supachai Thongsri,TRUE
+CC-7404,Krabi Stores,กลุ่มร้านกระบี่,South,Krabi,Store Group,Thaworn Boonrat,TRUE
+CC-7405,Trang Stores,กลุ่มร้านตรัง,South,Trang,Store Group,Narong Chaiyasit,TRUE
+CC-7406,Phang Nga Stores,กลุ่มร้านพังงา,South,Phang Nga,Store Group,Wirat Somboon,TRUE
+CC-7407,Nakhon Si Thammarat Stores,กลุ่มร้านนครศรีธรรมราช,South,Nakhon Si Thammarat,Store Group,Somjit Phusit,TRUE
+CC-7408,Pattani Stores,กลุ่มร้านปัตตานี,South,Pattani,Store Group,Adul Wongsakul,TRUE
+CC-7409,Yala Stores,กลุ่มร้านยะลา,South,Yala,Store Group,Danai Siripong,TRUE
+CC-7410,Narathiwat Stores,กลุ่มร้านนราธิวาส,South,Narathiwat,Store Group,Bandit Somsri,TRUE
+CC-7411,Chumphon Stores,กลุ่มร้านชุมพร,South,Chumphon,Store Group,Chokchai Piyawat,TRUE
+CC-7412,Ranong Stores,กลุ่มร้านระนอง,South,Ranong,Store Group,Phongphan Sutthikul,TRUE
+CC-7501,Chonburi Stores,กลุ่มร้านชลบุรี,East,Chonburi,Store Group,Pattana Chaisawang,TRUE
+CC-7502,Rayong Stores,กลุ่มร้านระยอง,East,Rayong,Store Group,Somporn Kulthawat,TRUE
+CC-7503,Chanthaburi Stores,กลุ่มร้านจันทบุรี,East,Chanthaburi,Store Group,Veera Wongsawat,TRUE
+CC-7504,Trat Stores,กลุ่มร้านตราด,East,Trat,Store Group,Surachai Phanuwat,TRUE
+CC-7505,Prachinburi Stores,กลุ่มร้านปราจีนบุรี,East,Prachinburi,Store Group,Thanaphon Srisuk,TRUE
+CC-7506,Sa Kaeo Stores,กลุ่มร้านสระแก้ว,East,Sa Kaeo,Store Group,Suphap Charoenkit,TRUE
+CC-8001,Makro Wholesale Bangkok,Makro ขายส่งกรุงเทพ,Central,Bangkok,Wholesale,Anusorn Wattana,TRUE
+CC-8002,Makro Wholesale Central,Makro ขายส่งภาคกลาง,Central,Nonthaburi,Wholesale,Kittiphong Phongphan,TRUE
+CC-8003,Makro Wholesale North,Makro ขายส่งภาคเหนือ,North,Chiang Mai,Wholesale,Thanapol Sutthikun,TRUE
+CC-8004,Makro Wholesale Northeast,Makro ขายส่งภาคตะวันออกเฉียงเหนือ,Northeast,Khon Kaen,Wholesale,Sarawut Boonma,TRUE
+CC-8005,Makro Wholesale South,Makro ขายส่งภาคใต้,South,Surat Thani,Wholesale,Boonsong Chaiwat,TRUE
+CC-8006,Makro Wholesale East,Makro ขายส่งภาคตะวันออก,East,Chonburi,Wholesale,Narong Suksamran,TRUE
+CC-9001,Lotus's Retail Bangkok,Lotus's กรุงเทพ,Central,Bangkok,Retail,Wichit Thongchai,TRUE
+CC-9002,Lotus's Retail Central,Lotus's ภาคกลาง,Central,Pathum Thani,Retail,Pakorn Srisawat,TRUE
+CC-9003,Lotus's Retail North,Lotus's ภาคเหนือ,North,Chiang Mai,Retail,Somphong Ratanapong,TRUE
+CC-9004,Lotus's Retail Northeast,Lotus's ภาคตะวันออกเฉียงเหนือ,Northeast,Nakhon Ratchasima,Retail,Chatchawan Kaewprasert,TRUE
+CC-9005,Lotus's Retail South,Lotus's ภาคใต้,South,Phuket,Retail,Apirak Somboon,TRUE

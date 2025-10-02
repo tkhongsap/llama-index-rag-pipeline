@@ -1,0 +1,49 @@
+product_id,product_name,product_name_thai,division,category,subcategory,margin_profile,tax_rate,is_perishable
+PROD-001,Soft Drinks,น้ำอัดลม,Food & Beverage,Beverages,Soft Drinks,Medium,7%,FALSE
+PROD-002,Energy Drinks,เครื่องดื่มชูกำลัง,Food & Beverage,Beverages,Energy Drinks,High,7%,FALSE
+PROD-003,Bottled Water,น้ำดื่ม,Food & Beverage,Beverages,Water,Low,7%,FALSE
+PROD-004,Coffee & Tea RTD,กาแฟและชาพร้อมดื่ม,Food & Beverage,Beverages,Coffee & Tea,Medium,7%,FALSE
+PROD-005,Fruit Juices,น้ำผลไม้,Food & Beverage,Beverages,Juices,Medium,7%,FALSE
+PROD-006,Milk & Dairy,นมและผลิตภัณฑ์นม,Food & Beverage,Beverages,Dairy,Medium,7%,TRUE
+PROD-007,Sports Drinks,เครื่องดื่มเกลือแร่,Food & Beverage,Beverages,Sports Drinks,Medium,7%,FALSE
+PROD-008,Alcoholic Beverages,เครื่องดื่มแอลกอฮอล์,Food & Beverage,Beverages,Alcohol,High,10%,FALSE
+PROD-009,Packaged Snacks,ขนมขบเคี้ยว,Food & Beverage,Snacks,Packaged Snacks,High,7%,FALSE
+PROD-010,Confectionery,ขนมหวานและช็อกโกแลต,Food & Beverage,Snacks,Confectionery,High,7%,FALSE
+PROD-011,Cookies & Biscuits,คุกกี้และบิสกิต,Food & Beverage,Snacks,Cookies,High,7%,FALSE
+PROD-012,Instant Noodles,บะหมี่กึ่งสำเร็จรูป,Food & Beverage,Ready Meals,Instant Noodles,Medium,7%,FALSE
+PROD-013,Frozen Foods,อาหารแช่แข็ง,Food & Beverage,Ready Meals,Frozen,Medium,7%,TRUE
+PROD-014,Sandwiches & Wraps,แซนวิชและเวรป,Food & Beverage,Ready Meals,Sandwiches,Medium,7%,TRUE
+PROD-015,Prepared Meals,อาหารสำเร็จรูป,Food & Beverage,Ready Meals,Prepared Meals,Medium,7%,TRUE
+PROD-016,Bakery Items,เบเกอรี่,Food & Beverage,Bakery,Bakery,High,7%,TRUE
+PROD-017,Fresh Fruits,ผลไม้สด,Food & Beverage,Fresh Foods,Fresh Fruits,Low,0%,TRUE
+PROD-018,Condiments & Sauces,เครื่องปรุงรสและซอส,Food & Beverage,Dry Goods,Condiments,Medium,7%,FALSE
+PROD-019,Canned Foods,อาหารกระป๋อง,Food & Beverage,Dry Goods,Canned,Low,7%,FALSE
+PROD-020,Rice & Grains,ข้าวและธัญพืช,Food & Beverage,Dry Goods,Rice & Grains,Low,7%,FALSE
+PROD-021,Cigarettes,บุหรี่,Tobacco,Cigarettes,Cigarettes,Low,80%,FALSE
+PROD-022,Tobacco Products,ผลิตภัณฑ์ยาสูบ,Tobacco,Cigarettes,Other Tobacco,Low,80%,FALSE
+PROD-023,Shampoo & Conditioner,แชมพูและครีมนวด,Personal Care,Hair Care,Shampoo,High,7%,FALSE
+PROD-024,Body Wash & Soap,ครีมอาบน้ำและสบู่,Personal Care,Bath & Body,Body Wash,High,7%,FALSE
+PROD-025,Skincare,ผลิตภัณฑ์บำรุงผิว,Personal Care,Skincare,Skincare,High,7%,FALSE
+PROD-026,Cosmetics,เครื่องสำอาง,Personal Care,Cosmetics,Cosmetics,High,7%,FALSE
+PROD-027,Oral Care,ดูแลช่องปาก,Personal Care,Oral Care,Oral Care,High,7%,FALSE
+PROD-028,Deodorants,ดับกลิ่นกาย,Personal Care,Deodorants,Deodorants,High,7%,FALSE
+PROD-029,Feminine Hygiene,อนามัยสตรี,Personal Care,Feminine Care,Feminine,Medium,7%,FALSE
+PROD-030,Diapers & Baby Care,ผ้าอ้อมและผลิตภัณฑ์เด็ก,Personal Care,Baby Care,Baby Care,Medium,7%,FALSE
+PROD-031,Detergent & Fabric Care,ผงซักฟอกและดูแลผ้า,Household,Laundry,Detergent,Medium,7%,FALSE
+PROD-032,Cleaning Supplies,อุปกรณ์ทำความสะอาด,Household,Cleaning,Cleaning,Medium,7%,FALSE
+PROD-033,Dishwashing,น้ำยาล้างจาน,Household,Kitchen Care,Dishwashing,Medium,7%,FALSE
+PROD-034,Air Fresheners,ปรับอากาศ,Household,Home Care,Air Care,High,7%,FALSE
+PROD-035,Tissue & Paper Products,ทิชชูและกระดาษ,Household,Paper Products,Tissue,Medium,7%,FALSE
+PROD-036,Batteries,แบตเตอรี่,Electronics,Batteries,Batteries,Medium,7%,FALSE
+PROD-037,Mobile Accessories,อุปกรณ์โทรศัพท์,Electronics,Mobile,Mobile Accessories,High,7%,FALSE
+PROD-038,Stationery,เครื่องเขียน,Stationery,Office Supplies,Stationery,High,7%,FALSE
+PROD-039,Pet Food,อาหารสัตว์เลี้ยง,Pet Care,Pet Food,Pet Food,Medium,7%,FALSE
+PROD-040,Pet Supplies,อุปกรณ์สัตว์เลี้ยง,Pet Care,Pet Supplies,Pet Supplies,High,7%,FALSE
+PROD-041,Bill Payment Services,บริการชำระบิล,Services,Bill Payment,Bill Payment,Very High,0%,FALSE
+PROD-042,Mobile Top-up,เติมเงินโทรศัพท์,Services,Telecom,Mobile Top-up,High,0%,FALSE
+PROD-043,Delivery Services,บริการจัดส่ง,Services,Delivery,Delivery,High,7%,FALSE
+PROD-044,Financial Services,บริการทางการเงิน,Services,Financial,Financial,Very High,0%,FALSE
+PROD-045,Lottery Tickets,สลากกินแบ่ง,Services,Lottery,Lottery,Medium,0%,FALSE
+PROD-046,Parcel Services,บริการพัสดุ,Services,Logistics,Parcel,High,0%,FALSE
+PROD-047,ATM Services,บริการตู้เอทีเอ็ม,Services,Banking,ATM,High,0%,FALSE
+PROD-048,Insurance,ประกันภัย,Services,Insurance,Insurance,Very High,0%,FALSE

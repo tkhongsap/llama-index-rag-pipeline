@@ -90,6 +90,10 @@ data/*
 assets/*
 example/*
 
+# Generated consolidated and enriched data files (regenerate from source files)
+data-orion-mockup/*/consolidated/
+data-orion-mockup/*/monthly/enriched/
+
 # Logs
 *.log
 
