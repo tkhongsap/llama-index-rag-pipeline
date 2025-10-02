@@ -90,6 +90,9 @@ data/*
 assets/*
 example/*
 
+# Generated consolidated data files (regenerate from monthly files)
+data-mockup/*/consolidated/
+
 # Logs
 *.log
 
