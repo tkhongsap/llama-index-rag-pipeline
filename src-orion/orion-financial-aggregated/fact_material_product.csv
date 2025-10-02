@@ -1,176 +1,176 @@
 period,material_code,order_number,total_amount,transaction_count,material_description,io_description,data_source,aggregation_level,created_at
-202501,SV-2003010001,J890R610TX00,1563.57,6,CROSS CONNECT SERVICES (DC) @ ET,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-2003010002,J890R610TX00,0.0,39,CROSS CONNECT SERVICES (DC) @ BN 2,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-2003010003,J890R610TX00,0.0,61,CROSS CONNECT SERVICES (DC) @ BN 3,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-2003010004,J890R610TX00,0.0,114,CROSS CONNECT SERVICES (DC) @ BN 3.2,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-2003010005,J890R610TX00,0.0,102,CROSS CONNECT SERVICES (DC) @ BN 5,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-BKKRING(SET-01),J890R610TX00,0.0,4,BKKRING SET 01 (BKK Ring+Cross connect),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-BKKRING(SET-02),J890R610TX00,0.0,4,BKKRING SET 02 (BKK Ring+FOBB),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-BKKRING01,J890R610TX00,1164.72,81,GATEWAY BKK Ring,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-BKKRING02,J890R610TX00,0.0,2,DARK FIBER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-IIG000001,J890R610TX00,0.0,13,IIG SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-IPLC00000,J890R610TX00,0.0,2,GATEWAY IPLC SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-SD00000001,J890R610TX00,836.13,15,SERVICE PLUS,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-SI00000001,J890R610TX00,18900.75,488,INTEGRATION SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV-SI00000050,J890R610TX00,0.0,15,System integration - IOT,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1006010001,J890R610TX00,0.0,258,MANAGED SUPPORT SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1006010002,J890R610TX00,0.0,180,NETWORK ADMINISTRATION MANAGEMENT,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1006010003,J890R610TX00,0.0,19,SETUP FEE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1009010003,J890R610TX00,0.0,3,BP (Business Planning),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1009020001,J890R610TX00,0.0,53,PROJECT IMPLEMENTATION SERVICES (OTHER),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1009030001,J890R610TX00,0.0,37,IT OPERATION OUTSOURCE SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1009030003,J890R610TX00,1704.44,40,Operation for OB,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1009040001,J890R610TX00,0.0,166,APPLICATION MANAGED SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1009050001,J890R610TX00,971.46,143,Development Operation (DevOps),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012010001,J890R610TX00,0.0,210,SAP LICENSES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012010002,J890R610TX00,0.0,4,SAP LICENSES+HOSTING INFRASTRUCTURE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012010003,J890R610TX00,0.0,54,SAP HANA Lic+Hosting,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV101201L001,J890R610TX00,0.0,56,SAP BUSINESS SUITE PROFESSIONAL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050002,J890R610TX00,0.0,1,POWER BI PRO USER,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050005,J890R610TX00,0.0,1,PWRBIPRO SHRDSVR ALNG SUBSVL MVL PERUSR,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050009,J890R610TX00,0.0,20,POWER BI PREMIUM (P1) PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050010,J890R610TX00,0.0,64,POWER BI PRO - CREATOR,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050011,J890R610TX00,0.0,8,POWER BI P1 - VIEWER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050020,J890R610TX00,0.0,3,Dynamics NAV2018 Sub Lic.,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050023,J890R610TX00,41657.25,87,Windows Server 2016 STD,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050024,J890R610TX00,0.0,70,MS SQL Server STD,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012050038,J890R610TX00,0.0,2,Win Server Datcr Core 16 SL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060003,J890R610TX00,0.0,3,TRENDMICRO SMART PROTECTION COMPLETE LIC,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060013,J890R610TX00,0.0,1,SOFEWARE AS A SERVICES (Dummy),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060029,J890R610TX00,0.0,3,Veeam Backup License,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060036,J890R610TX00,0.0,2,Power BI Premium (P2) Package,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060037,J890R610TX00,0.0,6,Power BI P2 - Viewer,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060062,J890R610TX00,0.0,4,Power BI Pro,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060063,J890R610TX00,0.0,1,AppSheet subscription Pro Plan,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060068,J890R610TX00,0.0,9,Software rental,Other Income,Actual_Sale,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060074,J890R610TX00,0.0,6,Jira Software,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060080,J890R610TX00,0.0,6,Windows Remote Desktop,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060082,J890R610TX00,0.0,12,SQL Svr Strandard Edition-2 Core Pack,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060114,J890R610TX00,574.74,31,Windows Remote Desktop Services SAL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060116,J890R610TX00,0.0,4,UiPath - Flex - Attended - Named User,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060122,J890R610TX00,0.0,2,Windows Remote Desktop Services SAL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060137,J890R610TX00,0.0,4,Exchange Online(Plan1) (NCE Product),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060145,J890R610TX00,0.0,3,Microsoft Windows Standard SPLA,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060146,J890R610TX00,0.0,3,Microsoft SQL Server Standard SPLA,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060164,J890R610TX00,262.48,12,Docker Pro Plan,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060165,J890R610TX00,0.0,3,Canva Pro,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060172,J890R610TX00,0.0,3,SB99C-N-25-Snagit-25 Business 1 Year,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060173,J890R610TX00,0.0,6,SW/SQL - SQL Prompt,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1012060174,J890R610TX00,0.0,3,SW/SQLM - SQL Multi Script,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010001,J890R610TX00,0.0,18,MICROSOFT O365 E1 (YEAR),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010002,J890R610TX00,0.0,28,MICROSOFT O365 E3 (YEAR),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010006,J890R610TX00,0.0,1,OFFICE 365 BUSINESS ESSENTIALS,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010007,J890R610TX00,0.0,1,OFFICE 365 BUSINESS PREMIUM,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010020,J890R610TX00,0.0,1,Microsoft 365 Business,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010021,J890R610TX00,0.0,3,Microsoft O365 E5,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010022,J890R610TX00,0.0,4,MICROSOFT O365 Upgrade E1 to E3,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010023,J890R610TX00,0.0,15,O365 Extra File Storage,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013010026,J890R610TX00,0.0,5,M365 Copilot Sub Add-on,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013020001,J890R610TX00,0.0,8,GMAIL E-MAIL SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1013030001,J890R610TX00,0.0,2,EXCHANGE E-MAIL SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV1015010001,J890R610TX00,13214.37,340,E-TAX SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-CORPORATE,J890R610TX00,4017.25,112,INTERNET CORPORATE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-DEDICATE,J890R610TX00,0.0,11,INTERNET DEDICATE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-GOLD,J890R610TX00,0.0,18,INTERNET GOLD PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-INTERNET-OB-SET,J890R610TX00,0.0,27,Internet Services @OBC,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-INTERNET-SET02,J890R610TX00,650.47,30,INTERNET SET(02) Internet+BKK+FOBB,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-INTERNET-SET03,J890R610TX00,0.0,3,INTERNET SET(03) Internet +FOBB,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-INTERNET-SET04,J890R610TX00,0.0,4,INTERNET SET(03) Internet+WAN+BKK,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-INTERNET-SET05,J890R610TX00,0.0,10,INTERNET SET(05) Internet Smart connect,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-PLATINUM,J890R610TX00,0.0,4,INTERNET PLATINUM PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-SILVER,J890R610TX00,0.0,20,INTERNET SILVER PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002-WIFI,J890R610TX00,4342.1,18,INTERNET WIFI,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2002010001,J890R610TX00,4292.19,70,INTERNET CONNECTION SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2003-MPLS-SET02,J890R610TX00,0.0,2,MPLS+BKK Ring,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2003010001,J890R610TX00,0.0,101,ETHERNET SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2003020001,J890R610TX00,5639.84,1115,MPLS SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004010003,J890R610TX00,0.0,4,FOBB-V&H COPPER @ CW TOWER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004010006,J890R610TX00,0.0,2,UTP INTERFLOOR FOR FOBB-V&H COPPER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020001,J890R610TX00,0.0,99,FOBB-V&H FIBER @ ET,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020002,J890R610TX00,0.0,19,FOBB-V&H FIBER @ INTERLINK,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020003,J890R610TX00,0.0,62,FOBB-V&H FIBER @ CW Tower,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020004,J890R610TX00,0.0,8,FOBB-V&H FIBER @ PARK VENTURES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020005,J890R610TX00,0.0,9,FOBB-V&H FIBER @ SYM (SAMYAN),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020006,J890R610TX00,0.0,6,FOBB-V&H FIBER @ ParQ (THE ParQ),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020010,J890R610TX00,2357.64,29,INSTALLATION FEE FOR FOBB-V&H FIBER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020011,J890R610TX00,0.0,6,UTP INTERFLOOR FOR FOBB-V&H FIBER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020012,J890R610TX00,0.0,101,FOBB-V&H FIBER @ SILOM EDGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020013,J890R610TX00,39707.46,633,FOBB-V&H FIBER @ One Bangkok,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV2004020014,J890R610TX00,37597.61,327,Cross Connect for FOBB @ One Bangkok,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV3001010001,J890R610TX00,0.0,39,HARDWARE RENTAL SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV3001010002,J890R610TX00,0.0,2,HARDWARE RENTAL SERVICES - LED,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV3001010003,J890R610TX00,0.0,9,HARDWARE RENTAL SERVICES - ROUTER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV3001010004,J890R610TX00,0.0,6,HARDWARE RENTAL SERVICES - SWITCH,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV5001010003,J890R610TX00,988.72,365,ELECTRICITY CHARGE OTHER @BN,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV5001010005,J890R610TX00,0.0,36,CAR PARK @ BN,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV5001010007,J890R610TX00,5496.76,54,MISCELLANEOUS,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV600101001,J890R610TX00,0.0,63,Car Park-Other,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SV7001010003,J890R610TX00,0.0,2,SHORT TERM DEPOSIT - SAP,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV7001010005,J890R610TX00,0.0,1,SHORT TERM DEPOSIT - OTHER,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SV7001020001,J890R610TX00,0.0,2,ADVANCE RECEIPT (PROJECT),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMS10060003,J890R610TX00,0.0,6,DEDICATE FIREWALL SERVICE PALO,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMS10060005,J890R610TX00,0.0,14,MANAGED SHARED FIREWALL SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMS10060006,J890R610TX00,0.0,2,Virtual Firewall,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMS10060007,J890R610TX00,0.0,60,MANAGED SECURITY (TEAM K.TAWAT),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMS10060008,J890R610TX00,1582.01,7,Security Email Gateway service,Other Income,Actual_Sale,material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMS20020004,J890R610TX00,4934.96,107,SSL/VPN SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW10041001,J890R610TX00,0.0,8,WEB HOSTING SERVICES @ET,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW10070001,J890R610TX00,0.0,16,IP-PHONE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010001,J890R610TX00,34761.31,165,DOMAIN NAME REGISTRATION SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010002,J890R610TX00,0.0,10,SSL CERTIFICATE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010004,J890R610TX00,0.0,5,TELEPHONE SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010006,J890R610TX00,150.11,65,Maintenance Service,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010007,J890R610TX00,0.0,37,Public IP,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010008,J890R610TX00,0.0,21,Wiring Cable (Other),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010016,J890R610TX00,0.0,35,Network Maintenance Service (TCCtech),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010017,J890R610TX00,0.0,231,Network as a service,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVMW50010017-SET01,J890R610TX00,0.0,2,Network as a service (Cloud connect),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPR00B00001,J890R610TX00,0.0,1508,Virtual Private Server,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPR00N00001,J890R610TX00,0.0,126,PRIVATE CLOUD (NON),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPU00N00001,J890R610TX00,0.0,77,MULTI CLOUD (AWS),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPU00N00002,J890R610TX00,0.0,5,Google Cloud (GCP),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPU00N00003,J890R610TX00,0.0,7,Azure Cloud,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPU00N00004,J890R610TX00,0.0,5,Alibaba Cloud,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPU00N00005,J890R610TX00,121.52,53,Huawei CLOUD,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVPU00N00006,J890R610TX00,0.0,1,Yipinsoi Cloud,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSC1007100-SET 1,J890R610TX00,0.0,16,IT Provisioning O365 for TCC Private,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSC10071001,J890R610TX00,0.0,8,IT PROVISIONING FOR O365 E1-EMPIRETOWER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSC10071002,J890R610TX00,0.0,32,IT PROVISIONING FOR O365 E1-OUTSIDE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSH00B00001,J890R610TX00,0.0,15,SAP CLOUD HOSTING INFRASTRUCTURE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSH00N00001,J890R610TX00,0.0,273,SAP CLOUD HOSTING INFRASTRUCTURE (NON),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSH10060001,J890R610TX00,0.0,37,ADHOC: SMART HAND SKILL-1,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVSH10060002,J890R610TX00,0.0,8,ADHOC: SMART HAND SKILL-2,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVTR10010001,J890R610TX00,0.0,28,Telecom room service - ET,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,SVTR10010002,J890R610TX00,0.0,5,Telecom room service - Silom Edge,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,TC41010002,J890R610TX00,0.0,6,PDU,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC43010045,J890R610TX00,7936535.08,106944,Firewall FortiGate 60F,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:45:14.671951
-202501,TC43010053,J890R610TX00,0.0,3,HPE Aruba Networking CX 6300M,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC43010054,J890R610TX00,0.0,3,HPE Aruba Networking CX 6000 48G,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC43010055,J890R610TX00,0.0,3,HPE Aruba Networking CX 6000 24G,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC43010056,J890R610TX00,0.0,3,HPE Aruba Networking 1G,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC43010057,J890R610TX00,0.0,3,AP-515 // 2 Units,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC44010001,J890R610TX00,0.0,21,D2s Plus Dual Screen 15.6+10.1,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC44010005,J890R610TX00,0.0,1,ECC200-PE Programmable Gateway IPControl,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010005,J890R610TX00,27578.54,223,Battery Global Power,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010016,J890R610TX00,0.0,126,"UPS CLEANLINE, D-1500K, 1500VA/900W",Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010107,J890R610TX00,0.0,12,"Dell 27 Monitor - P2725H (27"")",Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010109,J890R610TX00,0.0,1,IrisID - iT100,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010110,J890R610TX00,0.0,1,Power Supply 220VAC,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010120,J890R610TX00,0.0,1,Dell Optiplex SFF 7020,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010121,J890R610TX00,0.0,50,"New UPS Cleanline I-1000X ,1000VA/550W",Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010125,J890R610TX00,26427.16,72,Cable POS Barcode Scanner,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010132,J890R610TX00,0.0,6,UPS 3kVA,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010137,J890R610TX00,0.0,1,HP EliteBook 840,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010139,J890R610TX00,0.0,1,"UPS Cleanline D-I1000,1000V",Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010142,J890R610TX00,0.0,12,"Dell E2425HS 23.8"" VA Monitor",Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010143,J890R610TX00,0.0,5,PowerEdge R760xs Rack Server,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010144,J890R610TX00,0.0,5,DDR4 ECC Unbuffered SODIMM,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010145,J890R610TX00,0.0,5,8TB HDD Plus Series,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46010146,J890R610TX00,0.0,5,4-bayDiskStation (up to 9-bay),Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020020,J890R610TX00,0.0,10,Win Server User CAL,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020023,J890R610TX00,0.0,1,Office Std Dev SftSA,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020024,J890R610TX00,0.0,1,Project Std Dev SftSA,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020025,J890R610TX00,0.0,1,Microsoft Office Home and Business 2024,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020026,J890R610TX00,0.0,6,SQL Server Enterprise,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020027,J890R610TX00,0.0,6,Win Server DC Core ALng,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
-202501,TC46020028,J890R610TX00,0.0,5,VisStudio Pro User SL 2022,Other Income,Actual_GL,material_product_summary,2025-10-02T15:45:14.671951
+202501,SV-2003010001,J890R610TX00,1563.57,6,CROSS CONNECT SERVICES (DC) @ ET,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-2003010002,J890R610TX00,0.0,39,CROSS CONNECT SERVICES (DC) @ BN 2,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-2003010003,J890R610TX00,0.0,61,CROSS CONNECT SERVICES (DC) @ BN 3,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-2003010004,J890R610TX00,0.0,114,CROSS CONNECT SERVICES (DC) @ BN 3.2,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-2003010005,J890R610TX00,0.0,102,CROSS CONNECT SERVICES (DC) @ BN 5,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-BKKRING(SET-01),J890R610TX00,0.0,4,BKKRING SET 01 (BKK Ring+Cross connect),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-BKKRING(SET-02),J890R610TX00,0.0,4,BKKRING SET 02 (BKK Ring+FOBB),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-BKKRING01,J890R610TX00,1164.72,81,GATEWAY BKK Ring,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-BKKRING02,J890R610TX00,0.0,2,DARK FIBER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-IIG000001,J890R610TX00,0.0,13,IIG SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-IPLC00000,J890R610TX00,0.0,2,GATEWAY IPLC SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-SD00000001,J890R610TX00,836.13,15,SERVICE PLUS,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-SI00000001,J890R610TX00,18900.75,488,INTEGRATION SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV-SI00000050,J890R610TX00,0.0,15,System integration - IOT,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1006010001,J890R610TX00,0.0,258,MANAGED SUPPORT SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1006010002,J890R610TX00,0.0,180,NETWORK ADMINISTRATION MANAGEMENT,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1006010003,J890R610TX00,0.0,19,SETUP FEE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1009010003,J890R610TX00,0.0,3,BP (Business Planning),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1009020001,J890R610TX00,0.0,53,PROJECT IMPLEMENTATION SERVICES (OTHER),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1009030001,J890R610TX00,0.0,37,IT OPERATION OUTSOURCE SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1009030003,J890R610TX00,1704.44,40,Operation for OB,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1009040001,J890R610TX00,0.0,166,APPLICATION MANAGED SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1009050001,J890R610TX00,971.46,143,Development Operation (DevOps),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012010001,J890R610TX00,0.0,210,SAP LICENSES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012010002,J890R610TX00,0.0,4,SAP LICENSES+HOSTING INFRASTRUCTURE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012010003,J890R610TX00,0.0,54,SAP HANA Lic+Hosting,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV101201L001,J890R610TX00,0.0,56,SAP BUSINESS SUITE PROFESSIONAL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050002,J890R610TX00,0.0,1,POWER BI PRO USER,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050005,J890R610TX00,0.0,1,PWRBIPRO SHRDSVR ALNG SUBSVL MVL PERUSR,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050009,J890R610TX00,0.0,20,POWER BI PREMIUM (P1) PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050010,J890R610TX00,0.0,64,POWER BI PRO - CREATOR,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050011,J890R610TX00,0.0,8,POWER BI P1 - VIEWER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050020,J890R610TX00,0.0,3,Dynamics NAV2018 Sub Lic.,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050023,J890R610TX00,41657.25,87,Windows Server 2016 STD,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050024,J890R610TX00,0.0,70,MS SQL Server STD,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012050038,J890R610TX00,0.0,2,Win Server Datcr Core 16 SL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060003,J890R610TX00,0.0,3,TRENDMICRO SMART PROTECTION COMPLETE LIC,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060013,J890R610TX00,0.0,1,SOFEWARE AS A SERVICES (Dummy),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060029,J890R610TX00,0.0,3,Veeam Backup License,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060036,J890R610TX00,0.0,2,Power BI Premium (P2) Package,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060037,J890R610TX00,0.0,6,Power BI P2 - Viewer,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060062,J890R610TX00,0.0,4,Power BI Pro,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060063,J890R610TX00,0.0,1,AppSheet subscription Pro Plan,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060068,J890R610TX00,0.0,9,Software rental,Other Income,Actual_Sale,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060074,J890R610TX00,0.0,6,Jira Software,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060080,J890R610TX00,0.0,6,Windows Remote Desktop,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060082,J890R610TX00,0.0,12,SQL Svr Strandard Edition-2 Core Pack,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060114,J890R610TX00,574.74,31,Windows Remote Desktop Services SAL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060116,J890R610TX00,0.0,4,UiPath - Flex - Attended - Named User,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060122,J890R610TX00,0.0,2,Windows Remote Desktop Services SAL,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060137,J890R610TX00,0.0,4,Exchange Online(Plan1) (NCE Product),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060145,J890R610TX00,0.0,3,Microsoft Windows Standard SPLA,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060146,J890R610TX00,0.0,3,Microsoft SQL Server Standard SPLA,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060164,J890R610TX00,262.48,12,Docker Pro Plan,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060165,J890R610TX00,0.0,3,Canva Pro,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060172,J890R610TX00,0.0,3,SB99C-N-25-Snagit-25 Business 1 Year,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060173,J890R610TX00,0.0,6,SW/SQL - SQL Prompt,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1012060174,J890R610TX00,0.0,3,SW/SQLM - SQL Multi Script,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010001,J890R610TX00,0.0,18,MICROSOFT O365 E1 (YEAR),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010002,J890R610TX00,0.0,28,MICROSOFT O365 E3 (YEAR),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010006,J890R610TX00,0.0,1,OFFICE 365 BUSINESS ESSENTIALS,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010007,J890R610TX00,0.0,1,OFFICE 365 BUSINESS PREMIUM,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010020,J890R610TX00,0.0,1,Microsoft 365 Business,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010021,J890R610TX00,0.0,3,Microsoft O365 E5,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010022,J890R610TX00,0.0,4,MICROSOFT O365 Upgrade E1 to E3,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010023,J890R610TX00,0.0,15,O365 Extra File Storage,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013010026,J890R610TX00,0.0,5,M365 Copilot Sub Add-on,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013020001,J890R610TX00,0.0,8,GMAIL E-MAIL SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1013030001,J890R610TX00,0.0,2,EXCHANGE E-MAIL SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV1015010001,J890R610TX00,13214.37,340,E-TAX SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-CORPORATE,J890R610TX00,4017.25,112,INTERNET CORPORATE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-DEDICATE,J890R610TX00,0.0,11,INTERNET DEDICATE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-GOLD,J890R610TX00,0.0,18,INTERNET GOLD PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-INTERNET-OB-SET,J890R610TX00,0.0,27,Internet Services @OBC,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-INTERNET-SET02,J890R610TX00,650.47,30,INTERNET SET(02) Internet+BKK+FOBB,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-INTERNET-SET03,J890R610TX00,0.0,3,INTERNET SET(03) Internet +FOBB,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-INTERNET-SET04,J890R610TX00,0.0,4,INTERNET SET(03) Internet+WAN+BKK,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-INTERNET-SET05,J890R610TX00,0.0,10,INTERNET SET(05) Internet Smart connect,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-PLATINUM,J890R610TX00,0.0,4,INTERNET PLATINUM PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-SILVER,J890R610TX00,0.0,20,INTERNET SILVER PACKAGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002-WIFI,J890R610TX00,4342.1,18,INTERNET WIFI,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2002010001,J890R610TX00,4292.19,70,INTERNET CONNECTION SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2003-MPLS-SET02,J890R610TX00,0.0,2,MPLS+BKK Ring,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2003010001,J890R610TX00,0.0,101,ETHERNET SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2003020001,J890R610TX00,5639.84,1115,MPLS SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004010003,J890R610TX00,0.0,4,FOBB-V&H COPPER @ CW TOWER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004010006,J890R610TX00,0.0,2,UTP INTERFLOOR FOR FOBB-V&H COPPER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020001,J890R610TX00,0.0,99,FOBB-V&H FIBER @ ET,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020002,J890R610TX00,0.0,19,FOBB-V&H FIBER @ INTERLINK,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020003,J890R610TX00,0.0,62,FOBB-V&H FIBER @ CW Tower,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020004,J890R610TX00,0.0,8,FOBB-V&H FIBER @ PARK VENTURES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020005,J890R610TX00,0.0,9,FOBB-V&H FIBER @ SYM (SAMYAN),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020006,J890R610TX00,0.0,6,FOBB-V&H FIBER @ ParQ (THE ParQ),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020010,J890R610TX00,2357.64,29,INSTALLATION FEE FOR FOBB-V&H FIBER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020011,J890R610TX00,0.0,6,UTP INTERFLOOR FOR FOBB-V&H FIBER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020012,J890R610TX00,0.0,101,FOBB-V&H FIBER @ SILOM EDGE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020013,J890R610TX00,39707.46,633,FOBB-V&H FIBER @ One Bangkok,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV2004020014,J890R610TX00,37597.61,327,Cross Connect for FOBB @ One Bangkok,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV3001010001,J890R610TX00,0.0,39,HARDWARE RENTAL SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV3001010002,J890R610TX00,0.0,2,HARDWARE RENTAL SERVICES - LED,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV3001010003,J890R610TX00,0.0,9,HARDWARE RENTAL SERVICES - ROUTER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV3001010004,J890R610TX00,0.0,6,HARDWARE RENTAL SERVICES - SWITCH,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV5001010003,J890R610TX00,988.72,365,ELECTRICITY CHARGE OTHER @BN,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV5001010005,J890R610TX00,0.0,36,CAR PARK @ BN,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV5001010007,J890R610TX00,5496.76,54,MISCELLANEOUS,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV600101001,J890R610TX00,0.0,63,Car Park-Other,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SV7001010003,J890R610TX00,0.0,2,SHORT TERM DEPOSIT - SAP,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV7001010005,J890R610TX00,0.0,1,SHORT TERM DEPOSIT - OTHER,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SV7001020001,J890R610TX00,0.0,2,ADVANCE RECEIPT (PROJECT),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMS10060003,J890R610TX00,0.0,6,DEDICATE FIREWALL SERVICE PALO,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMS10060005,J890R610TX00,0.0,14,MANAGED SHARED FIREWALL SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMS10060006,J890R610TX00,0.0,2,Virtual Firewall,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMS10060007,J890R610TX00,0.0,60,MANAGED SECURITY (TEAM K.TAWAT),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMS10060008,J890R610TX00,1582.01,7,Security Email Gateway service,Other Income,Actual_Sale,material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMS20020004,J890R610TX00,4934.96,107,SSL/VPN SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW10041001,J890R610TX00,0.0,8,WEB HOSTING SERVICES @ET,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW10070001,J890R610TX00,0.0,16,IP-PHONE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010001,J890R610TX00,34761.31,165,DOMAIN NAME REGISTRATION SERVICES,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010002,J890R610TX00,0.0,10,SSL CERTIFICATE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010004,J890R610TX00,0.0,5,TELEPHONE SERVICE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010006,J890R610TX00,150.11,65,Maintenance Service,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010007,J890R610TX00,0.0,37,Public IP,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010008,J890R610TX00,0.0,21,Wiring Cable (Other),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010016,J890R610TX00,0.0,35,Network Maintenance Service (TCCtech),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010017,J890R610TX00,0.0,231,Network as a service,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVMW50010017-SET01,J890R610TX00,0.0,2,Network as a service (Cloud connect),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPR00B00001,J890R610TX00,0.0,1508,Virtual Private Server,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPR00N00001,J890R610TX00,0.0,126,PRIVATE CLOUD (NON),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPU00N00001,J890R610TX00,0.0,77,MULTI CLOUD (AWS),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPU00N00002,J890R610TX00,0.0,5,Google Cloud (GCP),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPU00N00003,J890R610TX00,0.0,7,Azure Cloud,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPU00N00004,J890R610TX00,0.0,5,Alibaba Cloud,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPU00N00005,J890R610TX00,121.52,53,Huawei CLOUD,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVPU00N00006,J890R610TX00,0.0,1,Yipinsoi Cloud,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSC1007100-SET 1,J890R610TX00,0.0,16,IT Provisioning O365 for TCC Private,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSC10071001,J890R610TX00,0.0,8,IT PROVISIONING FOR O365 E1-EMPIRETOWER,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSC10071002,J890R610TX00,0.0,32,IT PROVISIONING FOR O365 E1-OUTSIDE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSH00B00001,J890R610TX00,0.0,15,SAP CLOUD HOSTING INFRASTRUCTURE,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSH00N00001,J890R610TX00,0.0,273,SAP CLOUD HOSTING INFRASTRUCTURE (NON),Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSH10060001,J890R610TX00,0.0,37,ADHOC: SMART HAND SKILL-1,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVSH10060002,J890R610TX00,0.0,8,ADHOC: SMART HAND SKILL-2,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVTR10010001,J890R610TX00,0.0,28,Telecom room service - ET,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,SVTR10010002,J890R610TX00,0.0,5,Telecom room service - Silom Edge,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,TC41010002,J890R610TX00,0.0,6,PDU,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC43010045,J890R610TX00,7936535.08,106944,Firewall FortiGate 60F,Other Income,"Actual_GL,Actual_Sale",material_product_summary,2025-10-02T15:58:05.454607
+202501,TC43010053,J890R610TX00,0.0,3,HPE Aruba Networking CX 6300M,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC43010054,J890R610TX00,0.0,3,HPE Aruba Networking CX 6000 48G,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC43010055,J890R610TX00,0.0,3,HPE Aruba Networking CX 6000 24G,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC43010056,J890R610TX00,0.0,3,HPE Aruba Networking 1G,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC43010057,J890R610TX00,0.0,3,AP-515 // 2 Units,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC44010001,J890R610TX00,0.0,21,D2s Plus Dual Screen 15.6+10.1,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC44010005,J890R610TX00,0.0,1,ECC200-PE Programmable Gateway IPControl,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010005,J890R610TX00,27578.54,223,Battery Global Power,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010016,J890R610TX00,0.0,126,"UPS CLEANLINE, D-1500K, 1500VA/900W",Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010107,J890R610TX00,0.0,12,"Dell 27 Monitor - P2725H (27"")",Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010109,J890R610TX00,0.0,1,IrisID - iT100,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010110,J890R610TX00,0.0,1,Power Supply 220VAC,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010120,J890R610TX00,0.0,1,Dell Optiplex SFF 7020,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010121,J890R610TX00,0.0,50,"New UPS Cleanline I-1000X ,1000VA/550W",Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010125,J890R610TX00,26427.16,72,Cable POS Barcode Scanner,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010132,J890R610TX00,0.0,6,UPS 3kVA,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010137,J890R610TX00,0.0,1,HP EliteBook 840,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010139,J890R610TX00,0.0,1,"UPS Cleanline D-I1000,1000V",Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010142,J890R610TX00,0.0,12,"Dell E2425HS 23.8"" VA Monitor",Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010143,J890R610TX00,0.0,5,PowerEdge R760xs Rack Server,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010144,J890R610TX00,0.0,5,DDR4 ECC Unbuffered SODIMM,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010145,J890R610TX00,0.0,5,8TB HDD Plus Series,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46010146,J890R610TX00,0.0,5,4-bayDiskStation (up to 9-bay),Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020020,J890R610TX00,0.0,10,Win Server User CAL,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020023,J890R610TX00,0.0,1,Office Std Dev SftSA,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020024,J890R610TX00,0.0,1,Project Std Dev SftSA,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020025,J890R610TX00,0.0,1,Microsoft Office Home and Business 2024,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020026,J890R610TX00,0.0,6,SQL Server Enterprise,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020027,J890R610TX00,0.0,6,Win Server DC Core ALng,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607
+202501,TC46020028,J890R610TX00,0.0,5,VisStudio Pro User SL 2022,Other Income,Actual_GL,material_product_summary,2025-10-02T15:58:05.454607

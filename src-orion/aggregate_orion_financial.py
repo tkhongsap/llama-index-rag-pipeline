@@ -272,6 +272,69 @@ class OrionFinancialAggregator:
 
         return grouped
 
+    def aggregate_actual_sale_summary(self):
+        """
+        Aggregate Actual Sale transactions by period, cost element, and order.
+
+        Returns fact table with columns:
+        - period, cost_element, cost_element_name, order_number, io_description,
+          material_code, material_description, total_amount, avg_amount,
+          transaction_count, unique_documents, document_types
+        """
+        logger.info("Creating Actual Sale Summary fact table...")
+
+        if self.actual_sale is None:
+            logger.error("Actual Sale data not loaded")
+            return None
+
+        df = self.actual_sale.copy()
+
+        # Convert amount to numeric
+        df['val_coarea_crcy'] = pd.to_numeric(df['val_coarea_crcy'], errors='coerce').fillna(0)
+
+        # Create period from fiscal_year and period
+        df['period'] = df['fiscal_year'].astype(str) + df['period'].astype(str).str.zfill(2)
+
+        # Group and aggregate
+        agg_dict = {
+            'val_coarea_crcy': ['sum', 'mean', 'count'],
+            'document_number': 'nunique',
+            'document_type': lambda x: ','.join(sorted(set(x.dropna()))),
+            'cost_element_name': 'first',
+            'cost_element_descr': 'first',
+            'io_description': 'first',
+            'material_description': 'first'
+        }
+
+        grouped = df.groupby([
+            'period',
+            'cost_element',
+            'order_number',
+            'material_code'
+        ]).agg(agg_dict).reset_index()
+
+        # Flatten columns
+        grouped.columns = [
+            'period', 'cost_element', 'order_number', 'material_code',
+            'total_amount', 'avg_amount', 'transaction_count',
+            'unique_documents', 'document_types',
+            'cost_element_name', 'cost_element_descr',
+            'io_description', 'material_description'
+        ]
+
+        # Round amounts
+        grouped['total_amount'] = grouped['total_amount'].round(2)
+        grouped['avg_amount'] = grouped['avg_amount'].round(2)
+
+        # Add metadata
+        grouped['aggregation_level'] = 'actual_sale_summary'
+        grouped['source_file'] = 'Actual_Sale_202501'
+        grouped['created_at'] = datetime.now().isoformat()
+
+        logger.info(f"Actual Sale Summary: {len(grouped):,} aggregated rows (from {len(df):,} transactions)")
+
+        return grouped
+
     def aggregate_material_product_summary(self):
         """
         Aggregate by material/product and period.
@@ -369,6 +432,7 @@ class OrionFinancialAggregator:
         results['gl_monthly'] = self.aggregate_gl_monthly_summary()
         results['sales_customer'] = self.aggregate_sales_by_customer_period()
         results['cost_allocation'] = self.aggregate_cost_allocation_summary()
+        results['actual_sale'] = self.aggregate_actual_sale_summary()
         results['material_product'] = self.aggregate_material_product_summary()
 
         return results
@@ -438,7 +502,7 @@ class OrionFinancialAggregator:
 
 def main():
     parser = argparse.ArgumentParser(description='Aggregate Orion Financial Data for RAG Pipeline')
-    parser.add_argument('--type', choices=['gl_monthly', 'sales_customer', 'cost_allocation', 'material_product', 'all'],
+    parser.add_argument('--type', choices=['gl_monthly', 'sales_customer', 'cost_allocation', 'actual_sale', 'material_product', 'all'],
                        default='all', help='Type of fact table to generate')
     parser.add_argument('--period', type=str, help='Specific period to process (e.g., 202501)')
 
@@ -461,6 +525,8 @@ def main():
             fact_tables['sales_customer'] = aggregator.aggregate_sales_by_customer_period()
         elif args.type == 'cost_allocation':
             fact_tables['cost_allocation'] = aggregator.aggregate_cost_allocation_summary()
+        elif args.type == 'actual_sale':
+            fact_tables['actual_sale'] = aggregator.aggregate_actual_sale_summary()
         elif args.type == 'material_product':
             fact_tables['material_product'] = aggregator.aggregate_material_product_summary()
 
