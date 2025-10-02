@@ -50,4 +50,18 @@ echo "   - actual_sale_consolidated.txt"
 echo "   - actual_sale_billing_consolidated.txt"
 echo "   - cost_alloc_consolidated.txt"
 echo ""
+
+# Optional: Run enrichment if --enrich flag is provided
+if [[ "$1" == "--enrich" ]]; then
+    echo "🔧 Running enrichment with master data..."
+    echo ""
+    python3 enrich_consolidated.py
+    echo ""
+    echo "✅ Enrichment complete! Check consolidated/enriched/ directory"
+else
+    echo "💡 Tip: Run with --enrich flag to add descriptive information from master files"
+    echo "   Example: ./regenerate_consolidated.sh --enrich"
+fi
+
+echo ""
 echo "🎯 Ready for RAG pipeline ingestion!"

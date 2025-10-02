@@ -49,6 +49,22 @@ The consolidated files combine all monthly files into single time-series dataset
 To regenerate consolidated files:
 
 ```bash
+./regenerate_consolidated.sh
+```
+
+To regenerate **and** enrich with master data descriptions:
+
+```bash
+./regenerate_consolidated.sh --enrich
+```
+
+The enrichment process adds descriptive columns from master data files (Customer, GL, Cost Center, IO, Material) to make the data more semantic and query-ready for RAG pipeline ingestion.
+
+### Manual Consolidation
+
+If you prefer manual consolidation:
+
+```bash
 cd data-mockup/orion-financial
 mkdir -p consolidated
 
@@ -67,12 +83,46 @@ mkdir -p consolidated
 # Consolidate Cost_Alloc (13 months)
 (head -1 monthly/Cost_Alloc_202401.txt && \
  tail -q -n +2 monthly/Cost_Alloc_*.txt) > consolidated/cost_alloc_consolidated.txt
+
+# Optional: Run enrichment
+python3 enrich_consolidated.py
 ```
 
-Or use the provided script:
-```bash
-./regenerate_consolidated.sh
-```
+## Enriched Files
+
+The `enrich_consolidated.py` script creates enriched versions of consolidated files in the `consolidated/enriched/` directory. These files include additional descriptive columns joined from master data:
+
+### Enrichment Details
+
+**actual_gl_enriched.txt** (19 columns, +6 from original):
+- `gl_name_th`, `gl_name_en`: Thai and English GL account descriptions
+- `cost_center_name`, `cost_center_description`: Cost center names and descriptions
+- `io_description`: Internal order description
+- `material_description`: Material description
+
+**actual_sale_enriched.txt** (24 columns, +2 from original):
+- `io_description`: Internal order description
+- `material_description`: Material description
+
+**actual_sale_billing_enriched.txt** (51 columns, +7 from original):
+- `customer_name_1`, `customer_name_2`, `customer_title`: Customer name fields
+- `gl_name_th`, `gl_name_en`: GL account descriptions (if gl_acct exists)
+- `io_description`: Internal order description
+- `material_description`: Material description
+
+**cost_alloc_enriched.txt** (17 columns, +5 from original):
+- `gl_name_th`, `gl_name_en`: GL account descriptions
+- `cost_center_name`, `cost_center_description`: Cost center names and descriptions (if cost_center exists)
+- `partner_io_description`: Partner internal order description
+
+### Join Coverage
+
+Typical join coverage rates (based on sample verification):
+- GL descriptions: 88-100%
+- Cost center descriptions: 5-92% (varies by file type)
+- Internal order descriptions: 22-100%
+- Material descriptions: 100%
+- Customer names: 99%
 
 ## File Format
 
