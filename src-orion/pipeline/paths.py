@@ -182,7 +182,8 @@ def dataset_choices(selection: str | None) -> Iterable[DatasetDefinition]:
     """Return dataset definitions based on a CLI selection string."""
 
     if not selection or selection.lower() == "all":
-        return DATASETS.values()
+        yield from DATASETS.values()
+        return
 
     keys = [key.strip() for key in selection.split(",") if key.strip()]
     for key in keys:
