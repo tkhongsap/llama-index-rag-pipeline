@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Dict, List
 
@@ -58,7 +58,7 @@ def run_verification(report_name: str) -> Dict:
     ensure_directories()
 
     results: Dict[str, Dict] = {
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "aggregated_dir": str(AGGREGATED_DIR),
         "datasets": {},
     }
