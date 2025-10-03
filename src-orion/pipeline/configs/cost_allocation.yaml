@@ -1,0 +1,76 @@
+name: orion_cost_allocation
+description: Orion cost allocation summary aggregated by cost center, GL account, and partner internal order.
+text_template: |
+  Period {period} shows cost center {cost_center} ({cost_center_name}) allocating GL account {gl_account}
+  ({gl_name_en}) to partner internal order {partner_internal_order} ({partner_io_description}). The summary contains
+  {transaction_count} postings ({unique_documents} unique documents) with document types {document_types}. Total
+  allocated amount: {total_amount} THB (average {avg_amount} THB). Source file {source_file} at aggregation level
+  {aggregation_level} was generated at {aggregated_at}.
+field_mappings:
+  - csv_column: period
+    metadata_key: period
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: cost_center
+    metadata_key: cost_center
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: cost_center_name
+    metadata_key: cost_center_name
+    field_type: generic
+    data_type: string
+  - csv_column: gl_acct
+    metadata_key: gl_account
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: gl_name_en
+    metadata_key: gl_name_en
+    field_type: generic
+    data_type: string
+  - csv_column: gl_name_th
+    metadata_key: gl_name_th
+    field_type: generic
+    data_type: string
+  - csv_column: partner_io
+    metadata_key: partner_internal_order
+    field_type: identifier
+    data_type: string
+  - csv_column: partner_io_description
+    metadata_key: partner_io_description
+    field_type: generic
+    data_type: string
+  - csv_column: total_amount
+    metadata_key: total_amount
+    field_type: generic
+    data_type: numeric
+  - csv_column: avg_amount
+    metadata_key: avg_amount
+    field_type: generic
+    data_type: numeric
+  - csv_column: transaction_count
+    metadata_key: transaction_count
+    field_type: generic
+    data_type: numeric
+  - csv_column: unique_documents
+    metadata_key: unique_documents
+    field_type: generic
+    data_type: numeric
+  - csv_column: document_types
+    metadata_key: document_types
+    field_type: generic
+    data_type: string
+  - csv_column: aggregation_level
+    metadata_key: aggregation_level
+    field_type: generic
+    data_type: string
+  - csv_column: source_file
+    metadata_key: source_file
+    field_type: generic
+    data_type: string
+  - csv_column: created_at
+    metadata_key: aggregated_at
+    field_type: generic
+    data_type: string

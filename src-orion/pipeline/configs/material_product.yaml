@@ -1,0 +1,49 @@
+name: orion_material_product
+description: Orion material and product roll-up across GL and sales extracts.
+text_template: |
+  Period {period} shows material {material_code} ({material_description}) tied to internal order {order_number} with
+  {transaction_count} contributing documents from {data_source}. Total recognised amount: {total_amount} THB. The
+  business unit context is {io_description} at aggregation level {aggregation_level}, generated at {created_at}.
+field_mappings:
+  - csv_column: period
+    metadata_key: period
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: material_code
+    metadata_key: material_code
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: order_number
+    metadata_key: order_number
+    field_type: identifier
+    data_type: string
+  - csv_column: total_amount
+    metadata_key: total_amount
+    field_type: generic
+    data_type: numeric
+  - csv_column: transaction_count
+    metadata_key: transaction_count
+    field_type: generic
+    data_type: numeric
+  - csv_column: material_description
+    metadata_key: material_description
+    field_type: generic
+    data_type: string
+  - csv_column: io_description
+    metadata_key: io_description
+    field_type: generic
+    data_type: string
+  - csv_column: data_source
+    metadata_key: data_source
+    field_type: generic
+    data_type: string
+  - csv_column: aggregation_level
+    metadata_key: aggregation_level
+    field_type: generic
+    data_type: string
+  - csv_column: created_at
+    metadata_key: created_at
+    field_type: generic
+    data_type: string
