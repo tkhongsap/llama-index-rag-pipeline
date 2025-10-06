@@ -1,0 +1,43 @@
+{
+  "generated_at": "2025-10-02T15:58:05.486521",
+  "source_directory": "/home/tkhongsap/my-github/llama-index-rag-pipeline/src-orion/orion-financial-monthly-data",
+  "output_directory": "/home/tkhongsap/my-github/llama-index-rag-pipeline/src-orion/orion-financial-aggregated",
+  "fact_tables": {
+    "gl_monthly": {
+      "row_count": 1516,
+      "column_count": 17,
+      "output_file": "fact_gl_monthly.csv"
+    },
+    "sales_customer": {
+      "row_count": 1210,
+      "column_count": 17,
+      "output_file": "fact_sales_customer.csv"
+    },
+    "cost_allocation": {
+      "row_count": 3016,
+      "column_count": 16,
+      "output_file": "fact_cost_allocation.csv"
+    },
+    "actual_sale": {
+      "row_count": 190,
+      "column_count": 16,
+      "output_file": "fact_actual_sale.csv"
+    },
+    "material_product": {
+      "row_count": 175,
+      "column_count": 10,
+      "output_file": "fact_material_product.csv"
+    }
+  },
+  "summary": {
+    "total_input_rows": 133344,
+    "total_output_rows": 6107,
+    "reduction_ratio": "95.4%",
+    "source_files": {
+      "Actual_GL": 102306,
+      "Actual_Sale": 14639,
+      "Actual_Sale_Billing": 7631,
+      "Cost_Alloc": 8768
+    }
+  }
+}
