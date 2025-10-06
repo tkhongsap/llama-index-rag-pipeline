@@ -1,0 +1,80 @@
+name: orion_sales_customer
+description: Orion sales billing summary aggregated by customer, product, and period.
+text_template: |
+  In period {period}, customer {customer_name} purchased {material_description} ({material_code}) via sales
+  organisation {sales_org}. The billing data shows {line_item_count} line items across {unique_billing_docs}
+  documents. Net revenue totalled {total_net_value} THB while gross revenue reached {total_gross_value} THB and
+  tax accrued {total_tax} THB (average tax {avg_tax}). Internal order context: {io_description}. Source file
+  {source_file} captured aggregation level {aggregation_level}.
+field_mappings:
+  - csv_column: period
+    metadata_key: period
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: customer_name
+    metadata_key: customer_name
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: material_code
+    metadata_key: material_code
+    field_type: identifier
+    data_type: string
+    required: true
+  - csv_column: material_description
+    metadata_key: material_description
+    field_type: generic
+    data_type: string
+  - csv_column: sales_org
+    metadata_key: sales_org
+    field_type: identifier
+    data_type: string
+  - csv_column: total_net_value
+    metadata_key: total_net_value
+    field_type: generic
+    data_type: numeric
+  - csv_column: total_gross_value
+    metadata_key: total_gross_value
+    field_type: generic
+    data_type: numeric
+  - csv_column: total_tax
+    metadata_key: total_tax
+    field_type: generic
+    data_type: numeric
+  - csv_column: avg_tax
+    metadata_key: avg_tax
+    field_type: generic
+    data_type: numeric
+  - csv_column: total_amount
+    metadata_key: total_amount
+    field_type: generic
+    data_type: numeric
+  - csv_column: unique_billing_docs
+    metadata_key: unique_billing_docs
+    field_type: generic
+    data_type: numeric
+  - csv_column: line_item_count
+    metadata_key: line_item_count
+    field_type: generic
+    data_type: numeric
+  - csv_column: io_description
+    metadata_key: io_description
+    field_type: generic
+    data_type: string
+  - csv_column: gl_name_en
+    metadata_key: gl_name_en
+    field_type: generic
+    data_type: string
+  - csv_column: aggregation_level
+    metadata_key: aggregation_level
+    field_type: generic
+    data_type: string
+  - csv_column: source_file
+    metadata_key: source_file
+    field_type: generic
+    data_type: string
+  - csv_column: created_at
+    metadata_key: aggregated_at
+    field_type: generic
+    data_type: string
