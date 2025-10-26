@@ -1,0 +1,331 @@
+"""
+Main orchestrator for sales promotion batch embedding pipeline.
+Coordinates document loading, embedding generation, and storage following production RAG patterns.
+
+Following PRD Section 6.4: batch_embedding.py specification
+"""
+
+import os
+import sys
+import time
+from pathlib import Path
+from datetime import datetime
+from dotenv import load_dotenv
+from typing import List, Tuple, Dict, Any
+
+# Load environment
+load_dotenv(override=True)
+
+# LlamaIndex imports
+from llama_index.core import DocumentSummaryIndex, Document
+from llama_index.core.schema import IndexNode
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
+
+# Local imports
+try:
+    from .document_loader import PromotionDocumentLoader
+    from .embedding_processor import EmbeddingProcessor
+    from .file_storage import EmbeddingStorage
+except ImportError:
+    # Fallback for direct script execution
+    from document_loader import PromotionDocumentLoader
+    from embedding_processor import EmbeddingProcessor
+    from file_storage import EmbeddingStorage
+
+
+# Configuration (Updated for GPT-5 and text-embedding-3-large)
+CONFIG = {
+    "input_file": Path("../data/processed/documents/documents.jsonl"),
+    "output_dir": Path("../data/embedding"),
+    "chunk_size": 2048,              # > doc size (no chunking)
+    "chunk_overlap": 0,
+    "embedding_model": "text-embedding-3-large",  # 3072 dimensions (upgraded from 1536)
+    "llm_model": "gpt-5",                         # OpenAI's latest model
+    "batch_size": 20,
+    "delay_between_batches": 3,
+    "summary_truncate_length": 500,
+    "max_retries": 3
+}
+
+
+class SalesPromotionBatchEmbeddingPipeline:
+    """
+    Main pipeline orchestrator for sales promotion embeddings.
+    
+    Follows src-imap/docs_embedding/ architecture patterns with adaptations
+    for atomic promotion documents.
+    """
+    
+    def __init__(self, config: Dict[str, Any] = CONFIG):
+        """
+        Initialize the embedding pipeline.
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        self.document_loader = PromotionDocumentLoader()
+        self.embedding_processor = EmbeddingProcessor()
+        self.storage = EmbeddingStorage()
+        self.api_key = self._validate_api_key()
+        
+        # Create timestamped output directory
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.output_dir = self.config["output_dir"] / f"embeddings_sales_{timestamp}"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        print(f"📁 Output directory: {self.output_dir}")
+    
+    def _validate_api_key(self) -> str:
+        """Validate OpenAI API key exists."""
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "OPENAI_API_KEY not found in environment. "
+                "Please set it in .env file."
+            )
+        return api_key
+    
+    def run(self) -> None:
+        """Execute the complete embedding pipeline."""
+        
+        print("=" * 80)
+        print("SALES PROMOTION EMBEDDING PIPELINE - PHASE 2")
+        print("=" * 80)
+        print(f"\nConfiguration:")
+        print(f"  Input file: {self.config['input_file']}")
+        print(f"  Batch size: {self.config['batch_size']} promotions")
+        print(f"  Embedding model: {self.config['embedding_model']}")
+        print(f"  LLM model: {self.config['llm_model']}")
+        print(f"  Chunk size: {self.config['chunk_size']} (no chunking)")
+        
+        # Step 1: Load documents from JSONL
+        print(f"\n{'='*80}")
+        print("STEP 1: Loading Documents")
+        print(f"{'='*80}")
+        
+        documents = self.document_loader.load_documents_from_jsonl(
+            self.config["input_file"]
+        )
+        
+        # Step 2: Group into batches
+        print(f"\n{'='*80}")
+        print("STEP 2: Batch Grouping")
+        print(f"{'='*80}")
+        
+        batches = self._create_batches(documents, self.config["batch_size"])
+        print(f"📦 Created {len(batches)} batches:")
+        for i, batch in enumerate(batches, 1):
+            print(f"   Batch {i}: {len(batch)} promotions")
+        
+        # Step 3: Process each batch
+        print(f"\n{'='*80}")
+        print("STEP 3: Processing Batches")
+        print(f"{'='*80}")
+        
+        all_batches_data = []
+        
+        for batch_num, batch_docs in enumerate(batches, 1):
+            print(f"\n{'─'*80}")
+            print(f"PROCESSING BATCH {batch_num}/{len(batches)}")
+            print(f"{'─'*80}")
+            
+            embeddings = self.process_batch(batch_docs, batch_num)
+            all_batches_data.append(embeddings)
+            
+            # Rate limiting (skip after last batch)
+            if batch_num < len(batches):
+                delay = self.config["delay_between_batches"]
+                print(f"\n⏸️  Rate limiting: Waiting {delay} seconds before next batch...")
+                time.sleep(delay)
+        
+        # Step 4: Save combined statistics
+        print(f"\n{'='*80}")
+        print("STEP 4: Generating Combined Statistics")
+        print(f"{'='*80}")
+        
+        self.storage.save_combined_statistics(self.output_dir, all_batches_data)
+        
+        # Summary
+        print(f"\n{'='*80}")
+        print("PIPELINE COMPLETE")
+        print(f"{'='*80}")
+        
+        total_indexnodes = sum(len(batch[0]) for batch in all_batches_data)
+        total_summaries = sum(len(batch[1]) for batch in all_batches_data)
+        
+        print(f"\n✅ Successfully processed {len(documents)} promotions")
+        print(f"✅ Generated {total_indexnodes + total_summaries} embeddings:")
+        print(f"   - IndexNode embeddings: {total_indexnodes}")
+        print(f"   - Summary embeddings: {total_summaries}")
+        print(f"✅ Processed {len(batches)} batches")
+        print(f"✅ Output saved to: {self.output_dir}")
+        
+        print(f"\n{'='*80}")
+        print("PHASE 2 COMPLETE - Ready for Phase 3 (Retrieval)")
+        print(f"{'='*80}")
+    
+    def _create_batches(
+        self,
+        documents: List[Document],
+        batch_size: int
+    ) -> List[List[Document]]:
+        """
+        Group documents into batches.
+        
+        Args:
+            documents: List of documents
+            batch_size: Number of documents per batch
+            
+        Returns:
+            List of document batches
+        """
+        batches = []
+        for i in range(0, len(documents), batch_size):
+            batch = documents[i:i + batch_size]
+            batches.append(batch)
+        return batches
+    
+    def process_batch(
+        self,
+        batch_docs: List[Document],
+        batch_num: int
+    ) -> Tuple[List[Dict], List[Dict]]:
+        """
+        Process a single batch of promotions.
+        
+        Args:
+            batch_docs: Batch of Document objects
+            batch_num: Batch number
+            
+        Returns:
+            Tuple of (indexnode_embeddings, summary_embeddings)
+        """
+        print(f"\n1️⃣  Configuring models...")
+        
+        # Configure models
+        llm = OpenAI(model=self.config["llm_model"], api_key=self.api_key)
+        embed_model = OpenAIEmbedding(
+            model=self.config["embedding_model"],
+            api_key=self.api_key
+        )
+        
+        print(f"   ✅ LLM: {self.config['llm_model']}")
+        print(f"   ✅ Embedding: {self.config['embedding_model']}")
+        
+        # Build DocumentSummaryIndex
+        print(f"\n2️⃣  Building DocumentSummaryIndex...")
+        doc_summary_index = self.embedding_processor.build_document_summary_index(
+            batch_docs,
+            llm,
+            embed_model,
+            chunk_size=self.config["chunk_size"],
+            chunk_overlap=self.config["chunk_overlap"]
+        )
+        
+        # Create IndexNodes
+        print(f"\n3️⃣  Creating IndexNodes...")
+        index_nodes = self._build_index_nodes(doc_summary_index, batch_num)
+        print(f"   ✅ Created {len(index_nodes)} IndexNodes")
+        
+        # Extract embeddings
+        print(f"\n4️⃣  Extracting embeddings...")
+        
+        indexnode_embeddings = self.embedding_processor.extract_indexnode_embeddings(
+            index_nodes, embed_model, batch_num
+        )
+        
+        summary_embeddings = self.embedding_processor.extract_summary_embeddings(
+            doc_summary_index, embed_model, batch_num
+        )
+        
+        # Save batch outputs
+        print(f"\n5️⃣  Saving batch outputs...")
+        self.storage.save_batch_embeddings(
+            self.output_dir,
+            batch_num,
+            indexnode_embeddings,
+            summary_embeddings
+        )
+        
+        print(f"\n✅ Batch {batch_num} complete:")
+        print(f"   - IndexNode embeddings: {len(indexnode_embeddings)}")
+        print(f"   - Summary embeddings: {len(summary_embeddings)}")
+        print(f"   - Total: {len(indexnode_embeddings) + len(summary_embeddings)}")
+        
+        return (indexnode_embeddings, summary_embeddings)
+    
+    def _build_index_nodes(
+        self,
+        doc_summary_index: DocumentSummaryIndex,
+        batch_num: int
+    ) -> List[IndexNode]:
+        """
+        Create IndexNodes for hierarchical retrieval.
+        
+        Args:
+            doc_summary_index: DocumentSummaryIndex object
+            batch_num: Batch number
+            
+        Returns:
+            List of IndexNode objects
+        """
+        index_nodes = []
+        doc_ids = list(doc_summary_index.ref_doc_info.keys())
+        
+        for i, doc_id in enumerate(doc_ids, 1):
+            doc_info = doc_summary_index.ref_doc_info[doc_id]
+            
+            # Get document title
+            promo_id = doc_info.metadata.get('document_id', doc_id)
+            promo_title = f"Promotion: {promo_id}"
+            
+            # Get LLM-generated summary
+            summary = doc_summary_index.get_document_summary(doc_id)
+            
+            # Truncate long summaries for display
+            truncate_len = self.config.get("summary_truncate_length", 500)
+            if len(summary) > truncate_len:
+                summary_display = summary[:truncate_len] + "..."
+            else:
+                summary_display = summary
+            
+            # Create IndexNode
+            index_node = IndexNode(
+                text=f"{promo_title}\n\nSummary: {summary_display}",
+                index_id=f"promo_{i}",
+                metadata={
+                    **doc_info.metadata,  # All 25 original fields
+                    "doc_id": doc_id,
+                    "doc_title": promo_title,
+                    "type": "document_summary",
+                    "batch_number": batch_num
+                }
+            )
+            
+            index_nodes.append(index_node)
+        
+        return index_nodes
+
+
+def main():
+    """Main entry point for the embedding pipeline."""
+    try:
+        pipeline = SalesPromotionBatchEmbeddingPipeline()
+        pipeline.run()
+    
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Pipeline interrupted by user")
+        sys.exit(1)
+    
+    except Exception as e:
+        print(f"\n\n❌ Pipeline error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+
