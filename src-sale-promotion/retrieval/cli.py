@@ -32,6 +32,7 @@ from retrieval.query_engine import PromotionQueryEngine
 from retrieval.index_classifier import IndexClassifier
 from retrieval.strategy_selector import StrategySelector
 from retrieval.cache import QueryCache
+from retrieval.config import MODEL_CONFIG
 from retrieval.retrievers import (
     VectorRetrieverAdapter,
     SummaryRetrieverAdapter,
@@ -103,11 +104,15 @@ class SalesPromotionCLI:
         # Initialize query system
         print("  [5/5] Initializing query engine...", end="", flush=True)
         
-        # LLM
+        # LLM - Phase 5: Use config model (gpt-4o-mini) for 10x speed improvement
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
-        llm = OpenAI(model="gpt-5", api_key=api_key, temperature=0.0)
+        llm = OpenAI(
+            model=MODEL_CONFIG["llm_model"],
+            api_key=api_key,
+            temperature=MODEL_CONFIG["llm_temperature"]
+        )
         
         # Retrievers
         retrievers = {
@@ -142,7 +147,7 @@ class SalesPromotionCLI:
         print("\n✅ System ready!")
         print(f"   - Embeddings: 142 (71 promotions)")
         print(f"   - Strategies: 7 available")
-        print(f"   - Models: GPT-5 + text-embedding-3-large")
+        print(f"   - Models: {MODEL_CONFIG['llm_model']} + {MODEL_CONFIG['embedding_model']}")
         print("="*70)
     
     def interactive_mode(self, top_k: int = 5, strategy_override: Optional[str] = None):

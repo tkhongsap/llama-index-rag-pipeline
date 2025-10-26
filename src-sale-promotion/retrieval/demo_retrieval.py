@@ -54,9 +54,10 @@ def initialize_system():
     metadata_index = FastMetadataIndex()
     metadata_index.build_index(loader.nodes)
     
-    # Initialize LLM
+    # Initialize LLM - Phase 5: Use gpt-4o-mini
+    from retrieval.config import MODEL_CONFIG
     api_key = os.getenv("OPENAI_API_KEY")
-    llm = OpenAI(model="gpt-5", api_key=api_key, temperature=0.0)
+    llm = OpenAI(model=MODEL_CONFIG["llm_model"], api_key=api_key, temperature=0.0)
     
     # Initialize all retrievers
     print(f"\n{'='*80}")
