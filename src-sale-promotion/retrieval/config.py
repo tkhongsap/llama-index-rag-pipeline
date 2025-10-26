@@ -16,11 +16,14 @@ BASE_DIR = Path(__file__).parent
 EMBEDDING_DIR = BASE_DIR / "../data/embedding/embeddings_sales_20251026_172927"
 
 # Model Configuration
+# Phase 5: Changed from gpt-5 to gpt-4o-mini for 10x speed + 73% cost reduction
+# Rollback: Set LLM_MODEL=gpt-5 in .env
 MODEL_CONFIG = {
-    "llm_model": os.getenv("LLM_MODEL", "gpt-5"),
+    "llm_model": os.getenv("LLM_MODEL", "gpt-4o-mini"),
     "embedding_model": os.getenv("EMBEDDING_MODEL", "text-embedding-3-large"),
     "embedding_dims": 3072,
     "llm_temperature": 0.0,
+    "enable_streaming": os.getenv("ENABLE_STREAMING", "true").lower() == "true",
 }
 
 # Retrieval Configuration

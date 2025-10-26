@@ -139,9 +139,10 @@ def test_metadata_retriever(vector_index, metadata_index):
     print("TEST 5: Metadata Retriever")
     print("="*80)
     
-    # Get LLM for auto-filter detection
+    # Get LLM for auto-filter detection - Phase 5: Use gpt-4o-mini
+    from retrieval.config import MODEL_CONFIG
     api_key = os.getenv("OPENAI_API_KEY")
-    llm = OpenAI(model="gpt-5", api_key=api_key) if api_key else None
+    llm = OpenAI(model=MODEL_CONFIG["llm_model"], api_key=api_key) if api_key else None
     
     retriever = MetadataRetrieverAdapter(
         vector_index,

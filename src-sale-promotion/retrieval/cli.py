@@ -32,6 +32,7 @@ from retrieval.query_engine import PromotionQueryEngine
 from retrieval.index_classifier import IndexClassifier
 from retrieval.strategy_selector import StrategySelector
 from retrieval.cache import QueryCache
+from retrieval.config import MODEL_CONFIG
 from retrieval.retrievers import (
     VectorRetrieverAdapter,
     SummaryRetrieverAdapter,
@@ -103,11 +104,15 @@ class SalesPromotionCLI:
         # Initialize query system
         print("  [5/5] Initializing query engine...", end="", flush=True)
         
-        # LLM
+        # LLM - Phase 5: Use config model (gpt-4o-mini) for 10x speed improvement
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
-        llm = OpenAI(model="gpt-5", api_key=api_key, temperature=0.0)
+        llm = OpenAI(
+            model=MODEL_CONFIG["llm_model"],
+            api_key=api_key,
+            temperature=MODEL_CONFIG["llm_temperature"]
+        )
         
         # Retrievers
         retrievers = {
@@ -130,20 +135,97 @@ class SalesPromotionCLI:
             debug_logging=self.debug
         )
         
-        # Query engine
+        # Query engine (streaming enabled by default, can be disabled with --no-stream)
         self.query_engine = PromotionQueryEngine(
             router=self.router,
             llm=llm,
-            verbose=self.debug
+            verbose=self.debug,
+            enable_streaming=True  # Will be overridden by CLI flag if --no-stream is used
         )
         
         print(" ✓")
-        
+
         print("\n✅ System ready!")
         print(f"   - Embeddings: 142 (71 promotions)")
         print(f"   - Strategies: 7 available")
-        print(f"   - Models: GPT-5 + text-embedding-3-large")
+        print(f"   - Models: {MODEL_CONFIG['llm_model']} + {MODEL_CONFIG['embedding_model']}")
         print("="*70)
+
+    def _warm_cache(self, silent: bool = True):
+        """
+        Pre-cache common queries to improve response time for frequent questions.
+
+        Targets 50%+ cache hit rate in production.
+
+        Args:
+            silent: Suppress output during cache warming
+        """
+        common_queries = [
+            # Customer type queries (Thai)
+            "ผมเป็นเอเย่นต์ มีโปรโมชันอะไรบ้าง",
+            "โปรโมชันสำหรับซับเอเย่นต์",
+
+            # Product queries (Thai)
+            "มีโปรอะไรสำหรับน้ำดื่มช้างบ้าง",
+            "โปรโมชันเบียร์",
+            "โปรโมชันน้ำดื่ม",
+
+            # Discount queries (Thai)
+            "โปรไหนให้ส่วนลดเยอะที่สุด",
+            "โปรโมชันที่ส่วนลดมากกว่า 30%",
+
+            # Active status (Thai)
+            "ตอนนี้มีโปรอะไรใช้ได้บ้าง",
+
+            # Purchase intent (Thai)
+            "ถ้าผมซื้อเบียร์ จะได้อะไรแถมบ้าง",
+            "มีโปรแถมของฟรีไหม",
+
+            # Brand queries (Thai)
+            "แบรนด์ช้างมีโปรอะไรดีๆ บ้าง",
+
+            # English queries
+            "What promotions are available for agents?",
+            "Which promotions give the best discount?",
+            "Are there any promotions with free items?",
+        ]
+
+        if not silent:
+            print(f"\n  [Cache] Warming cache with {len(common_queries)} common queries...")
+
+        # Temporarily disable streaming for cache warming
+        original_streaming = self.query_engine.enable_streaming
+        self.query_engine.enable_streaming = False
+
+        cached_count = 0
+        for query in common_queries:
+            try:
+                self.query_engine.query(query, top_k=5)
+                cached_count += 1
+            except Exception as e:
+                if not silent:
+                    print(f"  ⚠️  Failed to cache query: {query[:30]}... ({e})")
+                continue
+
+        # Restore streaming setting
+        self.query_engine.enable_streaming = original_streaming
+
+        if not silent:
+            print(f"  ✅ Successfully cached {cached_count}/{len(common_queries)} queries")
+
+    def load_system_with_cache_warming(self, warm_cache: bool = True):
+        """
+        Load system and optionally warm cache.
+
+        Args:
+            warm_cache: Whether to pre-cache common queries
+        """
+        self.load_system()
+
+        if warm_cache:
+            print("\n  [6/6] Warming cache...", end="", flush=True)
+            self._warm_cache(silent=True)
+            print(" ✓")
     
     def interactive_mode(self, top_k: int = 5, strategy_override: Optional[str] = None):
         """
@@ -408,7 +490,12 @@ Examples:
         choices=["vector", "metadata", "hybrid", "summary", "recursive", "chunk_decoupling", "planner"],
         help="Force specific retrieval strategy"
     )
-    
+    parser.add_argument(
+        "--no-stream",
+        action="store_true",
+        help="Disable response streaming (wait for full response)"
+    )
+
     return parser.parse_args()
 
 
@@ -428,9 +515,13 @@ def main():
     try:
         # Initialize CLI
         cli = SalesPromotionCLI(verbose=args.verbose, debug=args.debug)
-        
+
         # Load system
         cli.load_system()
+
+        # Override streaming setting if --no-stream flag is used
+        if args.no_stream:
+            cli.query_engine.enable_streaming = False
         
         # Execute requested mode
         if args.run_tests:

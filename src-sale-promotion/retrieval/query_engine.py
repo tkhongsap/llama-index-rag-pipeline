@@ -12,6 +12,7 @@ from llama_index.core.schema import NodeWithScore
 from llama_index.llms.openai import OpenAI
 
 from .router import PromotionRouter
+from .config import MODEL_CONFIG
 
 
 class PromotionQueryEngine:
@@ -32,21 +33,28 @@ class PromotionQueryEngine:
         router: PromotionRouter,
         llm: OpenAI,
         response_mode: str = "compact",
-        verbose: bool = False
+        verbose: bool = False,
+        enable_streaming: bool = None
     ):
         """
         Initialize query engine.
-        
+
         Args:
             router: Two-stage router
-            llm: LLM for response synthesis (GPT-5)
+            llm: LLM for response synthesis (GPT-4o-mini by default)
             response_mode: Response synthesis mode
             verbose: Enable verbose output
+            enable_streaming: Enable token-by-token streaming (default: from config)
         """
         self.router = router
         self.llm = llm
         self.response_mode = response_mode
         self.verbose = verbose
+        # Use config default if not specified
+        self.enable_streaming = (
+            enable_streaming if enable_streaming is not None
+            else MODEL_CONFIG.get("enable_streaming", True)
+        )
     
     def query(
         self,
@@ -86,9 +94,12 @@ class PromotionQueryEngine:
             if nodes:
                 print(f"   Strategy: {nodes[0].node.metadata.get('selected_strategy', 'unknown')}")
         
-        # Synthesize response
-        response_text = self._synthesize_response(query_str, nodes)
-        
+        # Synthesize response (streaming or non-streaming)
+        if self.enable_streaming:
+            response_text = self._synthesize_response_streaming(query_str, nodes)
+        else:
+            response_text = self._synthesize_response(query_str, nodes)
+
         synthesis_time = time.time() - start_time - retrieval_time
         total_time = time.time() - start_time
         
@@ -193,7 +204,93 @@ Your response:
             return response.text.strip()
         except Exception as e:
             return f"Error generating response: {str(e)}"
-    
+
+    def _synthesize_response_streaming(
+        self,
+        query: str,
+        nodes: List[NodeWithScore]
+    ) -> str:
+        """
+        Generate streaming natural language response using GPT-4o-mini.
+
+        Tokens appear in real-time for better UX (perceived latency < 1s).
+
+        Args:
+            query: User query
+            nodes: Retrieved nodes
+
+        Returns:
+            Complete natural language response
+        """
+        if not nodes:
+            no_results = "ไม่พบโปรโมชันที่ตรงกับเงื่อนไข (No promotions found matching your criteria.)"
+            print(no_results)
+            return no_results
+
+        # Build context from retrieved nodes (same as non-streaming)
+        context_parts = []
+        for i, node in enumerate(nodes[:5], 1):
+            metadata = node.node.metadata
+
+            # Extract key info
+            doc_id = metadata.get('document_id', 'N/A')
+            customer_type = metadata.get('customer_type', 'N/A')
+            product_name = metadata.get('product_name', 'N/A')
+            discount = metadata.get('discount_percentage', 'N/A')
+            is_active = metadata.get('is_active', False)
+
+            context_parts.append(
+                f"Promotion {i} (ID: {doc_id}):\n"
+                f"Customer Type: {customer_type}\n"
+                f"Product: {product_name}\n"
+                f"Discount: {discount}%\n"
+                f"Active: {is_active}\n"
+                f"Details: {node.node.text[:200]}...\n"
+            )
+
+        context = "\n".join(context_parts)
+
+        # Determine response language (Thai if query contains Thai, else English)
+        has_thai = any(ord(c) >= 0x0E00 and ord(c) <= 0x0E7F for c in query)
+        language = "Thai" if has_thai else "English"
+
+        # Generate prompt (same as non-streaming)
+        prompt = f"""
+Based on the following sales promotion information, answer the user's query clearly and concisely.
+
+Query: {query}
+
+Promotion Information:
+{context}
+
+Instructions:
+- Answer in {language}
+- Be specific and include key details (discount percentages, product names, customer types, dates)
+- If comparing or analyzing, provide clear comparison
+- If asked for list, format as numbered list
+- Include relevant promotion IDs for reference
+- Keep response concise but informative
+
+Your response:
+"""
+
+        try:
+            # Stream response token by token
+            full_response = []
+
+            for chunk in self.llm.stream_complete(prompt):
+                token = chunk.text
+                print(token, end="", flush=True)  # Real-time display
+                full_response.append(token)
+
+            print()  # Newline after streaming completes
+            return "".join(full_response)
+
+        except Exception as e:
+            error_msg = f"Error generating streaming response: {str(e)}"
+            print(error_msg)
+            return error_msg
+
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
         return self.router.get_cache_stats()
