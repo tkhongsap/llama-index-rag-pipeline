@@ -1,32 +1,67 @@
 """
-Chunk Decoupling Retriever for detailed analysis.
+Chunk Decoupling Retriever Adapter for Sales Promotions
+
+Strategy 6: Context-preserving retrieval for precise answer extraction.
+Adapted for atomic documents (no chunks).
+
+Performance Target: < 200ms
 """
 
-from typing import List
-from llama_index.core.schema import NodeWithScore, QueryBundle
+from typing import List, Optional
+from llama_index.core import VectorStoreIndex
+from llama_index.core.schema import NodeWithScore
+
 from .base import BaseRetrieverAdapter
 
 
 class ChunkDecouplingRetrieverAdapter(BaseRetrieverAdapter):
     """
-    Chunk decoupling retriever for precise context.
+    Chunk decoupling retriever adapted for atomic promotion documents.
     
-    Best for:
-    - Detailed analysis
-    - Specific information extraction
-    - Context-aware retrieval
-    
-    Example queries:
-    - "Detailed breakdown of campaign budget allocation"
-    - "Explain the pricing strategy for product X"
-    - "What were the exact terms of the promotion?"
+    Since sales promotions are atomic (50-150 tokens, no chunking),
+    this strategy simplifies to retrieving full documents with
+    emphasis on precise answer extraction.
     """
     
-    def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
-        """Retrieve using chunk decoupling."""
-        if not self.index:
-            return []
+    def __init__(
+        self,
+        vector_index: VectorStoreIndex,
+        top_k: int = 3
+    ):
+        """
+        Initialize chunk decoupling retriever.
         
-        retriever = self.index.as_retriever(similarity_top_k=self.top_k)
-        nodes = retriever.retrieve(query_bundle.query_str)
-        return self._enhance_metadata(nodes)
+        Args:
+            vector_index: VectorStoreIndex for retrieval
+            top_k: Number of results to return
+        """
+        super().__init__("chunk_decoupling")
+        self.vector_index = vector_index
+        self.top_k = top_k
+    
+    def retrieve(
+        self,
+        query: str,
+        top_k: Optional[int] = None
+    ) -> List[NodeWithScore]:
+        """
+        Retrieve nodes with focus on precise answer extraction.
+        
+        For atomic documents, this is similar to vector retrieval
+        but optimized for "what is..." type questions.
+        
+        Args:
+            query: Search query (supports Thai text)
+            top_k: Number of results (uses default if None)
+            
+        Returns:
+            List of NodeWithScore objects tagged with strategy metadata
+        """
+        k = top_k if top_k is not None else self.top_k
+        
+        # For atomic docs, retrieve full promotion documents
+        retriever = self.vector_index.as_retriever(similarity_top_k=k)
+        nodes = retriever.retrieve(query)
+        
+        # Tag nodes with strategy info
+        return self._tag_nodes_with_strategy(nodes)
