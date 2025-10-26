@@ -107,7 +107,7 @@ class FileOutputManager:
         
         # Determine padding based on total number of documents
         total_docs = len(documents)
-        padding = len(str(total_docs))
+        padding = 3  # Fixed 3-digit padding per PRD requirement (promotion_001.md to promotion_071.md)
         
         for idx, doc in enumerate(documents, 1):
             # Create filename: promotion_001.md, promotion_002.md, etc.

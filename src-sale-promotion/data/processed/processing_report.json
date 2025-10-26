@@ -1,0 +1,35 @@
+{
+  "processing_date": "2025-10-26T16:23:44.474183",
+  "config_name": "thai_sales_promotions",
+  "config_version": "2.0",
+  "total_promotions": 71,
+  "processing_time": "0.02 seconds",
+  "processing_speed": "4261.19 docs/sec",
+  "fields_extracted": 25,
+  "base_fields": 10,
+  "derived_fields": 15,
+  "text_stats": {
+    "min_length": 508,
+    "max_length": 601,
+    "avg_length": 555.0140845070423,
+    "total_chars": 39406
+  },
+  "active_promotions": 58,
+  "expired_promotions": 13,
+  "expiring_soon": 19,
+  "dates_converted": 142,
+  "product_categories": {
+    "water": 39,
+    "other": 13,
+    "beer": 19
+  },
+  "customer_tiers": {
+    "tier_1": 32,
+    "tier_2": 26,
+    "tier_3": 13
+  },
+  "promotion_types": {
+    "buy_x_get_y": 71
+  },
+  "success_rate": 100.0
+}
