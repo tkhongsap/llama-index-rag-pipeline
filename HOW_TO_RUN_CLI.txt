@@ -1,0 +1,120 @@
+================================================================================
+  HOW TO RUN SALES PROMOTION CLI
+================================================================================
+
+📍 ONE-LINE COMMAND (Copy & Paste):
+────────────────────────────────────────────────────────────────────────────────
+
+cd /home/tkhongsap/github/llama-index-rag-pipeline && source venv/bin/activate && cd src-sale-promotion/retrieval && python3 cli.py -i
+
+
+📝 STEP-BY-STEP COMMANDS:
+────────────────────────────────────────────────────────────────────────────────
+
+# Step 1: Go to project directory
+cd /home/tkhongsap/github/llama-index-rag-pipeline
+
+# Step 2: Activate virtual environment
+source venv/bin/activate
+
+# Step 3: Go to retrieval folder
+cd src-sale-promotion/retrieval
+
+# Step 4: Start CLI in interactive mode
+python3 cli.py -i
+
+
+🎯 OTHER CLI MODES:
+────────────────────────────────────────────────────────────────────────────────
+
+# Single query mode
+python3 cli.py -q "ผมเป็นเอเย่นต์ มีโปรโมชันอะไรบ้าง"
+
+# Test mode (run all 10 test questions)
+python3 cli.py -t
+
+# Verbose mode (detailed metrics)
+python3 cli.py -q "โปรโมชันเบียร์" -v
+
+# Force specific strategy
+python3 cli.py -q "โปรโมชันเบียร์" -s metadata
+
+# More results (top-10 instead of top-5)
+python3 cli.py -q "โปรโมชันเบียร์" -k 10
+
+# Debug mode
+python3 cli.py -q "โปรโมชันเบียร์" -d
+
+
+🛑 TO EXIT:
+────────────────────────────────────────────────────────────────────────────────
+
+Type: exit
+Or press: Ctrl+C
+
+
+📚 AVAILABLE STRATEGIES:
+────────────────────────────────────────────────────────────────────────────────
+
+1. vector           - General semantic search (fast, ~100ms)
+2. metadata         - Filtered queries (very fast, ~50ms)
+3. hybrid           - Thai keywords + semantic (moderate, ~150ms)
+4. summary          - Document-level retrieval (moderate, ~200ms)
+5. recursive        - Multi-level hierarchical (thorough, ~300ms)
+6. chunk_decoupling - Precise answers (moderate, ~200ms)
+7. planner          - Complex multi-part queries (comprehensive, ~500ms)
+
+
+💡 EXAMPLE QUERIES (Try These):
+────────────────────────────────────────────────────────────────────────────────
+
+Thai Queries:
+- ผมเป็นเอเย่นต์ มีโปรโมชันอะไรบ้าง
+- มีโปรอะไรสำหรับน้ำดื่มช้างบ้าง
+- โปรไหนให้ส่วนลดเยอะที่สุด
+- ตอนนี้มีโปรอะไรใช้ได้บ้าง
+- ถ้าผมซื้อเบียร์ จะได้อะไรแถมบ้าง
+- มีโปรแถมของฟรีไหม
+- แบรนด์ช้างมีโปรอะไรดีๆ บ้าง
+- มีโปรไหนใกล้หมดอายุบ้างไหม
+
+English Queries:
+- Which is better value - small or large bottles?
+- If I order 100 packs of water, which promotion should I use?
+
+
+📂 FILE LOCATIONS:
+────────────────────────────────────────────────────────────────────────────────
+
+CLI Code:        src-sale-promotion/retrieval/cli.py
+Test Questions:  src-sale-promotion/retrieval/test_set.py
+Documentation:   src-sale-promotion/retrieval/README_CLI.md
+Prompts:
+  - Strategy Selection:    retrieval/strategy_selector.py (line 55-100)
+  - Filter Detection:      retrieval/retrievers/metadata.py (line 144-181)
+  - Response Synthesis:    retrieval/query_engine.py (line 172-189)
+
+
+✅ SYSTEM REQUIREMENTS:
+────────────────────────────────────────────────────────────────────────────────
+
+✓ Python virtual environment activated
+✓ OPENAI_API_KEY set in .env
+✓ Phase 2 embeddings generated (142 embeddings, 71 promotions)
+✓ All dependencies installed (llama-index, openai, etc.)
+
+
+📊 EXPECTED PERFORMANCE:
+────────────────────────────────────────────────────────────────────────────────
+
+System Loading:        ~8 seconds (one-time)
+Query Response Time:   13-28 seconds (with GPT-5 synthesis)
+  - Routing:           5-6 seconds
+  - Retrieval:         0.1-0.5 seconds
+  - Synthesis:         7-15 seconds
+
+
+================================================================================
+Generated: 2025-10-26
+Version: Phase 4 CLI v4.0
+================================================================================
