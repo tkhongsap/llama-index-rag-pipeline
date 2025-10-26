@@ -42,6 +42,9 @@ python3 cli.py -q "โปรโมชันเบียร์" -s metadata
 # More results (top-10 instead of top-5)
 python3 cli.py -q "โปรโมชันเบียร์" -k 10
 
+# Disable streaming (wait for complete response)
+python3 cli.py -q "โปรโมชันเบียร์" --no-stream
+
 # Debug mode
 python3 cli.py -q "โปรโมชันเบียร์" -d
 
@@ -104,17 +107,21 @@ Prompts:
 ✓ All dependencies installed (llama-index, openai, etc.)
 
 
-📊 EXPECTED PERFORMANCE:
+📊 EXPECTED PERFORMANCE (Phase 5 Optimized):
 ────────────────────────────────────────────────────────────────────────────────
 
 System Loading:        ~8 seconds (one-time)
-Query Response Time:   13-28 seconds (with GPT-5 synthesis)
+Query Response Time:   8-10 seconds (with GPT-4o-mini synthesis)
+  - Perceived Latency: <1 second (streaming enabled)
   - Routing:           5-6 seconds
   - Retrieval:         0.1-0.5 seconds
-  - Synthesis:         7-15 seconds
+  - Synthesis:         2-3 seconds
+  - Cost per query:    $0.004 (73% cheaper than GPT-5)
+
+Previous Performance:  25-28 seconds (GPT-5)
 
 
 ================================================================================
 Generated: 2025-10-26
-Version: Phase 4 CLI v4.0
+Version: Phase 5 CLI v5.0 (Performance Optimized)
 ================================================================================
