@@ -11,15 +11,60 @@
 
 ## 1. Executive Summary
 
-Implement the data preparation workflow for the Sales Promotion RAG pipeline, transforming raw Thai promotional CSV data into structured markdown documents with rich metadata, ready for embedding generation.
+Implement the data preparation workflow for the Sales Promotion RAG pipeline, transforming raw Thai promotional CSV data into **LlamaIndex Document objects** with natural language text and rich metadata, ready for embedding generation (Phase 2).
 
 ### Key Objectives
-- ✅ Convert Thai CSV promotion data → Structured documents
-- ✅ Extract and derive comprehensive metadata
+- ✅ Convert Thai CSV promotion data → **LlamaIndex `Document(text=..., metadata={...})` objects**
+- ✅ Extract and derive comprehensive metadata (15+ fields per document)
 - ✅ Handle Buddhist calendar dates (2568 → 2025 CE)
 - ✅ Normalize Thai product names and customer types
-- ✅ Generate markdown documents with NO chunking (atomic promotions)
+- ✅ Generate natural language text descriptions (NO chunking - atomic promotions)
 - ✅ Enable fast metadata filtering for retrieval
+- ✅ **Output format compatible with Phase 2 (Embedding Generation)**
+
+### Critical Alignment with LlamaIndex Workflow
+
+**Following:** `attached_assets/00_doc_prep_workflow.md` (Theoretical Foundation)
+
+This PRD implements the **proper LlamaIndex document preparation workflow**:
+
+1. **CSV Row → Document Object** (NOT markdown files)
+   ```python
+   Document(
+       text="Natural language promotion description...",
+       metadata={...15+ fields...},
+       doc_id="PROMO_001"
+   )
+   ```
+
+2. **Natural Language Text Generation**
+   - Create human-readable description from structured data
+   - 50-200 tokens per promotion
+   - Embeddable content for semantic search
+
+3. **NO Chunking** (Correctly identified - promotions are atomic)
+   - Each promotion = 1 Document
+   - No need for TextSplitter
+
+4. **Output: JSONL Format**
+   - Serialized LlamaIndex Documents
+   - **Directly consumable by Phase 2**
+   - No re-parsing needed
+
+### Why This Matters
+
+**Phase 2 (Embedding) expects:**
+```python
+from llama_index.core import VectorStoreIndex
+
+# Load Phase 1 output
+documents = load_documents("processed/documents/documents.jsonl")
+
+# Directly embed (no conversion needed)
+index = VectorStoreIndex.from_documents(documents)
+```
+
+If we generated markdown files instead, Phase 2 would need to parse them back to Documents - **inefficient and error-prone!**
 
 ---
 
@@ -188,73 +233,109 @@ tier_3: รถขายปลีก, Retail TT
 - Mark active vs expired promotions
 - Calculate days until expiration
 
-### 4.5 Document Generation
+### 4.5 LlamaIndex Document Generation
 
-**FR-5.1: Markdown Format**
-Each promotion generates ONE markdown document:
+**FR-5.1: Natural Language Text Generation**
+Each promotion generates a natural language text description that will be embedded:
 
-```markdown
-# Promotion: Buy น้ำดื่มช้าง PET 600 CC Get Free Items
+```python
+text = f"""
+Promotion for {customer_type} customers: Buy {buy_quantity} {buy_unit} of {product_name} and get {free_quantity} {free_unit} of {free_item_name} FREE.
 
-## Promotion Details
-- **Customer Type**: เอเย่นต์ (Tier 1 - Wholesale)
-- **Period**: October 1, 2025 - December 31, 2025 (92 days)
-- **Status**: Active ✓
+Promotion Period: Valid from {start_date_gregorian} to {end_date_gregorian} ({duration_days} days).
+Status: {'Active ✓' if is_active else 'Expired ✗'}
+{'⚠️ Expires soon (within 7 days)' if expires_soon else ''}
 
-## Terms
-- **Buy**: 108 แพ็ค of น้ำดื่มช้าง PET 600 CC (1 แพ็ค = 12 ขวด)
-- **Get Free**: 42 แพ็ค of น้ำดื่มช้าง PET 600 CC
+Promotion Terms:
+- Purchase minimum: {buy_quantity} {buy_unit}
+- Free items: {free_quantity} {free_unit}
+- Effective discount: {discount_percentage}% off total quantity
+- Customer tier: {customer_tier} ({'Wholesale' if is_wholesale else 'Retail'})
 
-## Promotion Analysis
-- **Effective Discount**: 28.0%
-- **Effective Price Ratio**: 0.72 (pay for 72% of total quantity)
-- **Promotion Type**: Buy X Get Y
+Product Information:
+- Product: {product_name}
+- Category: {product_category}
+- Brand: {product_brand}
+- Size: {product_size or 'N/A'}
 
-## Product Information
-- **Product**: น้ำดื่มช้าง PET 600 CC
-- **Category**: Water
-- **Brand**: ช้าง (Chang)
-- **Size**: 600 CC
-- **Free Item**: น้ำดื่มช้าง PET 600 CC (same product)
-
-## Additional Conditions
-[None specified]
-
----
-*Document ID: PROMO_001*
-*Generated: 2025-10-26*
+{f'Additional Conditions: {additional_conditions}' if additional_conditions else 'No additional conditions.'}
+""".strip()
 ```
 
-**FR-5.2: Metadata JSON**
-Generate companion JSON with all metadata:
-```json
-{
-  "document_id": "PROMO_001",
-  "customer_type": "เอเย่นต์",
-  "customer_tier": "tier_1",
-  "is_wholesale": true,
-  "is_retail": false,
-  "start_date": "2568-10-01 00:00:00",
-  "end_date": "2568-12-31 00:00:00",
-  "start_date_gregorian": "2025-10-01",
-  "end_date_gregorian": "2025-12-31",
-  "is_active": true,
-  "expires_soon": false,
-  "duration_days": 92,
-  "product_name": "น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด)",
-  "product_category": "water",
-  "product_brand": "ช้าง",
-  "product_size": "600 CC",
-  "buy_quantity": 108,
-  "buy_unit": "แพ็ค",
-  "free_item_name": "น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด)",
-  "free_quantity": 42,
-  "free_unit": "แพ็ค",
-  "discount_percentage": 28.0,
-  "promotion_type": "buy_x_get_y",
-  "keywords": ["น้ำดื่มช้าง", "PET", "600", "เอเย่นต์", "water", "chang"]
-}
+**Example Output:**
 ```
+Promotion for เอเย่นต์ customers: Buy 108 แพ็ค of น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด) and get 42 แพ็ค of น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด) FREE.
+
+Promotion Period: Valid from 2025-10-01 to 2025-12-31 (92 days).
+Status: Active ✓
+
+Promotion Terms:
+- Purchase minimum: 108 แพ็ค
+- Free items: 42 แพ็ค
+- Effective discount: 28.0% off total quantity
+- Customer tier: tier_1 (Wholesale)
+
+Product Information:
+- Product: น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด)
+- Category: water
+- Brand: ช้าง
+- Size: 600 CC
+
+No additional conditions.
+```
+
+**FR-5.2: LlamaIndex Document Object**
+Create proper LlamaIndex `Document` objects (NOT markdown files):
+
+```python
+from llama_index.core import Document
+
+doc = Document(
+    text=generated_text,  # Natural language description from FR-5.1
+    metadata={
+        # Base fields
+        "document_id": "PROMO_001",
+        "customer_type": "เอเย่นต์",
+        "start_date": "2568-10-01 00:00:00",
+        "end_date": "2568-12-31 00:00:00",
+        "product_name": "น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด)",
+        "buy_quantity": 108,
+        "buy_unit": "แพ็ค",
+        "free_item_name": "น้ำดื่มช้าง PET 600 CC (1 แพ็ค เท่ากับ 12 ขวด)",
+        "free_quantity": 42,
+        "free_unit": "แพ็ค",
+        "additional_conditions": None,
+
+        # Derived metadata (15+ fields)
+        "customer_tier": "tier_1",
+        "is_wholesale": True,
+        "is_retail": False,
+        "start_date_gregorian": "2025-10-01",
+        "end_date_gregorian": "2025-12-31",
+        "is_active": True,
+        "expires_soon": False,
+        "duration_days": 92,
+        "product_category": "water",
+        "product_brand": "ช้าง",
+        "product_size": "600 CC",
+        "discount_percentage": 28.0,
+        "promotion_type": "buy_x_get_y",
+        "keywords": ["น้ำดื่มช้าง", "PET", "600", "เอเย่นต์", "water", "chang"]
+    },
+    doc_id="PROMO_001"  # Unique identifier
+)
+```
+
+**Why LlamaIndex Documents:**
+- ✅ **Phase 2 Compatibility**: Embeddings can directly use these objects
+- ✅ **Metadata Filtering**: All 15+ fields available for fast retrieval
+- ✅ **No Re-parsing**: Phase 2 doesn't need to read markdown
+- ✅ **Standard Format**: Follows LlamaIndex best practices
+
+**FR-5.3: Optional Human-Readable Preview**
+For development/debugging, optionally generate markdown preview:
+- Separate from main Document objects
+- For human review only, not used in Phase 2
 
 ### 4.6 Configuration Management
 
@@ -280,26 +361,51 @@ Generate companion JSON with all metadata:
 **FR-7.1: File Organization**
 ```
 src-sale-promotion/data/processed/
-├── markdown_files/
-│   ├── PROMO_001.md
-│   ├── PROMO_002.md
-│   └── ... (71 files)
-├── metadata/
-│   ├── PROMO_001_metadata.json
-│   ├── PROMO_002_metadata.json
-│   └── ... (71 files)
-├── documents.jsonl          # All documents in JSONL format
-├── config_used.yaml         # Configuration used for this run
-├── processing_report.json   # Statistics and validation
-└── README.md                # Processing summary
+├── documents/
+│   ├── documents.jsonl              # LlamaIndex Documents (MAIN OUTPUT)
+│   ├── documents_full.pkl           # Complete Python objects with all metadata
+│   └── documents_preview.json       # Human-readable metadata preview
+├── config_used.yaml                 # Configuration snapshot
+├── processing_report.json           # Statistics and validation
+└── README.md                        # Processing summary
+```
+
+**Primary Output Format (documents.jsonl):**
+- LlamaIndex `Document` objects serialized as JSONL
+- Each line is one complete Document (text + metadata + doc_id)
+- **This is what Phase 2 (Embedding) will consume**
+
+**Example JSONL line:**
+```json
+{
+  "doc_id": "PROMO_001",
+  "text": "Promotion for เอเย่นต์ customers: Buy 108 แพ็ค of น้ำดื่มช้าง...",
+  "metadata": {
+    "customer_type": "เอเย่นต์",
+    "customer_tier": "tier_1",
+    "product_category": "water",
+    "discount_percentage": 28.0,
+    ...
+  }
+}
 ```
 
 **FR-7.2: Statistics Tracking**
-- Total documents processed
-- Fields extracted (base + derived)
+- Total documents processed (target: 71)
+- Total Document objects created
+- Fields extracted per document (base: 10, derived: 15+)
 - Date conversions performed
+- Text generation statistics (avg length, min/max)
 - Validation errors (if any)
 - Processing time
+- Memory usage
+
+**FR-7.3: Document Validation**
+- Verify all Documents have `text` field (non-empty)
+- Verify all Documents have `metadata` dict with 15+ fields
+- Verify all Documents have unique `doc_id`
+- Validate Thai UTF-8 encoding in text
+- Validate metadata types (dates as strings, numbers as floats, etc.)
 
 ---
 
@@ -362,13 +468,13 @@ src-sale-promotion/data_processing/
 │   ├── csv_processor.py            # CSV loading & parsing
 │   ├── metadata_extractor.py       # Metadata derivation
 │   ├── thai_normalizer.py          # Thai text handling
-│   └── document_generator.py       # Markdown generation
+│   └── text_generator.py           # Natural language text generation
 ├── utils/
 │   ├── __init__.py
 │   ├── date_utils.py               # Buddhist calendar conversion
 │   ├── product_utils.py            # Product categorization
 │   └── customer_utils.py           # Customer tier mapping
-├── models.py                        # Data classes
+├── models.py                        # Data classes (PromotionDocument)
 └── run_data_prep.py                # Main orchestrator
 ```
 
@@ -384,31 +490,48 @@ CSV File (promotion_list.csv)
     ↓
 [Field Mapper]
   - Map Thai columns → metadata keys
-  - Extract base fields
+  - Extract base fields (10 fields)
     ↓
 [Metadata Extractor]
   - Convert dates (Buddhist → Gregorian)
-  - Categorize products
-  - Calculate discounts
-  - Assign customer tiers
+  - Categorize products (water, beer, spirits)
+  - Calculate discounts (effective %)
+  - Assign customer tiers (tier_1/2/3)
+  - Derive 15+ metadata fields
     ↓
 [Thai Normalizer]
   - Normalize product names
   - Extract keywords
   - Generate search text
     ↓
-[Document Generator]
-  - Create markdown documents
-  - Generate metadata JSON
-  - Save to files
+[Text Generator]
+  - Create natural language descriptions
+  - Format promotion details (50-200 tokens)
     ↓
-Output Files (Markdown + JSON + Statistics)
+[Document Creator]
+  - Create PromotionDocument objects
+  - Convert to LlamaIndex Documents
+    (text + metadata + doc_id)
+    ↓
+[Output Manager]
+  - Save as JSONL (documents.jsonl)
+  - Save as PKL (documents_full.pkl)
+  - Save preview JSON (metadata only)
+  - Generate statistics
+    ↓
+Output: 71 LlamaIndex Document objects
+        Ready for Phase 2 (Embedding)
 ```
 
 ### 6.3 Key Classes
 
 **PromotionDocument (Dataclass):**
 ```python
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, List
+from llama_index.core import Document
+
 @dataclass
 class PromotionDocument:
     document_id: str
@@ -441,31 +564,164 @@ class PromotionDocument:
     promotion_type: str
     keywords: List[str]
 
-    def to_markdown(self) -> str:
-        """Generate markdown representation."""
+    def to_llama_document(self) -> Document:
+        """
+        Convert to LlamaIndex Document format.
+
+        Returns:
+            Document object with text + metadata ready for embedding.
+        """
+        text = self._generate_text()
+        metadata = self.to_metadata_dict()
+
+        return Document(
+            text=text,
+            metadata=metadata,
+            doc_id=self.document_id
+        )
+
+    def _generate_text(self) -> str:
+        """
+        Generate natural language text description.
+
+        Returns:
+            Human-readable promotion description.
+        """
+        text = f"""
+Promotion for {self.customer_type} customers: Buy {self.buy_quantity} {self.buy_unit} of {self.product_name} and get {self.free_quantity} {self.free_unit} of {self.free_item_name} FREE.
+
+Promotion Period: Valid from {self.start_date_gregorian.strftime('%Y-%m-%d')} to {self.end_date_gregorian.strftime('%Y-%m-%d')} ({self.duration_days} days).
+Status: {'Active ✓' if self.is_active else 'Expired ✗'}
+{('⚠️ Expires soon (within 7 days)' if self.expires_soon else '')}
+
+Promotion Terms:
+- Purchase minimum: {self.buy_quantity} {self.buy_unit}
+- Free items: {self.free_quantity} {self.free_unit}
+- Effective discount: {self.discount_percentage}% off total quantity
+- Customer tier: {self.customer_tier} ({'Wholesale' if self.is_wholesale else 'Retail'})
+
+Product Information:
+- Product: {self.product_name}
+- Category: {self.product_category}
+- Brand: {self.product_brand}
+- Size: {self.product_size or 'N/A'}
+
+{(f'Additional Conditions: {self.additional_conditions}' if self.additional_conditions else 'No additional conditions.')}
+        """.strip()
+
+        return text
 
     def to_metadata_dict(self) -> dict:
-        """Generate metadata dictionary."""
+        """
+        Generate complete metadata dictionary.
+
+        Returns:
+            All fields as dict for Document metadata.
+        """
+        return {
+            # Base fields
+            "document_id": self.document_id,
+            "customer_type": self.customer_type,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "product_name": self.product_name,
+            "buy_quantity": self.buy_quantity,
+            "buy_unit": self.buy_unit,
+            "free_item_name": self.free_item_name,
+            "free_quantity": self.free_quantity,
+            "free_unit": self.free_unit,
+            "additional_conditions": self.additional_conditions,
+
+            # Derived metadata
+            "customer_tier": self.customer_tier,
+            "is_wholesale": self.is_wholesale,
+            "is_retail": self.is_retail,
+            "start_date_gregorian": self.start_date_gregorian.strftime('%Y-%m-%d'),
+            "end_date_gregorian": self.end_date_gregorian.strftime('%Y-%m-%d'),
+            "is_active": self.is_active,
+            "expires_soon": self.expires_soon,
+            "duration_days": self.duration_days,
+            "product_category": self.product_category,
+            "product_brand": self.product_brand,
+            "product_size": self.product_size,
+            "discount_percentage": self.discount_percentage,
+            "promotion_type": self.promotion_type,
+            "keywords": self.keywords
+        }
 ```
 
 **DataProcessor (Main Orchestrator):**
 ```python
+from llama_index.core import Document
+from typing import List
+
 class PromotionDataProcessor:
     def __init__(self, config_path: str):
         self.config = self._load_config(config_path)
         self.csv_processor = CSVProcessor(self.config)
         self.metadata_extractor = MetadataExtractor(self.config)
         self.thai_normalizer = ThaiNormalizer(self.config)
-        self.doc_generator = DocumentGenerator(self.config)
 
     def process(self, csv_path: str, output_dir: str) -> ProcessingResult:
-        """Main processing pipeline."""
+        """
+        Main processing pipeline: CSV → LlamaIndex Documents.
+
+        Returns:
+            ProcessingResult with statistics and Document list.
+        """
         # 1. Load CSV
-        # 2. Extract metadata
-        # 3. Normalize Thai text
-        # 4. Generate documents
-        # 5. Save outputs
-        # 6. Return statistics
+        rows = self.csv_processor.load_csv(csv_path)
+
+        # 2. Process each row
+        promotion_docs = []
+        for row in rows:
+            # 2a. Extract base metadata
+            base_metadata = self.csv_processor.extract_fields(row)
+
+            # 2b. Derive metadata (dates, categories, tiers, etc.)
+            derived_metadata = self.metadata_extractor.derive_metadata(base_metadata)
+
+            # 2c. Normalize Thai text
+            normalized = self.thai_normalizer.normalize(base_metadata, derived_metadata)
+
+            # 2d. Create PromotionDocument
+            promo_doc = PromotionDocument(**base_metadata, **derived_metadata, **normalized)
+
+            promotion_docs.append(promo_doc)
+
+        # 3. Convert to LlamaIndex Documents
+        llama_documents: List[Document] = [
+            doc.to_llama_document() for doc in promotion_docs
+        ]
+
+        # 4. Save outputs
+        self._save_documents_jsonl(llama_documents, output_dir)
+        self._save_documents_pkl(llama_documents, output_dir)
+        self._save_preview_json(promotion_docs, output_dir)
+        self._save_config_snapshot(output_dir)
+
+        # 5. Generate statistics
+        stats = self._generate_statistics(promotion_docs, llama_documents)
+
+        # 6. Return result
+        return ProcessingResult(
+            documents=llama_documents,
+            statistics=stats,
+            config_used=self.config
+        )
+
+    def _save_documents_jsonl(self, documents: List[Document], output_dir: str):
+        """Save LlamaIndex Documents as JSONL (main output for Phase 2)."""
+        # Serialize each Document to JSON line
+        pass
+
+    def _save_documents_pkl(self, documents: List[Document], output_dir: str):
+        """Save complete Python objects with pickle."""
+        pass
+
+    def _save_preview_json(self, promotion_docs: List[PromotionDocument], output_dir: str):
+        """Save human-readable metadata preview."""
+        pass
 ```
 
 ### 6.4 Configuration Schema
@@ -542,17 +798,19 @@ customer_tiers:
 - ✅ Keyword extraction logic
 - ✅ Search text generator
 
-### Phase 1D: Document Generation (Week 2, Days 1-2)
+### Phase 1D: LlamaIndex Document Generation (Week 2, Days 1-2)
 
 **Tasks:**
-1. Implement markdown template
-2. Implement metadata JSON generation
-3. Implement file output management
+1. Implement natural language text generation
+2. Implement LlamaIndex Document creation (`to_llama_document()`)
+3. Implement JSONL serialization for Documents
+4. Implement file output management
 
 **Deliverables:**
-- ✅ Markdown generator
-- ✅ JSON metadata export
-- ✅ File organization
+- ✅ Text generator (natural language descriptions)
+- ✅ LlamaIndex Document creator
+- ✅ JSONL/PKL serialization
+- ✅ File organization (documents/ folder)
 
 ### Phase 1E: Testing & Validation (Week 2, Days 3-5)
 
@@ -627,28 +885,55 @@ def test_discount_calculation():
 Phase 1 is complete when:
 
 ✅ **All 71 promotions** processed successfully
-✅ **71 markdown files** generated with structured content
-✅ **71 metadata JSON** files with 15+ fields each
-✅ **100% Thai encoding** preserved (no corruption)
-✅ **100% date conversion** accuracy (validated)
+✅ **71 LlamaIndex Document objects** created with text + metadata
+✅ **documents.jsonl** file with all Documents (LlamaIndex format)
+✅ **All Documents** have natural language text field (50-200 tokens each)
+✅ **All Documents** have 15+ metadata fields
+✅ **100% Thai encoding** preserved in text and metadata (no corruption)
+✅ **100% date conversion** accuracy (Buddhist → Gregorian validated)
 ✅ **Configuration-driven** (YAML controls all mappings)
 ✅ **Test coverage** > 80% for all modules
 ✅ **Processing time** < 2 seconds for full dataset
 ✅ **Documentation** complete (docstrings + README)
 ✅ **CLI interface** functional and user-friendly
+✅ **Phase 2 ready** - Documents can be loaded directly for embedding
 
 ### Acceptance Tests
 
 ```bash
 # Test 1: Process full dataset
 python -m src_sale_promotion.data_processing.run_data_prep
-# Expected: 71 files in < 2 seconds, no errors
+# Expected: 71 Document objects in < 2 seconds, no errors
 
-# Test 2: Validate outputs
+# Test 2: Validate LlamaIndex Documents
 python -m src_sale_promotion.data_processing.validate_output
-# Expected: All validation checks pass
+# Expected:
+#   - 71 Documents in documents.jsonl
+#   - All have non-empty text field
+#   - All have 15+ metadata fields
+#   - All have unique doc_id
+#   - Thai UTF-8 intact
 
-# Test 3: Run test suite
+# Test 3: Test Phase 2 compatibility
+python -c "
+from llama_index.core import Document
+import json
+
+# Load documents
+documents = []
+with open('data/processed/documents/documents.jsonl', 'r') as f:
+    for line in f:
+        doc_dict = json.loads(line)
+        doc = Document(**doc_dict)
+        documents.append(doc)
+
+print(f'✅ Loaded {len(documents)} LlamaIndex Documents')
+print(f'✅ Sample text length: {len(documents[0].text)} chars')
+print(f'✅ Sample metadata fields: {len(documents[0].metadata)}')
+"
+# Expected: All assertions pass, ready for Phase 2
+
+# Test 4: Run test suite
 pytest src-sale-promotion/test/test_data_processing.py -v
 # Expected: All tests pass, coverage > 80%
 ```
@@ -663,6 +948,7 @@ pytest src-sale-promotion/test/test_data_processing.py -v
 - pandas (CSV processing)
 - pyyaml (configuration)
 - python-dateutil (date handling)
+- llama-index-core (Document objects)
 
 ### Optional
 
