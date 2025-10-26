@@ -39,11 +39,11 @@ class TestQuestion:
 
 # 10 Test Questions
 TEST_SET: List[TestQuestion] = [
-    # Test 1: Customer Type Filtering (Metadata Strategy)
+    # Test 1: Customer Identity Question (Metadata Strategy)
     TestQuestion(
         test_id=1,
-        query="โปรโมชันสำหรับเอเย่นต์",
-        query_english="Promotions for agents",
+        query="ผมเป็นเอเย่นต์ มีโปรโมชันอะไรบ้าง",
+        query_english="I'm an agent, what promotions can I use?",
         language="Thai",
         expected_strategy="metadata",
         alternative_strategies=["vector"],
@@ -57,11 +57,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 2: Product Category Search (Vector Strategy)
+    # Test 2: Product Interest Question (Vector/Hybrid Strategy)
     TestQuestion(
         test_id=2,
-        query="โปรโมชันน้ำดื่มช้าง",
-        query_english="Chang drinking water promotions",
+        query="มีโปรอะไรสำหรับน้ำดื่มช้างบ้าง",
+        query_english="What deals do you have for Chang water?",
         language="Thai",
         expected_strategy="vector",
         alternative_strategies=["hybrid"],
@@ -74,11 +74,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 3: Discount Range Filtering (Metadata Strategy)
+    # Test 3: Value-Seeking Question (Metadata Strategy)
     TestQuestion(
         test_id=3,
-        query="โปรโมชันที่ให้ส่วนลดมากกว่า 25%",
-        query_english="Promotions with discount greater than 25%",
+        query="โปรไหนให้ส่วนลดเยอะที่สุด",
+        query_english="Which promotion gives the best discount?",
         language="Thai",
         expected_strategy="metadata",
         alternative_strategies=["vector"],
@@ -91,11 +91,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 4: Active Status Filter (Metadata Strategy)
+    # Test 4: Time-Based Question (Metadata Strategy)
     TestQuestion(
         test_id=4,
-        query="โปรโมชันที่กำลังใช้งานอยู่",
-        query_english="Currently active promotions",
+        query="ตอนนี้มีโปรอะไรใช้ได้บ้าง",
+        query_english="What promotions are available right now?",
         language="Thai",
         expected_strategy="metadata",
         alternative_strategies=["vector"],
@@ -108,11 +108,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 5: Multi-Criteria Query (Hybrid/Metadata Strategy)
+    # Test 5: Purchase Intent Question (Hybrid Strategy)
     TestQuestion(
         test_id=5,
-        query="โปรโมชันเบียร์สำหรับซับเอเย่นต์",
-        query_english="Beer promotions for sub-agents",
+        query="ถ้าผมซื้อเบียร์ จะได้อะไรแถมบ้าง",
+        query_english="If I buy beer, what do I get free?",
         language="Thai",
         expected_strategy="hybrid",
         alternative_strategies=["metadata", "vector"],
@@ -125,11 +125,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 6: Free Gift Queries (Vector Strategy)
+    # Test 6: Free Gift Question (Vector Strategy)
     TestQuestion(
         test_id=6,
-        query="โปรโมชันที่ให้ของแถม",
-        query_english="Promotions with free gifts",
+        query="มีโปรแถมของฟรีไหม",
+        query_english="Are there any promotions with free items?",
         language="Thai",
         expected_strategy="vector",
         alternative_strategies=["summary", "metadata"],
@@ -141,11 +141,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 7: Brand-Specific Search (Vector/Hybrid Strategy)
+    # Test 7: Brand Preference Question (Vector/Hybrid Strategy)
     TestQuestion(
         test_id=7,
-        query="โปรโมชันสินค้าแบรนด์ช้าง",
-        query_english="Chang brand product promotions",
+        query="แบรนด์ช้างมีโปรอะไรดีๆ บ้าง",
+        query_english="What good promotions does Chang brand have?",
         language="Thai",
         expected_strategy="vector",
         alternative_strategies=["hybrid", "metadata"],
@@ -157,11 +157,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 8: Size Comparison Query (Summary/Planner Strategy)
+    # Test 8: Comparison Question (Planner Strategy)
     TestQuestion(
         test_id=8,
-        query="Compare promotions for 600 CC vs 1500 CC water bottles",
-        query_english="Compare promotions for 600 CC vs 1500 CC water bottles",
+        query="Which is better value - small or large bottles?",
+        query_english="Which is better value - small or large bottles?",
         language="English",
         expected_strategy="planner",
         alternative_strategies=["summary", "metadata", "vector"],
@@ -173,11 +173,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=40
     ),
     
-    # Test 9: Expired Promotions (Metadata Strategy)
+    # Test 9: Urgency Question (Metadata Strategy)
     TestQuestion(
         test_id=9,
-        query="โปรโมชันที่หมดอายุแล้ว",
-        query_english="Expired promotions",
+        query="มีโปรไหนใกล้หมดอายุบ้างไหม",
+        query_english="Are there any promotions ending soon?",
         language="Thai",
         expected_strategy="metadata",
         alternative_strategies=["vector"],
@@ -190,11 +190,11 @@ TEST_SET: List[TestQuestion] = [
         timeout=30
     ),
     
-    # Test 10: Best Value Analysis (Planner/Summary Strategy)
+    # Test 10: Order Planning Question (Planner Strategy)
     TestQuestion(
         test_id=10,
-        query="Which promotion offers the best value for wholesale customers?",
-        query_english="Which promotion offers the best value for wholesale customers?",
+        query="If I order 100 packs of water, which promotion should I use?",
+        query_english="If I order 100 packs of water, which promotion should I use?",
         language="English",
         expected_strategy="planner",
         alternative_strategies=["summary", "metadata", "vector"],
