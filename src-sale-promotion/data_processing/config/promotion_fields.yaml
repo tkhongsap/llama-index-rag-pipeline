@@ -1,0 +1,191 @@
+# Sales Promotion Data Processing Configuration
+# Version: 2.0
+# Following Option 1c+2b pattern from PRD
+
+name: thai_sales_promotions
+version: "2.0"
+description: "Sales promotion data processing configuration for Thai promotions (Buy X Get Y)"
+
+# Field mappings from CSV columns to metadata keys
+field_mappings:
+  - csv_column: "ประเภทลูกค้า"
+    metadata_key: "customer_type"
+    field_type: "categorical"
+    data_type: "string"
+    required: true
+    description: "Customer type (tier classification)"
+
+  - csv_column: "ระยะเวลาเริ่ม"
+    metadata_key: "start_date"
+    field_type: "temporal"
+    data_type: "date"
+    transform: "buddhist_to_gregorian"
+    required: true
+    description: "Promotion start date (Buddhist calendar)"
+
+  - csv_column: "ระยะเวลาสื้นสุด"
+    metadata_key: "end_date"
+    field_type: "temporal"
+    data_type: "date"
+    transform: "buddhist_to_gregorian"
+    required: true
+    description: "Promotion end date (Buddhist calendar)"
+
+  - csv_column: "สินค้า"
+    metadata_key: "product_name"
+    field_type: "text"
+    data_type: "string"
+    required: true
+    description: "Product name in Thai"
+
+  - csv_column: "ซื้อ"
+    metadata_key: "buy_quantity"
+    field_type: "numeric"
+    data_type: "numeric"
+    required: true
+    description: "Minimum purchase quantity"
+
+  - csv_column: "หน่วยซื้อ"
+    metadata_key: "buy_unit"
+    field_type: "categorical"
+    data_type: "string"
+    required: true
+    description: "Purchase unit (แพ็ค, ลัง, ขวด, etc.)"
+
+  - csv_column: "รายการแถม"
+    metadata_key: "free_item_name"
+    field_type: "text"
+    data_type: "string"
+    required: true
+    description: "Free item name"
+
+  - csv_column: "แถม "
+    metadata_key: "free_quantity"
+    field_type: "numeric"
+    data_type: "numeric"
+    required: true
+    description: "Free item quantity"
+    aliases: ["แถม"]
+
+  - csv_column: "หน่วยแถม"
+    metadata_key: "free_unit"
+    field_type: "categorical"
+    data_type: "string"
+    required: true
+    description: "Free item unit"
+
+  - csv_column: "เงื่อนไขเพิ่มเติม"
+    metadata_key: "additional_conditions"
+    field_type: "text"
+    data_type: "string"
+    required: false
+    description: "Additional terms and conditions"
+
+# Product categorization patterns (for pattern matching)
+product_patterns:
+  water:
+    - "น้ำดื่ม"
+    - "PET"
+    - "น้ำแร่"
+    - "mineral water"
+    
+  beer:
+    - "เบียร์"
+    - "beer"
+    - "ช้างคลาสสิก"
+    - "ช้างดราฟท์"
+    - "เลโอ"
+    - "LEO"
+    
+  spirits:
+    - "สุราขาว"
+    - "spirits"
+    - "แสงโสม"
+    - "เหล้า"
+    
+  soda:
+    - "โคล่า"
+    - "cola"
+    - "น้ำอัดลม"
+    - "ซาโต้"
+    - "SATO"
+    - "soft drink"
+
+# Brand patterns (for brand extraction)
+brand_patterns:
+  ช้าง:
+    - "ช้าง"
+    - "Chang"
+  
+  นิยมไทย:
+    - "นิยมไทย"
+    - "Niyom Thai"
+  
+  ซาโต้:
+    - "ซาโต้"
+    - "SATO"
+    - "Sato"
+  
+  เลโอ:
+    - "เลโอ"
+    - "LEO"
+    - "Leo"
+
+# Size patterns (for size extraction)
+size_patterns:
+  - pattern: "(\\d+)\\s*CC"
+    unit: "CC"
+  - pattern: "(\\d+)\\s*มล"
+    unit: "มล."
+  - pattern: "(\\d+)\\s*ml"
+    unit: "ml"
+  - pattern: "(\\d+)\\s*L"
+    unit: "L"
+
+# Customer tier mapping
+customer_tiers:
+  tier_1:
+    - "เอเย่นต์"
+    - "Super Sub"
+    - "ซุปเปอร์ซับ"
+    
+  tier_2:
+    - "ซับเอเย่นต์"
+    - "CVA"
+    - "ซับซื้อตรง"
+    
+  tier_3:
+    - "รถขายปลีก"
+    - "Retail TT"
+    - "ร้านค้าปลีก"
+
+# Wholesale customer types (for is_wholesale flag)
+wholesale_types:
+  - "เอเย่นต์"
+  - "Super Sub"
+  - "ซุปเปอร์ซับ"
+  - "ซับเอเย่นต์"
+  - "CVA"
+  - "ซับซื้อตรง"
+
+# Retail customer types (for is_retail flag)
+retail_types:
+  - "รถขายปลีก"
+  - "Retail TT"
+  - "ร้านค้าปลีก"
+
+# Processing options
+processing:
+  batch_size: 1000
+  encoding: "utf-8"
+  date_threshold_days: 7  # For expires_soon flag
+  
+# Output options
+output:
+  jsonl_filename: "documents.jsonl"
+  markdown_dir: "markdown_files"
+  markdown_prefix: "promotion"
+  statistics_filename: "processing_report.json"
+  config_snapshot_filename: "config_used.yaml"
+  readme_filename: "README.md"
+
