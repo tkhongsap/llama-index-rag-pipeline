@@ -99,3 +99,8 @@ data-orion-mockup/*/monthly/enriched/
 
 # Git rewrite temporary files
 .git-rewrite/
+
+# Embedding data (generated)
+**/data/embedding/embeddings_*/
+*.npy
+*.pkl

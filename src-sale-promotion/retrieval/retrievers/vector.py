@@ -1,59 +1,71 @@
 """
-Vector Retriever for sales promotion documents.
+Vector Retriever Adapter for Sales Promotions
 
-Simple semantic similarity search using vector embeddings.
-Best for general queries and fast retrieval.
+Strategy 1: Basic semantic similarity search using 3072-dim embeddings.
+Best for simple semantic queries like "Find beer promotions" or "Show water deals".
+
+Performance Target: < 100ms
 """
 
-from typing import List
-from llama_index.core.schema import NodeWithScore, QueryBundle
+from typing import List, Optional
+from llama_index.core import VectorStoreIndex
+from llama_index.core.schema import NodeWithScore
+
 from .base import BaseRetrieverAdapter
 
 
 class VectorRetrieverAdapter(BaseRetrieverAdapter):
     """
-    Vector similarity retriever for sales promotion documents.
-
-    Uses semantic embedding similarity for retrieval.
-    Fast and reliable for most queries.
-
-    Best for:
-    - Simple semantic queries
-    - Product/campaign similarity
-    - General search
-
-    Example queries:
-    - "Find campaigns similar to summer sale"
-    - "Show products like wireless headphones"
-    - "What promotions target millennials?"
+    Basic vector similarity retriever for sales promotions.
+    
+    Uses semantic search with text-embedding-3-large (3072 dimensions).
+    Fast and reliable for general-purpose queries.
     """
-
-    def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
+    
+    def __init__(
+        self,
+        vector_index: VectorStoreIndex,
+        similarity_top_k: int = 5,
+        similarity_cutoff: float = 0.7
+    ):
         """
-        Retrieve using vector similarity.
-
+        Initialize vector retriever.
+        
         Args:
-            query_bundle: Query bundle
-
-        Returns:
-            List of similar nodes
+            vector_index: VectorStoreIndex built from Phase 2 embeddings
+            similarity_top_k: Number of results to return
+            similarity_cutoff: Minimum similarity score threshold
         """
-        if not self.index:
-            return []
-
-        # Use LlamaIndex vector retriever
-        retriever = self.index.as_retriever(
-            similarity_top_k=self.top_k
+        super().__init__("vector")
+        self.vector_index = vector_index
+        self.similarity_top_k = similarity_top_k
+        self.similarity_cutoff = similarity_cutoff
+    
+    def retrieve(
+        self,
+        query: str,
+        top_k: Optional[int] = None
+    ) -> List[NodeWithScore]:
+        """
+        Retrieve nodes using vector similarity search.
+        
+        Args:
+            query: Search query (supports Thai text)
+            top_k: Number of results (uses default if None)
+            
+        Returns:
+            List of NodeWithScore objects tagged with strategy metadata
+        """
+        k = top_k if top_k is not None else self.similarity_top_k
+        
+        # Create retriever from index
+        retriever = self.vector_index.as_retriever(
+            similarity_top_k=k,
+            similarity_cutoff=self.similarity_cutoff
         )
-
-        nodes = retriever.retrieve(query_bundle.query_str)
-        nodes = self._filter_by_threshold(nodes)
-        nodes = self._enhance_metadata(nodes)
-
-        return nodes
-
-
-# Standalone function for backward compatibility
-def create_vector_retriever(index, top_k: int = 5):
-    """Create a vector retriever from an index."""
-    return VectorRetrieverAdapter(index=index, top_k=top_k)
+        
+        # Perform retrieval
+        nodes = retriever.retrieve(query)
+        
+        # Tag nodes with strategy info
+        return self._tag_nodes_with_strategy(nodes)

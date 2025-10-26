@@ -1,64 +1,63 @@
 """
-Base retriever adapter for sales promotion pipeline.
+Base Retriever Adapter for Sales Promotion Data
+
+Defines the common interface that all retrieval strategy adapters must implement.
+Adapted from src-imap/retrieval/retrievers/base.py for sales promotion documents.
 """
 
-from typing import List, Optional
-from llama_index.core.schema import NodeWithScore, QueryBundle
-from llama_index.core.retrievers import BaseRetriever
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any, Optional
+from llama_index.core.schema import NodeWithScore
 
 
-class BaseRetrieverAdapter(BaseRetriever):
-    """
-    Base adapter for all retrieval strategies.
-
-    Provides common functionality for sales promotion retrievers.
-    """
-
-    def __init__(
-        self,
-        index=None,
-        top_k: int = 5,
-        similarity_threshold: float = 0.0,
-        **kwargs
-    ):
+class BaseRetrieverAdapter(ABC):
+    """Base class for all sales promotion retrieval strategy adapters."""
+    
+    def __init__(self, strategy_name: str):
         """
-        Initialize base retriever adapter.
-
+        Initialize the adapter with strategy name.
+        
         Args:
-            index: LlamaIndex VectorStoreIndex
-            top_k: Number of results to return
-            similarity_threshold: Minimum similarity score
-            **kwargs: Additional strategy-specific parameters
+            strategy_name: Name of the retrieval strategy
         """
-        super().__init__()
-        self.index = index
-        self.top_k = top_k
-        self.similarity_threshold = similarity_threshold
-        self.kwargs = kwargs
-
-    def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
+        self.strategy_name = strategy_name
+    
+    @abstractmethod
+    def retrieve(self, query: str, top_k: Optional[int] = None) -> List[NodeWithScore]:
         """
-        Internal retrieve method to be implemented by subclasses.
-
+        Retrieve relevant nodes for the given query.
+        
         Args:
-            query_bundle: Query bundle with query string
-
+            query: The search query (may contain Thai text)
+            top_k: Number of nodes to retrieve (optional, uses strategy default if None)
+            
         Returns:
-            List of nodes with scores
+            List of NodeWithScore objects with strategy metadata
         """
-        raise NotImplementedError("Subclasses must implement _retrieve()")
-
-    def _filter_by_threshold(self, nodes: List[NodeWithScore]) -> List[NodeWithScore]:
-        """Filter nodes by similarity threshold."""
-        if self.similarity_threshold > 0:
-            return [node for node in nodes if node.score >= self.similarity_threshold]
-        return nodes
-
-    def _enhance_metadata(self, nodes: List[NodeWithScore]) -> List[NodeWithScore]:
-        """Add sales promotion-specific metadata enhancements."""
+        pass
+    
+    def _tag_nodes_with_strategy(self, nodes: List[NodeWithScore]) -> List[NodeWithScore]:
+        """
+        Tag retrieved nodes with strategy information.
+        
+        Args:
+            nodes: List of NodeWithScore objects
+            
+        Returns:
+            Tagged nodes with strategy metadata
+        """
         for node in nodes:
             if hasattr(node.node, 'metadata'):
-                # Add retrieval metadata
-                node.node.metadata['retriever_type'] = self.__class__.__name__
-                node.node.metadata['similarity_score'] = node.score
+                node.node.metadata['retrieval_strategy'] = self.strategy_name
+                node.node.metadata['data_source'] = 'sales_promotions'
+            else:
+                node.node.metadata = {
+                    'retrieval_strategy': self.strategy_name,
+                    'data_source': 'sales_promotions'
+                }
         return nodes
+    
+    @property
+    def name(self) -> str:
+        """Get the strategy name."""
+        return self.strategy_name
