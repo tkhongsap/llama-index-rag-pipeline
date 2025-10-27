@@ -177,19 +177,21 @@ python -m pytest src-sale-promotion/test/ --cov=src_sale_promotion
 |------|---------|--------|
 | `README.md` | Main documentation | ✅ Complete |
 | `data_processing/models.py` | Data models | ✅ Complete |
-| `data_processing/run_data_processing_standalone.py` | Data processing CLI | ⚠️ Stub |
-| `docs_embedding/batch_embedding.py` | Embedding generation | 📋 To implement |
+| `data_processing/run_data_processing_standalone.py` | Data processing CLI | ✅ Complete |
+| `docs_embedding/batch_embedding.py` | Embedding generation | ✅ Complete |
 | `load_embedding/load_embedding.py` | Load embeddings | 📋 To implement |
 | `retrieval/retrievers/vector.py` | Vector retriever | ✅ Complete |
 | `retrieval/retrievers/hybrid.py` | Hybrid retriever | ⚠️ Stub |
 | `retrieval/router.py` | Main router | 📋 To implement |
-| `retrieval/cli.py` | CLI interface | ⚠️ Stub |
+| `retrieval/cli.py` | CLI interface | ✅ Complete |
 
 ### Common Commands
 
 ```bash
 # Data processing
 python -m src_sale_promotion.data_processing.run_data_processing_standalone
+# Use packaged mock data
+python -m src_sale_promotion.data_processing.run_data_processing_standalone --sample
 
 # Embedding generation
 python -m src_sale_promotion.docs_embedding.batch_embedding
@@ -197,6 +199,9 @@ python -m src_sale_promotion.docs_embedding.batch_embedding
 # Retrieval
 python -m src_sale_promotion.retrieval.cli --interactive
 python -m src_sale_promotion.retrieval.cli --query "Your query"
+# Override embedding directory or list available drops
+python -m src_sale_promotion.retrieval.cli --embedding-path path/to/embeddings --query "โปรไหนลดแรง"
+python -m src_sale_promotion.retrieval.cli --list-embeddings
 
 # Testing
 python -m pytest src-sale-promotion/test/ -v

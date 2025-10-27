@@ -57,23 +57,31 @@ src-sale-promotion/
 
 ### 1. Data Processing
 ```bash
-# Convert sales/promotion CSV to structured documents
+# Convert CSVs under data/input_docs/sale-promotion/ into JSONL + markdown
 python -m src_sale_promotion.data_processing.run_data_processing_standalone
+
+# Use the packaged mock dataset instead of local files
+python -m src_sale_promotion.data_processing.run_data_processing_standalone --sample
 ```
 
 ### 2. Generate Embeddings
 ```bash
-# Create batch embeddings
+# Create throttled batch embeddings using the latest processed JSONL
 python -m src_sale_promotion.docs_embedding.batch_embedding
 ```
 
 ### 3. Interactive Retrieval
 ```bash
-# CLI - Interactive mode
-python -m src_sale_promotion.retrieval.cli --load-embeddings latest --interactive
+# List available embedding drops (newest first)
+python -m src_sale_promotion.retrieval.cli --list-embeddings
 
-# CLI - Single query
-python -m src_sale_promotion.retrieval.cli --load-embeddings latest --query "What were our best performing summer campaigns?"
+# CLI - Interactive mode (auto-loads the newest embeddings)
+python -m src_sale_promotion.retrieval.cli --interactive
+
+# CLI - Single query with explicit embedding directory override
+python -m src_sale_promotion.retrieval.cli \
+  --embedding-path data/embedding/sale-promotion/embeddings_sales_YYYYMMDD_HHMMSS \
+  --query "What were our best performing summer campaigns?"
 
 # Streamlit UI
 streamlit run src-sale-promotion/retrieval/streamlit_cli.py

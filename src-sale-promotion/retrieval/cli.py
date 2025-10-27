@@ -18,7 +18,11 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 
-# Add parent to path for imports
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# Add parent to path for legacy relative imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Load environment
@@ -32,7 +36,11 @@ from retrieval.query_engine import PromotionQueryEngine
 from retrieval.index_classifier import IndexClassifier
 from retrieval.strategy_selector import StrategySelector
 from retrieval.cache import QueryCache
-from retrieval.config import MODEL_CONFIG
+from retrieval.config import (
+    MODEL_CONFIG,
+    list_embedding_directories,
+    resolve_embedding_path,
+)
 from retrieval.retrievers import (
     VectorRetrieverAdapter,
     SummaryRetrieverAdapter,
@@ -55,16 +63,27 @@ class SalesPromotionCLI:
     3. Test mode - Run automated test suite
     """
     
-    def __init__(self, verbose: bool = False, debug: bool = False):
+    def __init__(
+        self,
+        verbose: bool = False,
+        debug: bool = False,
+        embedding_path: Optional[str] = None,
+    ):
         """
         Initialize CLI.
         
         Args:
             verbose: Enable verbose output
             debug: Enable debug output
+            embedding_path: Optional override for embedding directory
         """
         self.verbose = verbose
         self.debug = debug
+        self.embedding_path = (
+            Path(embedding_path).expanduser().resolve()
+            if embedding_path
+            else None
+        )
         self.query_engine = None
         self.router = None
         self.session_queries = 0
@@ -79,7 +98,7 @@ class SalesPromotionCLI:
         
         # Load embeddings
         print("  [1/5] Loading embeddings...", end="", flush=True)
-        loader = EmbeddingLoader()
+        loader = EmbeddingLoader(embedding_path=self.embedding_path)
         indexnode_embs, summary_embs = loader.load_all_embeddings()
         print(" ✓")
         
@@ -495,6 +514,16 @@ Examples:
         action="store_true",
         help="Disable response streaming (wait for full response)"
     )
+    parser.add_argument(
+        "--embedding-path",
+        type=str,
+        help="Override the embedding directory to load",
+    )
+    parser.add_argument(
+        "--list-embeddings",
+        action="store_true",
+        help="List available embedding directories and exit",
+    )
 
     return parser.parse_args()
 
@@ -502,6 +531,23 @@ Examples:
 def main():
     """CLI entry point."""
     args = parse_arguments()
+
+    if args.list_embeddings:
+        dirs = list_embedding_directories()
+        if not dirs:
+            print("No embedding directories found. Run the embedding pipeline first.")
+            sys.exit(1)
+
+        try:
+            default_path = resolve_embedding_path()
+        except FileNotFoundError:
+            default_path = None
+
+        print("Available embedding directories (newest first):")
+        for path in dirs:
+            indicator = "  <-- default" if default_path and path == default_path else ""
+            print(f" - {path}{indicator}")
+        sys.exit(0)
     
     # Check if no mode specified
     if not (args.interactive or args.query or args.run_tests):
@@ -514,7 +560,11 @@ def main():
     
     try:
         # Initialize CLI
-        cli = SalesPromotionCLI(verbose=args.verbose, debug=args.debug)
+        cli = SalesPromotionCLI(
+            verbose=args.verbose,
+            debug=args.debug,
+            embedding_path=args.embedding_path,
+        )
 
         # Load system
         cli.load_system()
