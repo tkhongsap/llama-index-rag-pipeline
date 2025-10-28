@@ -102,5 +102,7 @@ data-orion-mockup/*/monthly/enriched/
 
 # Embedding data (generated)
 **/data/embedding/embeddings_*/
+**/data/embedding/sale-promotion/
+src-sale-promotion/data/embedding/
 *.npy
 *.pkl

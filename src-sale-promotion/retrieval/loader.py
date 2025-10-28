@@ -8,13 +8,13 @@ import os
 import pickle
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Union
 from llama_index.core import VectorStoreIndex, Document, StorageContext
 from llama_index.core.schema import TextNode, IndexNode
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 
-from .config import CONFIG
+from .config import CONFIG, resolve_embedding_path
 
 
 class EmbeddingLoader:
@@ -28,14 +28,24 @@ class EmbeddingLoader:
     - Building VectorStoreIndex for retrieval
     """
     
-    def __init__(self, embedding_path: Path = None):
+    def __init__(self, embedding_path: Union[str, Path, None] = None):
         """
         Initialize embedding loader.
         
         Args:
             embedding_path: Path to Phase 2 embedding directory
         """
-        self.embedding_path = embedding_path or CONFIG["embedding_path"]
+        default_path = CONFIG.get("embedding_path")
+        if default_path:
+            default_path = Path(default_path).expanduser().resolve()
+        else:
+            default_path = resolve_embedding_path()
+
+        if embedding_path:
+            self.embedding_path = Path(embedding_path).expanduser().resolve()
+        else:
+            self.embedding_path = default_path
+
         self.embeddings_loaded = 0
         self.nodes = []
         self.vector_index = None
@@ -277,4 +287,3 @@ def load_and_build_index() -> Tuple[VectorStoreIndex, List[TextNode]]:
     vector_index = loader.build_vector_index(indexnode_embs, summary_embs)
     
     return vector_index, loader.nodes
-

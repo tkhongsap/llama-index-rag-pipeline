@@ -6,14 +6,23 @@ Centralized configuration for all retrieval strategies, models, caching, and per
 
 import os
 from pathlib import Path
+from typing import List, Optional, Union
 from dotenv import load_dotenv
+
+from src_sale_promotion.common import EMBEDDING_DIR as ROOT_EMBEDDING_ROOT
 
 # Load environment variables
 load_dotenv()
 
 # Base paths
-BASE_DIR = Path(__file__).parent
-EMBEDDING_DIR = BASE_DIR / "../data/embedding/embeddings_sales_20251026_172927"
+BASE_DIR = Path(__file__).parent.resolve()
+LEGACY_EMBEDDING_ROOT = (BASE_DIR / "../data/embedding").resolve()
+
+# Candidate roots searched for embeddings when no override is provided.
+EMBEDDING_ROOT_CANDIDATES: List[Path] = [
+    ROOT_EMBEDDING_ROOT,
+    LEGACY_EMBEDDING_ROOT,
+]
 
 # Model Configuration
 # Phase 5: Changed from gpt-5 to gpt-4o-mini for 10x speed + 73% cost reduction
@@ -106,9 +115,9 @@ ROUTING_CONFIG = {
     "enable_strategy_override": True,  # Allow manual strategy selection
 }
 
-# Complete configuration
+# Complete configuration (embedding path resolved dynamically at runtime)
 CONFIG = {
-    "embedding_path": EMBEDDING_DIR,
+    "embedding_path": None,
     "models": MODEL_CONFIG,
     "retrieval": RETRIEVAL_CONFIG,
     "cache": CACHE_CONFIG,
@@ -116,6 +125,67 @@ CONFIG = {
     "strategies": STRATEGY_CONFIG,
     "routing": ROUTING_CONFIG,
 }
+
+
+def _list_embedding_dirs(base: Path) -> List[Path]:
+    """Return timestamped embedding directories under the provided root."""
+    if not base.exists():
+        return []
+    return sorted(
+        (p.resolve() for p in base.glob("embeddings_sales_*") if p.is_dir()),
+        reverse=True,
+    )
+
+
+def list_embedding_directories() -> List[Path]:
+    """List all known embedding directories in priority order."""
+    dirs: List[Path] = []
+    for root in EMBEDDING_ROOT_CANDIDATES:
+        dirs.extend(_list_embedding_dirs(root))
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_dirs = []
+    for path in dirs:
+        if path not in seen:
+            seen.add(path)
+            unique_dirs.append(path)
+    return unique_dirs
+
+
+def resolve_embedding_path(
+    preferred: Optional[Union[str, Path]] = None,
+) -> Path:
+    """
+    Resolve the embedding directory to use for retrieval.
+
+    Priority:
+    1. Explicit `preferred` argument (CLI override)
+    2. `EMBEDDING_DIR` environment variable
+    3. Latest timestamped directory under known roots
+    """
+    if preferred:
+        path = Path(preferred).expanduser().resolve()
+        if not path.exists():
+            raise FileNotFoundError(f"Embedding path override not found: {path}")
+        return path
+
+    env_path = os.getenv("EMBEDDING_DIR")
+    if env_path:
+        path = Path(env_path).expanduser().resolve()
+        if not path.exists():
+            raise FileNotFoundError(
+                f"EMBEDDING_DIR points to '{path}', but it does not exist."
+            )
+        return path
+
+    candidates = list_embedding_directories()
+    if not candidates:
+        raise FileNotFoundError(
+            "No embedding directories were found. "
+            "Run the embedding pipeline first or set EMBEDDING_DIR explicitly."
+        )
+
+    return candidates[0]
 
 
 def get_config() -> dict:
@@ -132,4 +202,3 @@ def is_strategy_enabled(strategy_name: str) -> bool:
     """Check if a strategy is enabled."""
     strategy_cfg = STRATEGY_CONFIG.get(strategy_name, {})
     return strategy_cfg.get("enabled", False)
-

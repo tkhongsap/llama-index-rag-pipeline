@@ -13,6 +13,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 from typing import List, Tuple, Dict, Any
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 # Load environment
 load_dotenv(override=True)
 
@@ -33,11 +37,12 @@ except ImportError:
     from embedding_processor import EmbeddingProcessor
     from file_storage import EmbeddingStorage
 
+from src_sale_promotion.common import PROCESSED_DOCS_DIR, EMBEDDING_DIR
 
 # Configuration (Updated for GPT-5 and text-embedding-3-large)
 CONFIG = {
-    "input_file": Path("../data/processed/documents/documents.jsonl"),
-    "output_dir": Path("../data/embedding"),
+    "input_file": PROCESSED_DOCS_DIR / "documents" / "documents.jsonl",
+    "output_dir": EMBEDDING_DIR,
     "chunk_size": 2048,              # > doc size (no chunking)
     "chunk_overlap": 0,
     "embedding_model": "text-embedding-3-large",  # 3072 dimensions (upgraded from 1536)
@@ -328,4 +333,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
