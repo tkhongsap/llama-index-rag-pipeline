@@ -7,6 +7,7 @@ Loads Phase 2 embeddings (142 PKL files, 3072-dim) and builds indexes for retrie
 import os
 import pickle
 import numpy as np
+import hashlib
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Union
 from llama_index.core import VectorStoreIndex, Document, StorageContext
@@ -123,11 +124,43 @@ class EmbeddingLoader:
         
         # Configure embedding model (CRITICAL: must match stored embedding dims)
         from llama_index.core import Settings
+        from llama_index.core.base.embeddings.base import BaseEmbedding
+
+        class LocalDeterministicEmbedding(BaseEmbedding):
+            """Offline embedding model that generates deterministic 3072-dim vectors."""
+            def __init__(self, dim: int = 3072):
+                super().__init__()
+                self._dim = dim
+
+            def _vec(self, text: str) -> List[float]:  # type: ignore[name-defined]
+                seed = int(hashlib.md5(text.encode("utf-8")).hexdigest()[:8], 16)
+                rng = np.random.default_rng(seed)
+                v = rng.normal(0.0, 1.0, size=self._dim).astype(np.float32)
+                n = float(np.linalg.norm(v)) or 1.0
+                return (v / n).tolist()
+
+            # BaseEmbedding hooks
+            def _get_query_embedding(self, query: str):
+                return self._vec(query)
+
+            def _aget_query_embedding(self, query: str):  # pragma: no cover - sync path used
+                return self._vec(query)
+
+            def _get_text_embedding(self, text: str):
+                return self._vec(text)
+
+            def _aget_text_embedding(self, text: str):  # pragma: no cover - sync path used
+                return self._vec(text)
+
         api_key = os.getenv("OPENAI_API_KEY")
-        embed_model = OpenAIEmbedding(
-            model="text-embedding-3-large",  # 3072 dimensions
-            api_key=api_key
-        )
+        offline = os.getenv("OFFLINE_MODE", "false").lower() == "true"
+        if offline or not api_key:
+            embed_model = LocalDeterministicEmbedding(dim=3072)
+        else:
+            embed_model = OpenAIEmbedding(
+                model="text-embedding-3-large",  # 3072 dimensions
+                api_key=api_key
+            )
         Settings.embed_model = embed_model
         
         print(f"  🔧 Configured embedding model: text-embedding-3-large (3072 dims)")

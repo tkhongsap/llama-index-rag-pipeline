@@ -9,7 +9,12 @@ from pathlib import Path
 from typing import List, Optional, Union
 from dotenv import load_dotenv
 
-from src_sale_promotion.common import EMBEDDING_DIR as ROOT_EMBEDDING_ROOT
+try:
+    # Preferred: use shared constants if available on sys.path
+    from src_sale_promotion.common import EMBEDDING_DIR as ROOT_EMBEDDING_ROOT
+except Exception:
+    # Fallback: resolve top-level data/embedding relative to repo root
+    ROOT_EMBEDDING_ROOT = (Path(__file__).resolve().parents[2] / "data" / "embedding").resolve()
 
 # Load environment variables
 load_dotenv()

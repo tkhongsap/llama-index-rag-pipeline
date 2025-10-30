@@ -8,10 +8,12 @@ Following PRD Section 6.4: batch_embedding.py specification
 import os
 import sys
 import time
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 from typing import List, Tuple, Dict, Any
+import numpy as np
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -73,6 +75,8 @@ class SalesPromotionBatchEmbeddingPipeline:
         self.document_loader = PromotionDocumentLoader()
         self.embedding_processor = EmbeddingProcessor()
         self.storage = EmbeddingStorage()
+        # Offline mode: generate deterministic local embeddings without API calls
+        self.offline = os.getenv("OFFLINE_MODE", "false").lower() == "true"
         self.api_key = self._validate_api_key()
         
         # Create timestamped output directory
@@ -83,12 +87,15 @@ class SalesPromotionBatchEmbeddingPipeline:
         print(f"📁 Output directory: {self.output_dir}")
     
     def _validate_api_key(self) -> str:
-        """Validate OpenAI API key exists."""
+        """Validate OpenAI API key exists, unless running in OFFLINE_MODE."""
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
+            if self.offline:
+                # Offline mode: allow proceeding without a key
+                return ""
             raise ValueError(
                 "OPENAI_API_KEY not found in environment. "
-                "Please set it in .env file."
+                "Please set it in .env file or enable OFFLINE_MODE=true."
             )
         return api_key
     
@@ -136,7 +143,10 @@ class SalesPromotionBatchEmbeddingPipeline:
             print(f"PROCESSING BATCH {batch_num}/{len(batches)}")
             print(f"{'─'*80}")
             
-            embeddings = self.process_batch(batch_docs, batch_num)
+            if self.offline:
+                embeddings = self._process_batch_offline(batch_docs, batch_num)
+            else:
+                embeddings = self.process_batch(batch_docs, batch_num)
             all_batches_data.append(embeddings)
             
             # Rate limiting (skip after last batch)
@@ -260,6 +270,103 @@ class SalesPromotionBatchEmbeddingPipeline:
         print(f"   - Total: {len(indexnode_embeddings) + len(summary_embeddings)}")
         
         return (indexnode_embeddings, summary_embeddings)
+
+    def _deterministic_vector(self, key: str, dim: int = 3072) -> List[float]:
+        """Generate a deterministic pseudo-embedding vector for a given key."""
+        # Stable seed from key
+        seed = int(hashlib.md5(key.encode("utf-8")).hexdigest()[:8], 16)
+        rng = np.random.default_rng(seed)
+        vec = rng.normal(loc=0.0, scale=1.0, size=dim).astype(np.float32)
+        # Normalize to unit length for better numeric behavior
+        norm = float(np.linalg.norm(vec)) or 1.0
+        return (vec / norm).tolist()
+
+    def _process_batch_offline(
+        self,
+        batch_docs: List[Document],
+        batch_num: int,
+    ) -> Tuple[List[Dict], List[Dict]]:
+        """
+        Offline path: generate 3072-dim deterministic embeddings and simple summaries
+        without calling external APIs. Intended for testing environments.
+        """
+        print("\n🧪 OFFLINE MODE: Generating local embeddings (no API calls)...")
+
+        indexnode_embeddings: List[Dict[str, Any]] = []
+        summary_embeddings: List[Dict[str, Any]] = []
+
+        for i, doc in enumerate(batch_docs, 1):
+            meta = dict(doc.metadata or {})
+            promo_id = meta.get("document_id", f"DOC_{i:03d}")
+            promo_title = f"Promotion: {promo_id}"
+
+            # Build simple summary by truncating document text
+            full_text = doc.text or ""
+            truncate_len = self.config.get("summary_truncate_length", 500)
+            summary_text = (full_text[:truncate_len] + "...") if len(full_text) > truncate_len else full_text
+
+            # IndexNode-like text
+            indexnode_text = f"{promo_title}\n\nSummary: {summary_text}"
+
+            # Deterministic embeddings
+            index_vec = self._deterministic_vector(f"{promo_id}-index", dim=3072)
+            summary_vec = self._deterministic_vector(f"{promo_id}-summary", dim=3072)
+
+            # IndexNode embedding record
+            indexnode_embeddings.append({
+                "node_id": f"node_{promo_id}",
+                "index_id": f"promo_{i}",
+                "doc_title": promo_title,
+                "text": indexnode_text,
+                "text_length": len(indexnode_text),
+                "embedding_vector": index_vec,
+                "embedding_dim": len(index_vec),
+                "metadata": {
+                    **meta,
+                    "doc_id": promo_id,
+                    "doc_title": promo_title,
+                    "type": "document_summary",
+                    "batch_number": batch_num,
+                },
+                "type": "indexnode",
+                "batch_number": batch_num,
+            })
+
+            # Summary embedding record
+            summary_embeddings.append({
+                "node_id": f"summary_{promo_id}",
+                "doc_id": promo_id,
+                "doc_title": promo_title,
+                "summary_text": summary_text,
+                "summary_length": len(summary_text),
+                "embedding_vector": summary_vec,
+                "embedding_dim": len(summary_vec),
+                "metadata": {
+                    **meta,
+                    "doc_id": promo_id,
+                    "doc_title": promo_title,
+                    "type": "summary",
+                    "batch_number": batch_num,
+                },
+                "type": "summary",
+                "batch_number": batch_num,
+            })
+
+        # Save batch outputs
+        print(f"\n5️⃣  Saving batch outputs (offline)...")
+        self.storage.save_batch_embeddings(
+            self.output_dir,
+            batch_num,
+            indexnode_embeddings,
+            summary_embeddings,
+        )
+
+        print(f"\n✅ Batch {batch_num} complete (offline):")
+        print(f"   - IndexNode embeddings: {len(indexnode_embeddings)}")
+        print(f"   - Summary embeddings: {len(summary_embeddings)}")
+        print(f"   - Total: {len(indexnode_embeddings) + len(summary_embeddings)}")
+
+        return indexnode_embeddings, summary_embeddings
     
     def _build_index_nodes(
         self,
